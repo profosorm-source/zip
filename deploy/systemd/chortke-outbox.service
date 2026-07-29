@@ -1,0 +1,17 @@
+[Unit]
+Description=Chortke Outbox Publisher
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/chortke
+ExecStart=/usr/bin/php /var/www/chortke/cli.php outbox:publish --limit=100 --sleep=5
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/chortke/outbox.log
+StandardError=append:/var/log/chortke/outbox-error.log
+
+[Install]
+WantedBy=multi-user.target

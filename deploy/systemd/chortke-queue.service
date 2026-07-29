@@ -1,0 +1,18 @@
+[Unit]
+Description=Chortke Queue Worker
+After=network.target mysql.service redis.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/chortke
+ExecStart=/usr/bin/php /var/www/chortke/cli.php queue:work --daemon --sleep=1 --tries=3
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/chortke/queue.log
+StandardError=append:/var/log/chortke/queue-error.log
+Environment=QUEUE_CONNECTION=redis
+
+[Install]
+WantedBy=multi-user.target
