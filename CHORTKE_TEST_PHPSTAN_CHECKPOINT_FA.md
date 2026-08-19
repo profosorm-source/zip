@@ -33,17 +33,18 @@ PHPStan 1.12.33  Level 9  بدون ignore / baseline / @phpstan-ignore
 - شمارنده‌های assert از `global` به `array{pass:int,fail:int}` با ارجاع تبدیل شد تا شاخهٔ مرده ساخته نشود
 - `Cache::flush()` قرارداد واقعی است، نه `flushAll`
 
-PHPDoc در مرز تولیدکننده (نه DTO):
+PHPDoc در مرز تولیدکننده، هم‌سبک خانه (`VitrineResult` / `SocialTaskResult`):
 
-- `TicketService::create` / `TicketCommandService::create`  
-  `array{success:false,message:string}|array{success:true,message:string,ticket_id:int}`
-- `LotteryCommandService::createRound`  
-  `array{success:false,message:string}|array{success:true,message:string,round_id:int}`
-- `ManualDepositService::create`  
-  `array{success:bool,message?:string,deposit_id?:int}`
-- `AdTubeAdapter::create` شکل پاسخ adapter
+```text
+@phpstan-type TicketCreateResult array{success: bool, message: string, ticket_id?: int}
+@phpstan-type LotteryRoundCreateResult array{success: bool, message: string, round_id?: int}
+@phpstan-type ManualDepositCreateResult array{success: bool, message?: string, deposit_id?: int}
+@phpstan-type AdTubeCreateResult array{success: bool, message: string, data?: ..., errors?: ...}
+```
 
-تست واحد بعد از شاخهٔ شکست (`fail($message)`) به `ticket_id` / `round_id` دسترسی دارد.
+مصرف‌کننده با `int_value($result['ticket_id'] ?? 0)` در مرز شکل‌گیری id.
+
+شمارندهٔ ساگا مثل `Master360`: `global $pass/$fail` + `try/catch` در همان scope.
 
 ## فایل‌های این سشن
 
