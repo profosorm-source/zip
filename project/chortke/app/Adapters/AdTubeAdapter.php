@@ -33,7 +33,7 @@ class AdTubeAdapter extends AdapterBase implements AdSystemContract
 
     /**
      * @param array<string, mixed> $data
-     * @return array{success: bool, message: string, data?: array<string, mixed>, errors?: array<int|string, mixed>}
+     * @return AdTubeCreateResult
      */
     public function create(int $userId, array $data): array
     {

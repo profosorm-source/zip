@@ -168,10 +168,11 @@ class TicketController extends BaseUserController
         
         // ایجاد تیکت
         $result = $this->ticketService->create($userId, $data);
-        
-        if ($result['success']) {
+        $createdTicketId = int_value($result['ticket_id'] ?? 0);
+
+        if ($result['success'] && $createdTicketId > 0) {
             session()->setFlash('success', $result['message']);
-            redirect('/tickets/show/' . $result['ticket_id']);
+            redirect('/tickets/show/' . $createdTicketId);
         }
         
         session()->setFlash('error', $result['message']);

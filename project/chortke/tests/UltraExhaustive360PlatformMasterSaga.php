@@ -325,7 +325,7 @@ try {
         'max_bet_usdt' => '1000',
         'created_by' => $adminId,
     ]);
-    $gameId = (int)($gameObj->id ?? 0);
+    $gameId = $gameObj !== null ? int_value($gameObj->id) : 0;
 
     $betRes = $predictionService->placeBet($actorId, $gameId, 'home', '50');
     $predictionGameModel->closeBetting($gameId);
@@ -377,7 +377,7 @@ try {
         'message' => 'متن درخواست پشتیبانی',
         'priority' => 'normal',
     ]);
-    $tckId = (int)($ticketRes['ticket_id'] ?? $ticketRes['id'] ?? 0);
+    $tckId = int_value($ticketRes['ticket_id'] ?? $ticketRes['id'] ?? 0);
     $ticketService->reply($tckId, $adminId, 'پاسخ پشتیبانی ارسال گردید.', true);
     $ticketService->updateStatus($tckId, 'closed', $adminId);
 
