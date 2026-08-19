@@ -14,6 +14,9 @@ use App\Contracts\ValidatorFactoryInterface;
 use App\Contracts\LoggerInterface;
 use App\Services\Shared\IdempotencyService;
 
+/**
+ * @phpstan-type TicketCreateResult array{success: bool, message: string, ticket_id?: int}
+ */
 class TicketCommandService
 {
     /**
@@ -91,7 +94,7 @@ class TicketCommandService
 
     /**
      * @param array<string, mixed> $data
-     * @return array{success: false, message: string}|array{success: true, message: string, ticket_id: int}
+     * @return TicketCreateResult
      */
     public function create(int $userId, array $data): array
     {

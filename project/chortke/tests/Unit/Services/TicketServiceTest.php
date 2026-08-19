@@ -155,10 +155,8 @@ class TicketServiceTest extends TestCase
 
         $result = $this->service->create(1, $data);
 
-        if (!$result['success']) {
-            $this->fail($result['message']);
-        }
-        $this->assertSame(101, $result['ticket_id']);
+        $this->assertTrue($result['success']);
+        $this->assertSame(101, int_value($result['ticket_id'] ?? 0));
     }
 
     /** @test */

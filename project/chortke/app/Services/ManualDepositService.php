@@ -11,6 +11,9 @@ use App\Models\ManualDeposit;
 use App\Services\OutboxService;
 use App\Services\Payment\PaymentService;
 
+/**
+ * @phpstan-type ManualDepositCreateResult array{success: bool, message?: string, deposit_id?: int}
+ */
 class ManualDepositService
 {
     private Database $db;
@@ -46,7 +49,7 @@ class ManualDepositService
      */
     /**
      * @param array<string, mixed> $data
-     * @return array{success: bool, message?: string, deposit_id?: int}
+     * @return ManualDepositCreateResult
      */
     public function create(int $userId, array $data, ?string $receiptPath = null): array
     {

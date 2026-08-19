@@ -44,10 +44,8 @@ class LotteryCommandServiceBehaviorTest extends TestCase
         $c['roundModel']->shouldReceive('create')->once()->andReturn(1);
 
         $result = $c['svc']->createRound(1, ['title' => 'Test Round']);
-        if (!$result['success']) {
-            $this->fail($result['message']);
-        }
-        $this->assertSame(1, $result['round_id']);
+        $this->assertTrue($result['success']);
+        $this->assertSame(1, int_value($result['round_id'] ?? 0));
     }
 
     /** @test */

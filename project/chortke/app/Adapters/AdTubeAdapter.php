@@ -15,6 +15,8 @@ use App\Models\Ads;
 /**
  * AdTubeAdapter - creates AdTube campaign records only.
  * Financial hold/withdraw is handled centrally by AdSystemManager.
+ *
+ * @phpstan-type AdTubeCreateResult array{success: bool, message: string, data?: array<string, mixed>, errors?: array<int|string, mixed>}
  */
 class AdTubeAdapter extends AdapterBase implements AdSystemContract
 {

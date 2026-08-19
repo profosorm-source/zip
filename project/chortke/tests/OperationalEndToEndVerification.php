@@ -35,21 +35,21 @@ $userSvc = $container->make(UserService::class);
 $walletSvc = $container->make(WalletService::class);
 $vitrineSvc = $container->make(VitrineService::class);
 
-/** @var array{pass: int, fail: int} $stats */
-$stats = ['pass' => 0, 'fail' => 0];
+$pass = 0;
+$fail = 0;
 
-/**
- * @param array{pass: int, fail: int} $stats
- */
-function opAssert(string $title, bool $condition, array &$stats, string $detail = ''): void {
+function opAssert(string $title, bool $condition, string $detail = ''): void {
+    global $pass, $fail;
     if ($condition) {
         echo "  ✓ PASS: {$title}" . ($detail ? " ({$detail})" : "") . "\n";
-        $stats['pass']++;
+        $pass++;
     } else {
         echo "  ✗ FAIL: {$title}" . ($detail ? " ({$detail})" : "") . "\n";
-        $stats['fail']++;
+        $fail++;
     }
 }
+
+try {
 
 // ─── اکشن ۱: ثبت‌نام و ساخت کیف‌پول واقعی در دیتابیس ───────────────
 echo "▶ [اکشن ۱]: افتتاح حساب کاربری و ایجاد کیف‌پول در MariaDB...\n";
@@ -66,8 +66,8 @@ $db->insert("INSERT INTO wallets (user_id, balance_irt, balance_usdt, locked_irt
 
 $w1 = $db->fetch("SELECT balance_irt, balance_usdt FROM wallets WHERE user_id = ?", [$u1Id]);
 $w1Irt = $w1 !== null ? float_value($w1->balance_irt) : null;
-opAssert("حساب کاربری op_user1 در دیتابیس ایجاد شد", $u1Id > 0, $stats, "User ID: {$u1Id}");
-opAssert("کیف پول اول با موجودی اولیه صفر ایجاد شد", $w1Irt === 0.0, $stats);
+opAssert("حساب کاربری op_user1 در دیتابیس ایجاد شد", $u1Id > 0, "User ID: {$u1Id}");
+opAssert("کیف پول اول با موجودی اولیه صفر ایجاد شد", $w1Irt === 0.0);
 
 
 // ─── اکشن ۲: واریز دستی ۵ میلیون تومانی و شارژ دیتابیس ──────────────
@@ -88,7 +88,6 @@ $w1AfterDepIrt = $w1AfterDep !== null ? float_value($w1AfterDep->balance_irt) : 
 opAssert(
     "موجودی کاربر اول پس از واریز دستی به ۵,۰۰۰,۰۰۰ تومان رسید",
     $w1AfterDepIrt === 5000000.0,
-    $stats,
     "Balance: " . number_format($w1AfterDepIrt ?? 0.0) . " IRT"
 );
 
@@ -111,8 +110,8 @@ $w2AfterTrans = $db->fetch("SELECT balance_irt FROM wallets WHERE user_id = ?", 
 $w1AfterTransIrt = $w1AfterTrans !== null ? float_value($w1AfterTrans->balance_irt) : null;
 $w2AfterTransIrt = $w2AfterTrans !== null ? float_value($w2AfterTrans->balance_irt) : null;
 
-opAssert("موجودی فرستنده به ۴,۰۰۰,۰۰۰ تومان کسر شد", $w1AfterTransIrt === 4000000.0, $stats);
-opAssert("موجودی گیرنده به ۱,۰۰۰,۰۰۰ تومان افزایش یافت", $w2AfterTransIrt === 1000000.0, $stats);
+opAssert("موجودی فرستنده به ۴,۰۰۰,۰۰۰ تومان کسر شد", $w1AfterTransIrt === 4000000.0);
+opAssert("موجودی گیرنده به ۱,۰۰۰,۰۰۰ تومان افزایش یافت", $w2AfterTransIrt === 1000000.0);
 
 
 // ─── اکشن ۴: معامله اسکرو در ویترین تجاری (قفل وجه و تسویه) ──────────
@@ -134,8 +133,8 @@ $lockOk = (bool)($lockRes['success'] ?? false);
 $w1Locked = $db->fetch("SELECT balance_usdt, locked_usdt FROM wallets WHERE user_id = ?", [$u1Id]);
 $w1LockedUsdt = $w1Locked !== null ? float_value($w1Locked->locked_usdt) : null;
 
-opAssert("قفل وجه اسکرو ۱۰۰ تتری خریدار موفقیت‌آمیز بود", $lockOk, $stats);
-opAssert("مبلغ ۱۰۰ تتر در حساب خریدار قفل گردید (Locked USDT = 100)", $w1LockedUsdt === 100.0, $stats);
+opAssert("قفل وجه اسکرو ۱۰۰ تتری خریدار موفقیت‌آمیز بود", $lockOk);
+opAssert("مبلغ ۱۰۰ تتر در حساب خریدار قفل گردید (Locked USDT = 100)", $w1LockedUsdt === 100.0);
 
 // تایید تحویل توسط خریدار و آزادسازی وجه به فروشنده
 $confirmRes = $vitrineSvc->confirmDelivery($u1Id, $listingId);
@@ -143,8 +142,8 @@ $confirmOk = (bool)($confirmRes['success'] ?? false);
 $w2Seller = $db->fetch("SELECT balance_usdt FROM wallets WHERE user_id = ?", [$u2Id]);
 $w2SellerUsdt = $w2Seller !== null ? float_value($w2Seller->balance_usdt) : 0.0;
 
-opAssert("تایید تحویل انجام شد و معامله ویترین تسویه گردید", $confirmOk, $stats);
-opAssert("مبلغ ۱۰۰ تتر به حساب فروشنده واریز شد (موجودی فروشنده: {$w2SellerUsdt} USDT)", $w2SellerUsdt > 0, $stats);
+opAssert("تایید تحویل انجام شد و معامله ویترین تسویه گردید", $confirmOk);
+opAssert("مبلغ ۱۰۰ تتر به حساب فروشنده واریز شد (موجودی فروشنده: {$w2SellerUsdt} USDT)", $w2SellerUsdt > 0);
 
 
 // ─── اکشن ۵: ثبت تیکت پشتیبانی و پاسخ ادمین ───────────────────────
@@ -158,7 +157,7 @@ $ticketRes = $ticketSvc->create($u1Id, [
     'message' => 'سلام، واریز دستی ۵ میلیون تومانی انجام گردید. لطفاً بررسی و تایید بفرمایید.'
 ]);
 
-opAssert("تیکت پشتیبانی با موفقیت در دیتابیس ثبت شد", $ticketRes['success'], $stats);
+opAssert("تیکت پشتیبانی با موفقیت در دیتابیس ثبت شد", $ticketRes['success']);
 
 $ticketId = int_value($ticketRes['ticket_id'] ?? 0);
 if ($ticketId > 0) {
@@ -172,7 +171,7 @@ if ($ticketId > 0) {
 
     $tRow = $db->fetch("SELECT status FROM tickets WHERE id = ?", [$ticketId]);
     $ticketStatus = $tRow !== null ? str_value($tRow->status) : '';
-    opAssert("پاسخ ادمین ثبت شد و وضعیت تیکت به answered تغییر یافت", $ticketStatus === 'answered', $stats);
+    opAssert("پاسخ ادمین ثبت شد و وضعیت تیکت به answered تغییر یافت", $ticketStatus === 'answered');
 }
 
 
@@ -182,10 +181,13 @@ $userSvc->incrementFraudScore($u2Id, 15);
 $u2Updated = $db->fetch("SELECT fraud_score FROM users WHERE id = ?", [$u2Id]);
 $fraudScore = $u2Updated !== null ? int_value($u2Updated->fraud_score) : -1;
 
-opAssert("امتیاز ریسک کاربر در دیتابیس با موفقیت ارتقا یافت (Fraud Score = {$fraudScore})", $fraudScore === 15, $stats);
+opAssert("امتیاز ریسک کاربر در دیتابیس با موفقیت ارتقا یافت (Fraud Score = {$fraudScore})", $fraudScore === 15);
 
-$pass = $stats['pass'];
-$fail = $stats['fail'];
+} catch (\Throwable $e) {
+    echo "\n  [CRITICAL ERROR] " . $e->getMessage() . "\n";
+    echo "  In " . $e->getFile() . ":" . $e->getLine() . "\n";
+    $fail++;
+}
 
 echo "\n======================================================================\n";
 echo "  خلاصه عملکرد آزمون‌های ۱۰۰٪ عملیاتی و زنده دیتابیس\n";
@@ -194,6 +196,9 @@ echo "  Passed: {$pass}    Failed: {$fail}\n";
 echo "======================================================================\n\n";
 
 if ($fail === 0) {
+    echo "SUCCESS: ALL OPERATIONAL CHECKS PASSED!\n";
     exit(0);
+} else {
+    echo "FAILURE: SOME OPERATIONAL CHECKS FAILED.\n";
+    exit(1);
 }
-exit(1);

@@ -13,6 +13,9 @@ use App\Contracts\WalletServiceInterface;
 use App\Services\Shared\IdempotencyService;
 use Core\EventDispatcher;
 
+/**
+ * @phpstan-type LotteryRoundCreateResult array{success: bool, message: string, round_id?: int}
+ */
 class LotteryCommandService
 {
     /**
@@ -66,7 +69,7 @@ class LotteryCommandService
 
     /**
      * @param array<string, mixed> $data
-     * @return array{success: false, message: string}|array{success: true, message: string, round_id: int}
+     * @return LotteryRoundCreateResult
      */
     public function createRound(int $userId, array $data): array
     {

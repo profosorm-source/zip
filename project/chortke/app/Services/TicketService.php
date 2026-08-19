@@ -19,6 +19,8 @@ use App\Services\Shared\IdempotencyService;
  *
  * REFACTOR: حذف تمام Container::getInstance() از داخل method body ها.
  * Database، Ticket و TicketMessage مستقیماً inject می‌شوند.
+ *
+ * @phpstan-type TicketCreateResult array{success: bool, message: string, ticket_id?: int}
  */
 class TicketService
 {
@@ -69,7 +71,7 @@ class TicketService
 
     /**
      * @param array<string, mixed> $data
-     * @return array{success: false, message: string}|array{success: true, message: string, ticket_id: int}
+     * @return TicketCreateResult
      */
     public function create(int $userId, array $data): array
     {
