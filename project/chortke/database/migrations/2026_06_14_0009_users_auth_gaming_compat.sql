@@ -1,0 +1,17 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Final compatibility for tests after environment reset
+ALTER TABLE `users`
+  ADD COLUMN IF NOT EXISTS `kyc_status` VARCHAR(50) NULL DEFAULT 'unverified',
+  ADD COLUMN IF NOT EXISTS `tier` VARCHAR(50) NULL DEFAULT 'SILVER',
+  ADD COLUMN IF NOT EXISTS `role_id` INT(10) UNSIGNED NULL,
+  ADD COLUMN IF NOT EXISTS `mobile_verified_at` TIMESTAMP NULL,
+  ADD COLUMN IF NOT EXISTS `device_fingerprint` VARCHAR(64) NULL,
+  ADD COLUMN IF NOT EXISTS `active_days_count` INT(10) NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS `blacklist_reason` TEXT NULL,
+  ADD COLUMN IF NOT EXISTS `blacklisted_at` DATETIME NULL,
+  ADD COLUMN IF NOT EXISTS `level_type` ENUM('auto','purchased') NULL DEFAULT 'auto',
+  ADD COLUMN IF NOT EXISTS `last_active_date` DATE NULL,
+  ADD COLUMN IF NOT EXISTS `referral_quality_score` DECIMAL(5,2) NOT NULL DEFAULT 85.00;
+
+SET FOREIGN_KEY_CHECKS = 1;

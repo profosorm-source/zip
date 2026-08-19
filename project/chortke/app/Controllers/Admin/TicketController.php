@@ -1,0 +1,314 @@
+<?php
+
+namespace App\Controllers\Admin;
+
+use App\Models\Ticket;
+use App\Models\TicketMessage;
+use App\Models\TicketCategory;
+use App\Services\TicketService;
+use App\Services\Search\SearchOrchestrator;
+use App\Policies\RateLimitPolicy;
+use App\Controllers\Admin\BaseAdminController;
+
+class TicketController extends BaseAdminController
+{
+    // L-04: این کنترلر به نقش support مجاز است؛ گیت ورود = ناحیهٔ ادمین، و عملیات با authorizeById('tickets.*') ریزدانه محدود می‌شود.
+    protected function enforceAdminAccess(): void
+    {
+        $this->requireAdminArea();
+    }
+
+    private TicketService $ticketService;
+    private SearchOrchestrator $searchService;
+    
+    public function __construct(
+        \App\Services\TicketService $ticketService,
+        SearchOrchestrator $searchService, ?\App\Contracts\LoggerInterface $logger = null) {
+        parent::__construct(null, null, null, null, $logger);
+        $this->ticketService = $ticketService;
+        $this->searchService = $searchService;
+    }
+    
+    /**
+     * لیست تیکت‌ها
+     */
+    public function index(): void
+    {
+        $filters = [
+            'status' => $this->request->get('status', ''),
+            'priority' => $this->request->get('priority', ''),
+            'category_id' => $this->request->get('category_id', ''),
+            'assigned_to' => $this->request->get('assigned_to', '')
+        ];
+        
+        $search = trim(str_value($this->request->get('search') ?? ''));
+        $page = max(1, $this->request->int('page', 1));
+        $perPage = 20;
+        $offset = ($page - 1) * $perPage;
+        
+        // استفاده از TicketService برای دریافت تیکت‌ها
+        if (!empty($search)) {
+            $result = $this->searchService->searchTickets($search, $filters, $perPage, $offset);
+            $tickets = $result['items'] ?? [];
+            $total = $result['total'] ?? 0;
+        } else {
+            $result = $this->ticketService->listForAdmin($filters, $page, $perPage);
+            $tickets = $result['tickets'] ?? [];
+            $total = $result['total'] ?? 0;
+        }
+
+        $totalPages = ceil($total / $perPage);
+        
+        // آمار از Service
+        $stats = $this->ticketService->getStats();
+        
+        // دسته‌بندی‌ها از Service
+        $categories = $this->ticketService->getCategories();
+        
+        view('admin/tickets/index', [
+            'tickets' => $tickets,
+            'stats' => $stats,
+            'categories' => $categories,
+            'filters' => $filters,
+            'search' => $search,
+            'page' => $page,
+            'totalPages' => $totalPages,
+            'total' => $total
+        ]);
+    }
+    
+    /**
+     * نمایش تیکت
+     */
+    public function show(int $id): void
+    {
+        $ticket = $this->ticketService->getById($id);
+        
+        if (!$ticket) {
+            $this->session->setFlash('error', 'تیکت یافت نشد.');
+            redirect('/admin/tickets');
+        }
+
+        // 🛡️ HIGH-01: جلوگیری از دسترسی ادمین‌های عادی به تیکت‌های غیرمنتسب به خودشان یا فاقد انتساب (Fail-Closed)
+        $adminId = $this->requireAdminId();
+        $isAssignedToMe = ($ticket->assigned_to !== null && (int)$ticket->assigned_to === $adminId);
+        if (!$isAssignedToMe) {
+            try {
+                $hasPermission = (bool) $this->policyService->authorizeById('tickets.view_all', $adminId);
+            } catch (\Throwable $e) {
+                $hasPermission = false; // Fail-Closed
+            }
+            if (!$hasPermission) {
+                $this->logger->warning('unauthorized_ticket_access_attempt', [
+                    'admin_id' => $adminId,
+                    'ticket_id' => $id,
+                    'ip' => $this->request->ip()
+                ]);
+                $this->session->setFlash('error', 'شما دسترسی مشاهده این تیکت را ندارید.');
+                redirect('/admin/tickets');
+            }
+        }
+        
+        $messages = $this->ticketService->getMessages($id);
+        
+        // علامت‌گذاری به عنوان خوانده شده
+        $this->ticketService->markAsRead($id, true);
+        
+        view('admin/tickets/show', [
+            'ticket' => $ticket,
+            'messages' => $messages
+        ]);
+    }
+    
+    public function reply(): void
+    {
+        // CORE-036: CSRF Protection
+        $this->validateCsrf();
+
+        $data = $this->request->json();
+        $ticketId = int_value($data['ticket_id'] ?? 0);
+        
+        $rawMessage = trim(str_value($data['message'] ?? ''));
+        if (!$ticketId || empty($rawMessage)) {
+            $this->response->json(['success' => false, 'message' => 'ارسال پیام الزامی است.']);
+        }
+
+        // 🛡️ CRITICAL-05: کنترل طول داده ورودی بر روی داده خام قبل از ضدعفونی
+        if (mb_strlen((string)$rawMessage) > 5000) {
+            $this->response->json([
+                'success' => false, 
+                'message' => 'پیام نباید بیشتر از ۵۰۰۰ کاراکتر باشد'
+            ], 422);
+        }
+
+        $adminId = $this->requireAdminId();
+        
+        // 🛡️ HIGH-02: Rate limiting سبک برای ادمین (مثلاً 100 پاسخ در ساعت)
+        RateLimitPolicy::enforce('admin_ticket_reply', $adminId, true);
+
+        // 🛡️ HIGH-08: ضدعفونی صریح پیام پاسخ ادمین جهت مقابله با حملات Stored XSS پس از ولیدیشن طول
+        $message = htmlspecialchars($rawMessage, ENT_QUOTES, 'UTF-8', false);
+
+        $ticket = $this->ticketService->getById($ticketId);
+        if (!$ticket) {
+            $this->response->json([
+                'success' => false, 
+                'message' => 'تیکت یافت نشد.'
+            ], 404);
+            return;
+        }
+        
+        // 🛡️ HIGH-03: Prevent admin IDOR by ensuring they own the ticket or have global permissions
+        $isAssignedToMe = ($ticket->assigned_to !== null && (int)$ticket->assigned_to === $adminId);
+        if (!$isAssignedToMe) {
+            try {
+                $hasPermission = (bool) $this->policyService->authorizeById('tickets.view_all', $adminId);
+            } catch (\Throwable $e) {
+                $hasPermission = false;
+            }
+            if (!$hasPermission) {
+                $this->response->json(['success' => false, 'message' => 'شما دسترسی لازم برای پاسخ به این تیکت را ندارید.'], 403);
+            }
+        }
+        
+        $result = $this->ticketService->reply(
+            $ticketId,
+            $this->requireAdminId(),
+            $message,
+            true // isAdmin
+        );
+
+        if ($result['success'] ?? false) {
+            $this->logger->activity('ticket_admin_reply', 
+                "ادمین پاسخ داد به تیکت #{$ticketId}", 
+                $this->requireAdminId(), 
+                ['ticket_id' => $ticketId, 'message_length' => mb_strlen((string)$message)]
+            );
+            
+            // 🛡️ NEW-12: ثبت کامل ردپای حسابرسی ادمین به همراه هش پیام پیام جهت امنیت کامل حسابرسی
+            $this->auditLog('ticket_admin_reply', 'ticket', $ticketId, null, [
+                'message_length' => mb_strlen((string)$rawMessage),
+                'message_hash' => hash('sha256', $rawMessage), // 🛡️ MEDIUM-03: Hash the raw message for integrity verification
+
+                'has_sanitized' => true,
+                'ip_address' => $this->request->ip(),
+                'user_agent' => substr(str_value($this->request->header('User-Agent') ?? ''), 0, 255)
+            ]);
+        }
+        
+        $this->response->json($result);
+    }
+    
+    public function changeStatus(): void
+    {
+        // CORE-036: CSRF Protection
+        $this->validateCsrf();
+
+        $data = $this->request->json();
+        $ticketId = int_value($data['id'] ?? 0);
+        $status = str_value($data['status'] ?? '');
+        
+        if (!$ticketId || !$status) {
+            $this->response->json(['success' => false, 'message' => 'داده‌های ناقص.']);
+        }
+
+        // H-02: Status Whitelist Validation
+        if (!in_array($status, \App\Enums\TicketStatus::all(), true)) {
+            $this->response->json(['success' => false, 'message' => 'وضعیت نامعتبر است.']);
+        }
+
+        $ticket = $this->ticketService->getById($ticketId);
+        if (!$ticket) {
+            $this->response->json(['success' => false, 'message' => 'تیکت یافت نشد.']);
+
+            return;
+
+        }        
+        // 🛡️ CRITICAL-03: Prevent admin IDOR by ensuring they own the ticket or have global permissions
+        $adminId = $this->requireAdminId();
+        $isAssignedToMe = ($ticket->assigned_to !== null && (int)$ticket->assigned_to === $adminId);
+        if (!$isAssignedToMe) {
+            try {
+                $hasPermission = (bool) $this->policyService->authorizeById('tickets.view_all', $adminId);
+            } catch (\Throwable $e) {
+                $hasPermission = false;
+            }
+            if (!$hasPermission) {
+                $this->response->json(['success' => false, 'message' => 'شما دسترسی لازم برای تغییر وضعیت این تیکت را ندارید.'], 403);
+            }
+        }
+        
+        $oldStatus = $ticket->status;
+        
+        if ($this->ticketService->updateStatus($ticketId, $status, $this->requireAdminId())) {
+            $this->logger->activity('ticket_status_changed', "وضعیت تیکت #{$ticketId} به {$status} تغییر کرد", $this->requireAdminId(), []);
+            
+            // 🛡️ NEW-12: ثبت کامل ردپای حسابرسی ادمین
+            $this->auditLog('ticket_status_changed', 'ticket', $ticketId, 
+                ['status' => $oldStatus],
+                ['status' => $status]
+            );
+            
+            $this->response->json([
+                'success' => true,
+                'message' => 'وضعیت تیکت تغییر کرد.'
+            ]);
+        }
+        
+        $this->response->json(['success' => false, 'message' => 'خطا در تغییر وضعیت.']);
+    }
+    
+    public function assign(): void
+    {
+        // CORE-036: CSRF Protection
+        $this->validateCsrf();
+
+        // 🛡️ Item 9: بررسی اجازه کاربر جاری برای تخصیص تیکت
+        if (!$this->policyService->authorizeById('tickets.assign', $this->requireAdminId())) {
+            $this->response->json([
+                'success' => false, 
+                'message' => 'دسترسی غیرمجاز برای تغییر تخصیص تیکت.'
+            ], 403);
+        }
+
+        $data = $this->request->json();
+        $ticketId = int_value($data['ticket_id'] ?? 0);
+        $adminId = int_value($data['admin_id'] ?? 0);
+        
+        // 🛡️ LOW-05: اعتبارسنجی دقیق شناسه مدیر و ممانعت از ارجاعات نامعتبر
+        if (!$ticketId || $adminId <= 0) {
+            $this->response->json(['success' => false, 'message' => 'شناسه تیکت یا شناسه مدیر نامعتبر است.']);
+        }
+
+        $ticket = $this->ticketService->getById($ticketId);
+        if (!$ticket) {
+            $this->response->json(['success' => false, 'message' => 'تیکت یافت نشد.']);
+
+            return;
+
+        }
+        $oldAdminId = (int)($ticket->assigned_to ?? 0);
+
+        if (!$this->policyService->isAdminById($adminId)) {
+            $this->response->json(['success' => false, 'message' => 'شناسه مدیر نامعتبر است.']);
+        }
+        
+        if ($this->ticketService->assignTo($ticketId, $adminId)) {
+            $this->logger->activity('ticket_assigned', "تیکت #{$ticketId} به مدیر {$adminId} تخصیص داده شد", $this->requireAdminId(), []);
+            
+            // 🛡️ NEW-12: ثبت کامل ردپای حسابرسی ادمین
+            $this->auditLog('ticket_assigned', 'ticket', $ticketId, 
+                ['assigned_to' => $oldAdminId],
+                ['assigned_to' => $adminId]
+            );
+
+            $this->response->json([
+                'success' => true,
+                'message' => 'تیکت تخصیص داده شد.'
+            ]);
+        }
+        
+        $this->response->json(['success' => false, 'message' => 'خطا در تخصیص.']);
+    }
+
+}

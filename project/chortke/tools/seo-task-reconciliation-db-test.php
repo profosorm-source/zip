@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+require_once __DIR__ . '/../bootstrap/app.php';
+
+use Core\Container; use Core\Database; use App\Services\AdSystemManager; use App\Services\Seo\SeoService;
+$c=Container::getInstance(); $db=$c->make(Database::class); $manager=$c->make(AdSystemManager::class); $seo=$c->make(SeoService::class);
+function seoUser(Database $db,string $name): int {return (int)$db->insert("INSERT INTO users (username,email,full_name,status,role,kyc_status,created_at,updated_at) VALUES (?, ?, ?, 'active','user','verified',NOW(),NOW())",[$name,$name.'@example.test',$name]);}
+function seoWallet(Database $db,int $uid,float $bal=0): void {$db->insert("INSERT INTO wallets (user_id,balance_irt,balance_usdt,locked_irt,locked_usdt,created_at,updated_at) VALUES (?, ?, 0, 0, 0, NOW(), NOW())",[$uid,$bal]);}
+function arrSeo($o){return $o?json_decode(json_encode($o,JSON_UNESCAPED_UNICODE),true):null;}
+try{
+ $db->query("DELETE FROM seo_executions WHERE ad_id IN (SELECT id FROM ads WHERE title LIKE 'SEORECON:%')");
+ $db->query("DELETE FROM escrow_transactions WHERE order_type IN ('seo_ad_budget','ad_creation_seo') AND (order_id IN (SELECT CAST(id AS CHAR) FROM ads WHERE title LIKE 'SEORECON:%') OR order_id IN (SELECT id FROM saga_executions WHERE saga_name='ad_creation_seo'))");
+ $db->query("DELETE FROM ads WHERE title LIKE 'SEORECON:%'");
+ $db->query("DELETE FROM users WHERE email LIKE 'seorecon_%@example.test'");
+ $adv=seoUser($db,'seorecon_adv'); $worker=seoUser($db,'seorecon_worker'); $lowWorker=seoUser($db,'seorecon_low'); $cancelWorker=seoUser($db,'seorecon_cancel'); seoWallet($db,$adv,1000000); seoWallet($db,$worker); seoWallet($db,$lowWorker); seoWallet($db,$cancelWorker);
+ $create=$manager->create('seo',$adv,['title'=>'SEORECON: manager seo','target_link'=>'https://example.com','keyword'=>'چرتکه تست','budget'=>100000,'min_payout'=>1000,'max_payout'=>5000,'target_duration'=>60,'min_score'=>40,'max_per_day'=>10,'currency'=>'irt']);
+ $ad=(int)$create['ad_id']; $adRow=$db->fetch("SELECT id,status,site_url,target_url,budget,remaining_budget,min_payout,max_payout,target_duration,min_score,max_per_day FROM ads WHERE id=?",[$ad]); $escrow=$db->fetch("SELECT id,order_id,order_type,amount,partial_released,status FROM escrow_transactions WHERE order_id=? AND order_type='seo_ad_budget' ORDER BY id DESC LIMIT 1",[(string)$ad]);
+ $selfStart=$seo->startTask($ad,$adv);
+ $start=$seo->startTask($ad,$worker); $eid=(int)$start['execution_id'];
+ $complete=$seo->completeTask($eid,$worker,['duration'=>180,'scroll_depth'=>85,'interactions'=>8,'scroll_speed'=>300,'mouse_pattern'=>'normal','pause_count'=>5,'interaction_types'=>['scroll','click','pause'],'behavior'=>['scroll_speed'=>300,'mouse_pattern'=>'normal','pause_count'=>5,'interaction_types'=>['external_open','return_to_task','scroll','click','pause'],'target_opened'=>1]]);
+ $exec=$db->fetch("SELECT id,status,final_score,payout_amount,session_id,target_keyword FROM seo_executions WHERE id=?",[$eid]); $adAfter=$db->fetch("SELECT remaining_budget,executions_count,status FROM ads WHERE id=?",[$ad]); $escrowAfter=$db->fetch("SELECT amount,partial_released,status FROM escrow_transactions WHERE id=?",[(int)$escrow->id]); $workerWallet=$db->fetch("SELECT balance_irt FROM wallets WHERE user_id=?",[$worker]); $advWallet=$db->fetch("SELECT locked_irt FROM wallets WHERE user_id=?",[$adv]);
+ // Low score on another ad, no escrow required
+ $lowAd=(int)$db->insert("INSERT INTO ads (user_id,title,description,type,site_url,target_url,keyword,budget,remaining_budget,min_payout,max_payout,target_duration,min_score,max_per_day,status,currency,created_at,updated_at) VALUES (?, 'SEORECON: low seo', 'low score', 'seo', 'https://example.com', 'https://example.com', 'low', 100000, 100000, 1000, 5000, 60, 40, 10, 'active', 'irt', NOW(), NOW())",[$adv]);
+ $lowStart=$seo->startTask($lowAd,$lowWorker); $lowId=(int)$lowStart['execution_id']; $lowComplete=$seo->completeTask($lowId,$lowWorker,['duration'=>5,'scroll_depth'=>0,'interactions'=>0,'scroll_speed'=>0,'mouse_pattern'=>'linear','pause_count'=>0,'interaction_types'=>[]]); $lowExec=$db->fetch("SELECT id,status,rejection_reason FROM seo_executions WHERE id=?",[$lowId]);
+ // Cancel
+ $cancelAd=(int)$db->insert("INSERT INTO ads (user_id,title,description,type,site_url,target_url,keyword,budget,remaining_budget,min_payout,max_payout,target_duration,min_score,max_per_day,status,currency,created_at,updated_at) VALUES (?, 'SEORECON: cancel seo', 'cancel', 'seo', 'https://example.com', 'https://example.com', 'cancel', 100000, 100000, 1000, 5000, 60, 40, 10, 'active', 'irt', NOW(), NOW())",[$adv]);
+ $cancelStart=$seo->startTask($cancelAd,$cancelWorker); $cancelId=(int)$cancelStart['execution_id']; $cancel=$seo->cancelTask($cancelId,$cancelWorker); $cancelExec=$db->fetch("SELECT id,status,cancel_reason FROM seo_executions WHERE id=?",[$cancelId]);
+ echo json_encode(['ok'=>!empty($create['ad_id'])&&$escrow&&empty($selfStart['success'])&&!empty($complete['success'])&&($exec->status??'')==='completed'&&(float)$workerWallet->balance_irt>0&&(float)$escrowAfter->partial_released>0&&empty($lowComplete['success'])&&in_array(($lowExec->status??''), ['rejected','fraud'], true)&&!empty($cancel['success'])&&($cancelExec->status??'')==='cancelled','create'=>$create,'ad'=>$adRow,'escrow'=>$escrow,'self_start'=>$selfStart,'start'=>$start,'complete'=>$complete,'execution'=>$exec,'ad_after'=>$adAfter,'escrow_after'=>$escrowAfter,'worker_wallet'=>$workerWallet,'advertiser_wallet'=>$advWallet,'low_complete'=>$lowComplete,'low_execution'=>$lowExec,'cancel'=>$cancel,'cancel_execution'=>$cancelExec],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE).PHP_EOL;
+}catch(Throwable $e){try{if($db->inTransaction())$db->rollBack();}catch(Throwable){} echo json_encode(['ok'=>false,'error'=>$e->getMessage(),'file'=>$e->getFile(),'line'=>$e->getLine()],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE).PHP_EOL; exit(1);}

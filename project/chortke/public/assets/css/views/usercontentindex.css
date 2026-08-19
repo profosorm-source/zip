@@ -1,0 +1,3 @@
+.custom-slider::-webkit-slider-thumb { background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+.glass-output { animation: pulseGlow 3s infinite alternate; }
+@keyframes pulseGlow { from { box-shadow: 0 0 5px rgba(255,255,255,0.1); } to { box-shadow: 0 0 20px rgba(255,255,255,0.3); } }

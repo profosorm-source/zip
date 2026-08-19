@@ -1,0 +1,108 @@
+PHPUnit 8.5.52 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.23
+Configuration: /home/user/project/app/phpunit.xml
+
+.............................................................   61 / 2215 (  2%)
+.........................................................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+..  122 / 2215 (  5%)
+.......................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+.....................................  183 / 2215 (  8%)
+..........................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+RESULT: {"success":true,"message":"پرداخت با موفقیت تکمیل شد","ref_id":"ref123"}
+........[Sentry] Handler not initialized — skipping capture.
+..........................  244 / 2215 ( 11%)
+.............................................................  305 / 2215 ( 13%)
+.......F.....................................................  366 / 2215 ( 16%)
+.............................................................  427 / 2215 ( 19%)
+.............................................................  488 / 2215 ( 22%)
+.............................................................  549 / 2215 ( 24%)
+.............................................................  610 / 2215 ( 27%)
+.....[Sentry] Handler not initialized — skipping capture.
+..........................[Sentry] Handler not initialized — skipping capture.
+..............................  671 / 2215 ( 30%)
+..................................[Sentry] Handler not initialized — skipping capture.
+........................SSS  732 / 2215 ( 33%)
+....................................[queue:work] error: Connection failed
+.........................  793 / 2215 ( 35%)
+.............................................................  854 / 2215 ( 38%)
+.............................................................  915 / 2215 ( 41%)
+.............................................................  976 / 2215 ( 44%)
+............................................................. 1037 / 2215 ( 46%)
+............................................................. 1098 / 2215 ( 49%)
+............................................................. 1159 / 2215 ( 52%)
+............................................................. 1220 / 2215 ( 55%)
+............................................................. 1281 / 2215 ( 57%)
+.......................Failed to log event dispatched info: Logger is broken
+..[EventDispatcher] reconstruction failed for NonExistentEventClassThatWillFail in event 'test.queued.event', falling back to GenericEvent
+.[EventDispatcher] reconstruction failed for  in event 'test.no_class.event', falling back to GenericEvent
+..................................[fallback-logger][info] Session handler: Redis connected via Cache
+. 1342 / 2215 ( 60%)
+[fallback-logger][info] Session handler: Redis connected via Cache
+.[fallback-logger][info] Session handler: Redis connected via Cache
+.[fallback-logger][info] Session handler: Redis connected via Cache
+........................................................... 1403 / 2215 ( 63%)
+............................................................. 1464 / 2215 ( 66%)
+............................................[fallback-logger][info] Session handler: Redis connected via Cache
+................. 1525 / 2215 ( 68%)
+.........................................[fallback-logger][error] queue.redis.push_failed_falling_back {"job":"App\\\\Jobs\\\\LogPerformanceJob","queue":"analytics","error":"Redis connection failure"}
+.................... 1586 / 2215 ( 71%)
+............................................................. 1647 / 2215 ( 74%)
+............................................................. 1708 / 2215 ( 77%)
+............................................................. 1769 / 2215 ( 79%)
+......................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+..[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.........................[Sentry] Handler not initialized — skipping capture.
+........... 1830 / 2215 ( 82%)
+.....................................[Sentry] Handler not initialized — skipping capture.
+........................ 1891 / 2215 ( 85%)
+............................................................. 1952 / 2215 ( 88%)
+............................................................. 2013 / 2215 ( 90%)
+............................................................. 2074 / 2215 ( 93%)
+............................................................. 2135 / 2215 ( 96%)
+............................................................. 2196 / 2215 ( 99%)
+..[Sentry] Handler not initialized — skipping capture.
+.................                                           2215 / 2215 (100%)
+
+Time: 495805 hours, Memory: 90.50 MB
+
+There was 1 failure:
+
+1) Tests\Unit\ComprehensiveSecurityTest::http_only_cookie_flag_is_configured
+Real .env must not be committed to the repository
+Failed asserting that true is false.
+
+/home/user/project/app/tests/Unit/ComprehensiveSecurityTest.php:254
+/home/user/project/app/vendor/bin/phpunit:122
+
+--
+
+There were 3 skipped tests:
+
+1) Tests\Unit\Core\RedisGracefulTest::testCallDoesNotThrowWhenUnavailable
+Redis is available — cannot test unavailable path
+
+/home/user/project/app/tests/Unit/Core/RedisGracefulTest.php:17
+/home/user/project/app/vendor/bin/phpunit:122
+
+2) Tests\Unit\Core\RedisGracefulTest::testScanKeysReturnsEmptyWhenUnavailable
+Redis is available
+
+/home/user/project/app/tests/Unit/Core/RedisGracefulTest.php:34
+/home/user/project/app/vendor/bin/phpunit:122
+
+3) Tests\Unit\Core\RedisGracefulTest::testNoExceptionOnAnyMethod
+Redis is available
+
+/home/user/project/app/tests/Unit/Core/RedisGracefulTest.php:44
+/home/user/project/app/vendor/bin/phpunit:122
+
+FAILURES!
+Tests: 2215, Assertions: 4262, Failures: 1, Skipped: 3.

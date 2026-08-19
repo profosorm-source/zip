@@ -1,0 +1,25 @@
+PHPUnit 8.5.52 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.23
+Configuration: /home/user/project/app/phpunit.xml
+
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+F                                                                   1 / 1 (100%)
+
+Time: 495805.23 hours, Memory: 10.00 MB
+
+There was 1 failure:
+
+1) Tests\Integration\Financial\EscrowBudgetConsumptionInvariantTest::consumed_budget_reduces_locked_funds_without_refunding_buyer_balance
+Failed asserting that two strings are identical.
+--- Expected
++++ Actual
+@@ @@
+-'49980000.00000000'
++'49988000.00000000'
+
+/home/user/project/app/tests/Integration/Financial/EscrowBudgetConsumptionInvariantTest.php:72
+
+FAILURES!
+Tests: 1, Assertions: 4, Failures: 1.

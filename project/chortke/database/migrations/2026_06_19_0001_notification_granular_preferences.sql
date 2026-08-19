@@ -1,0 +1,47 @@
+-- Granular notification preferences per channel and type
+-- Adds per-type switches while keeping existing channel-level master switches.
+
+ALTER TABLE `notification_preferences_v2`
+    ADD COLUMN `in_app_deposit` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `in_app_withdrawal` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `in_app_task` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `in_app_investment` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `in_app_lottery` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `in_app_referral` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `in_app_security` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `in_app_kyc` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `in_app_system` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `in_app_marketing` TINYINT(1) DEFAULT 0,
+
+    ADD COLUMN `email_deposit` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `email_withdrawal` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `email_task` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `email_investment` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `email_lottery` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `email_referral` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `email_security` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `email_kyc` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `email_system` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `email_marketing` TINYINT(1) DEFAULT 0,
+
+    ADD COLUMN `push_deposit` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `push_withdrawal` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `push_task` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `push_investment` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `push_lottery` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `push_referral` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `push_security` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `push_kyc` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `push_system` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `push_marketing` TINYINT(1) DEFAULT 0,
+
+    ADD COLUMN `sms_deposit` TINYINT(1) DEFAULT 0,
+    ADD COLUMN `sms_withdrawal` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `sms_task` TINYINT(1) DEFAULT 0,
+    ADD COLUMN `sms_investment` TINYINT(1) DEFAULT 0,
+    ADD COLUMN `sms_lottery` TINYINT(1) DEFAULT 0,
+    ADD COLUMN `sms_referral` TINYINT(1) DEFAULT 0,
+    ADD COLUMN `sms_security` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `sms_kyc` TINYINT(1) DEFAULT 1,
+    ADD COLUMN `sms_system` TINYINT(1) DEFAULT 0,
+    ADD COLUMN `sms_marketing` TINYINT(1) DEFAULT 0;

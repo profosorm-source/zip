@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="light">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="csrf-token" content="TEST_CSRF">
+  <title>Ads Wizard Phase 2</title>
+  <link rel="stylesheet" href="../../public/assets/vendor/materialicons/materialicons.css">
+  <link rel="stylesheet" href="../../public/assets/css/wizard.css">
+  <style>body{font-family:Vazirmatn,Tahoma,sans-serif;background:#f6f8fa;margin:0;padding:24px}.log{direction:ltr;text-align:left;background:#111827;color:#fff;border-radius:12px;padding:10px;margin-top:15px;font-size:12px;white-space:pre-wrap}.wizard-container{max-width:1180px;margin:0 auto}.wizard-glass{background:#fff}.type-grid{grid-template-columns:repeat(6,minmax(140px,1fr))}</style>
+  <script>
+    window.__adsWizard = { calls: [], submitted: null };
+    window.Notyf = function(){ return { success:m=>window.__adsWizard.lastToast=['success',m], error:m=>window.__adsWizard.lastToast=['error',m] }; };
+    const registry = {
+      social_task:{fields:[{name:'title',type:'text',label:'عنوان',required:true},{name:'platform',type:'select',label:'پلتفرم',options:['instagram','telegram','twitter','tiktok'],required:true},{name:'task_type',type:'select',label:'نوع',options:['follow','like','comment','share','join','subscribe'],required:true},{name:'target_link',type:'text',label:'لینک/آیدی',required:true},{name:'price_per_task',type:'number',label:'پاداش',required:true,min:100},{name:'total_count',type:'number',label:'تعداد',required:true,min:1},{name:'description',type:'textarea',label:'توضیح',required:false}]},
+      adtube:{fields:[{name:'title',type:'text',label:'عنوان',required:true},{name:'target_link',type:'url',label:'لینک یوتیوب',required:true},{name:'price_per_task',type:'number',label:'پاداش نمایش',required:true},{name:'total_count',type:'number',label:'تعداد',required:true}]},
+      custom_task:{fields:[{name:'title',type:'text',label:'عنوان',required:true},{name:'description',type:'textarea',label:'شرح',required:true},{name:'link',type:'url',label:'لینک',required:false},{name:'proof_type',type:'select',label:'نوع مدرک',options:['text','code','url','screenshot','file','video'],required:true},{name:'proof_description',type:'textarea',label:'دستور مدرک',required:true},{name:'price_per_task',type:'number',label:'پاداش',required:true},{name:'total_count',type:'number',label:'تعداد',required:true},{name:'deadline_hours',type:'number',label:'مهلت',required:false,default:24}]},
+      seo:{fields:[{name:'title',type:'text',label:'عنوان',required:true},{name:'target_link',type:'url',label:'آدرس سایت',required:true},{name:'keyword',type:'text',label:'کلمه',required:true},{name:'budget',type:'number',label:'بودجه',required:true},{name:'min_payout',type:'number',label:'حداقل',required:true},{name:'max_payout',type:'number',label:'حداکثر',required:true},{name:'target_duration',type:'number',label:'زمان هدف',required:false,default:60},{name:'min_score',type:'number',label:'حداقل امتیاز',required:false,default:40}]},
+      banner:{fields:[{name:'title',type:'text',label:'عنوان',required:true},{name:'placement',type:'select',label:'جایگاه',options:['header','sidebar','footer','inline','popup'],required:true},{name:'target_link',type:'url',label:'لینک',required:true},{name:'image',type:'file',label:'تصویر',required:true,accept:'image/*'},{name:'budget',type:'number',label:'بودجه',required:true}]},
+      notification:{fields:[{name:'title',type:'text',label:'عنوان',required:true},{name:'body',type:'textarea',label:'متن',required:true},{name:'target_link',type:'url',label:'لینک',required:false},{name:'budget',type:'number',label:'بودجه',required:true},{name:'scheduled_time',type:'datetime-local',label:'زمان',required:false}]}
+    };
+    const fee = {social_task:15,adtube:20,custom_task:10,seo:15,banner:12,notification:15};
+    window.fetch = async function(url,opt={}){
+      window.__adsWizard.calls.push({url:String(url),method:opt.method||'GET'});
+      if(String(url).includes('/ads/api/type-info')){const type=new URL('https://x.test'+url).searchParams.get('type');return new Response(JSON.stringify({success:true,data:registry[type]}),{headers:{'Content-Type':'application/json'}})}
+      if(String(url).includes('/ads/api/validate-field')) return new Response(JSON.stringify({success:true,message:'معتبر'}),{headers:{'Content-Type':'application/json'}});
+      if(String(url).includes('/ads/api/preview-cost')){const body=JSON.parse(opt.body||'{}');const type=body.ad_type;let base=0;if(['seo','banner','notification'].includes(type)) base=Number(body.budget||0); else base=Number(body.price_per_task||0)*Number(body.total_count||1);const f=fee[type]||10;return new Response(JSON.stringify({success:true,preview:{base_budget:base,site_fee_percent:f,site_fee_amount:base*f/100,total_with_fee:base+base*f/100,estimated_reach:Number(body.total_count||1),currency:'irt'}}),{headers:{'Content-Type':'application/json'}})}
+      if(String(url).includes('/ads/store')){let data={}; if(opt.body instanceof FormData){for(const [k,v] of opt.body.entries()) data[k]=v&&v.name?v.name:String(v)} window.__adsWizard.submitted=data; return new Response(JSON.stringify({success:true,ad_id:777}),{headers:{'Content-Type':'application/json'}})}
+      return new Response(JSON.stringify({success:true}),{headers:{'Content-Type':'application/json'}})
+    }
+  </script>
+</head>
+<body>
+<div class="wizard-container" id="adsWizard">
+  <div class="wizard-stepper" id="wizardStepper" data-step="1"><div class="step-node active" id="nodeStep1"><div class="step-bubble">۱</div><span class="step-label">انتخاب نوع</span></div><div class="step-node" id="nodeStep2"><div class="step-bubble">۲</div><span class="step-label">جزئیات تبلیغ</span></div><div class="step-node" id="nodeStep3"><div class="step-bubble">۳</div><span class="step-label">بررسی و تأیید</span></div><div class="step-node" id="nodeStep4"><div class="step-bubble">۴</div><span class="step-label">ثبت نهایی</span></div></div>
+  <div class="wizard-glass"><div class="step-loading-overlay" id="stepLoading"><div class="wizard-spinner"></div></div>
+    <div id="step1" class="wizard-panel active"><div class="wizard-panel-header"><span class="material-icons icon-gradient">category</span><span>نوع تبلیغ خود را انتخاب کنید</span></div><div class="wizard-panel-body"><div class="type-grid"><div class="type-card" data-type="social_task"><span class="material-icons">group</span><h5>سوشال</h5></div><div class="type-card" data-type="adtube"><span class="material-icons">play_circle</span><h5>AdTube</h5></div><div class="type-card" data-type="custom_task"><span class="material-icons">assignment</span><h5>سفارشی</h5></div><div class="type-card" data-type="seo"><span class="material-icons">search</span><h5>SEO</h5></div><div class="type-card" data-type="banner"><span class="material-icons">image</span><h5>بنر</h5></div><div class="type-card" data-type="notification"><span class="material-icons">notifications_active</span><h5>نوتیفیکیشن</h5></div></div></div></div>
+    <div id="step2" class="wizard-panel"><div class="wizard-panel-header"><span class="material-icons icon-gradient" id="step2Icon">edit</span><span id="step2Title">جزئیات تبلیغ</span></div><div class="wizard-panel-body"><form id="dynamicForm" class="wizard-dynamic-form" novalidate><input type="hidden" name="_csrf_token" value="TEST_CSRF"></form></div></div>
+    <div id="step3" class="wizard-panel"><div class="wizard-panel-header"><span class="material-icons icon-gradient">account_balance_wallet</span><span>بررسی بودجه</span></div><div class="wizard-panel-body"><div id="budgetPreview" class="budget-preview-card"></div></div></div>
+    <div id="step4" class="wizard-panel"><div class="wizard-panel-header"><span class="material-icons icon-gradient">fact_check</span><span>تأیید نهایی</span></div><div class="wizard-panel-body"><div class="alert alert-info wizard-info-alert">ثبت نهایی</div></div></div>
+    <div id="wizardSuccess" class="wizard-success"><h3>ثبت شد</h3></div>
+    <div class="wizard-actions" id="wizardActions"><button type="button" class="wizard-btn wizard-btn-secondary vis-hidden" id="btnPrev">مرحله قبل</button><button type="button" class="wizard-btn wizard-btn-primary" id="btnNext" disabled>مرحله بعد</button><button type="button" class="wizard-btn wizard-btn-primary d-none" id="btnSubmit">تأیید نهایی و ثبت</button></div>
+  </div>
+  <pre class="log" id="log">ready</pre>
+</div>
+<script src="../../public/assets/js/views/useradscreate.js"></script>
+<script>setInterval(()=>{document.getElementById('log').textContent=JSON.stringify(window.__adsWizard.submitted||window.__adsWizard.calls.slice(-3),null,2)},300)</script>
+</body></html>

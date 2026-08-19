@@ -1,0 +1,13 @@
+composer
+mariadb-client
+mariadb-server
+php-bcmath
+php-cli
+php-curl
+php-mbstring
+php-mysql
+php-redis
+php-sqlite3
+php-xml
+php-zip
+redis-server

@@ -1,0 +1,2 @@
+{"status":"pending","reason":"تراکنش هنوز در RPC عمومی یافت نشده است"}
+[INFO] 2026-07-25 00:26:32 Session handler: Redis connected via Cache {"request_id":"dc4ad3c81506df7ed87b40ab8c1584b0","trace_id":"dc4ad3c81506df7ed87b40ab8c1584b0","span_id":"a684f0a1b109c030","parent_span_id":null,"type":"system","correlation_id":null}

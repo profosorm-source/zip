@@ -1,0 +1,21 @@
+.star-rating {
+    font-size: 40px;
+    direction: ltr;
+    display: inline-block;
+}
+
+.star {
+    cursor: pointer;
+    color: #ddd;
+    transition: color 0.2s;
+    display: inline-block;
+}
+
+.star:hover,
+.star.active {
+    color: #ffc107;
+}
+
+.star:hover ~ .star {
+    color: #ddd;
+}

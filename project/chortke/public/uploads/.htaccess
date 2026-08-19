@@ -1,0 +1,18 @@
+# Disable script execution and access to dynamic file formats
+<FilesMatch "\.(php|php[0-9]|phtml|phar|html|htm|xml|svg|sh|exe|bat)$">
+    Require all denied
+</FilesMatch>
+
+# Disable PHP engine in this directory if mod_php is enabled
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
+# Prevent directory indexing
+Options -Indexes

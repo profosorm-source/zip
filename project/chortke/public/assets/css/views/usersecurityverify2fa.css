@@ -1,0 +1,7 @@
+body { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); min-height: 100vh; }
+        .verify-card { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 400px; width: 100%; }
+        .code-input { font-size: 2rem; letter-spacing: 0.5rem; text-align: center; font-weight: bold; }
+        .otp-digits { display: flex; gap: 8px; justify-content: center; }
+        .otp-digit { width: 48px; height: 56px; font-size: 1.5rem; text-align: center; border: 2px solid #dee2e6; border-radius: 12px; font-weight: bold; transition: border-color .2s; }
+        .otp-digit:focus { border-color: #0d6efd; box-shadow: 0 0 0 3px rgba(13,110,253,.2); outline: none; }
+        .otp-digit.filled { border-color: #198754; }

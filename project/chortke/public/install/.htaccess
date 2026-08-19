@@ -1,0 +1,4 @@
+# Production safety: the web installer must not be reachable from a deployed web root.
+# If installation is needed, run it in a controlled maintenance/staging environment
+# and explicitly remove/override this rule for that short window only.
+Require all denied

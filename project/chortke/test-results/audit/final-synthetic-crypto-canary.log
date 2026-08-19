@@ -1,0 +1,3 @@
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+Synthetic crypto canary passed; fixtures rolled back.
+Output: test-results/audit/synthetic_crypto_canary.out

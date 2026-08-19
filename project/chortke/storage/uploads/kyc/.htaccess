@@ -1,0 +1,8 @@
+
+# فقط دسترسی به تصاویر
+<FilesMatch "\.(jpg|jpeg|png|gif)$">
+    Require all granted
+</FilesMatch>
+
+# جلوگیری از لیست کردن فایل‌ها
+Options -Indexes

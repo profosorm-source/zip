@@ -1,0 +1,132 @@
+-- CHORTKE MIGRATION PART 31: ADVANCED BANNERS & ADS
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- [REMOVED DUPLICATE banners]
+DROP TABLE IF EXISTS `banner_clicks`;
+CREATE TABLE `banner_clicks` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `banner_id` INT(10) UNSIGNED NOT NULL,
+  `user_id` INT(10) UNSIGNED DEFAULT NULL,
+  `ip_address` VARCHAR(45) DEFAULT NULL,
+  `user_agent` VARCHAR(500) DEFAULT NULL,
+  `referer` VARCHAR(500) DEFAULT NULL,
+  `device_fingerprint` VARCHAR(64) DEFAULT NULL,
+  `clicked_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `social_ads`;
+CREATE TABLE `social_ads` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `advertiser_id` INT(10) UNSIGNED NOT NULL,
+  `title` VARCHAR(255) NOT NULL,
+  `description` TEXT DEFAULT NULL,
+  `platform` VARCHAR(50) NOT NULL,
+  `task_type` VARCHAR(50) NOT NULL,
+  `reward` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `total_slots` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+  `remaining_slots` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+  `status` ENUM('pending','active','paused','cancelled','rejected','completed') NOT NULL DEFAULT 'pending',
+  `reject_reason` TEXT DEFAULT NULL,
+  `reviewed_by` INT(10) UNSIGNED DEFAULT NULL,
+  `reviewed_at` TIMESTAMP NULL,
+  `starts_at` TIMESTAMP NULL,
+  `expires_at` TIMESTAMP NULL,
+  `completed_at` TIMESTAMP NULL,
+  `cancelled_at` TIMESTAMP NULL,
+  `deleted_at` TIMESTAMP NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `seo_ads`;
+CREATE TABLE `seo_ads` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT(10) UNSIGNED NOT NULL,
+  `site_url` VARCHAR(500) NOT NULL,
+  `title` VARCHAR(150) NOT NULL,
+  `keyword` VARCHAR(100) NOT NULL,
+  `description` VARCHAR(200) DEFAULT NULL,
+  `budget` DECIMAL(14,2) NOT NULL,
+  `remaining_budget` DECIMAL(14,2) NOT NULL,
+  `price_per_click` DECIMAL(10,2) NOT NULL DEFAULT 500.00,
+  `clicks_count` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+  `status` ENUM('pending','active','paused','rejected','exhausted') NOT NULL DEFAULT 'pending',
+  `rejection_reason` TEXT DEFAULT NULL,
+  `deadline` DATE DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `seo_keywords`;
+CREATE TABLE `seo_keywords` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `keyword` VARCHAR(200) NOT NULL,
+  `target_url` VARCHAR(500) NOT NULL,
+  `target_position` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+  `scroll_min_seconds` INT(10) UNSIGNED NOT NULL DEFAULT 25,
+  `scroll_max_seconds` INT(10) UNSIGNED NOT NULL DEFAULT 40,
+  `pause_min_seconds` INT(10) UNSIGNED NOT NULL DEFAULT 3,
+  `pause_max_seconds` INT(10) UNSIGNED NOT NULL DEFAULT 8,
+  `total_browse_seconds` INT(10) UNSIGNED NOT NULL DEFAULT 60,
+  `reward_amount` DECIMAL(12,4) NOT NULL DEFAULT 0.0000,
+  `currency` ENUM('irt','usdt') NOT NULL DEFAULT 'irt',
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created_by` INT(10) UNSIGNED DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `startup_banners`;
+CREATE TABLE `startup_banners` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT(10) UNSIGNED NOT NULL,
+  `title` VARCHAR(200) NOT NULL,
+  `description` TEXT DEFAULT NULL,
+  `image_path` VARCHAR(500) NOT NULL,
+  `link_url` VARCHAR(500) DEFAULT NULL,
+  `duration_days` INT(10) UNSIGNED NOT NULL DEFAULT 7,
+  `price` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `views` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+  `clicks` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+  `status` ENUM('pending','active','paused','rejected','expired') NOT NULL DEFAULT 'pending',
+  `rejection_reason` TEXT DEFAULT NULL,
+  `starts_at` TIMESTAMP NULL,
+  `ends_at` TIMESTAMP NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `social_task_settings`;
+CREATE TABLE `social_task_settings` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `key_name` VARCHAR(100) DEFAULT NULL,
+  `value` VARCHAR(255) DEFAULT NULL,
+  `median_reward` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `min_reward` DECIMAL(12,2) DEFAULT NULL,
+  `max_reward` DECIMAL(12,2) DEFAULT NULL,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created_by` INT(10) UNSIGNED DEFAULT NULL,
+  `updated_by` INT(10) UNSIGNED DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `user_banner_requests`;
+CREATE TABLE `user_banner_requests` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT(10) UNSIGNED NOT NULL,
+  `placement_id` INT(10) UNSIGNED DEFAULT NULL,
+  `title` VARCHAR(200) DEFAULT NULL,
+  `image_path` VARCHAR(500) DEFAULT NULL,
+  `link_url` VARCHAR(500) DEFAULT NULL,
+  `days` INT(10) UNSIGNED NOT NULL DEFAULT 1,
+  `total_price` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `status` ENUM('pending','active','rejected','cancelled','expired') NOT NULL DEFAULT 'pending',
+  `rejection_reason` TEXT DEFAULT NULL,
+  `starts_at` TIMESTAMP NULL,
+  `ends_at` TIMESTAMP NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET FOREIGN_KEY_CHECKS = 1;

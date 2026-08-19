@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Preview | Investment Create</title>
+  <link rel="stylesheet" href="../../public/assets/vendor/vazirmatn/vazirmatn.css">
+  <link rel="stylesheet" href="../../public/assets/vendor/materialicons/materialicons.css">
+  <link rel="stylesheet" href="../../public/assets/css/panel-binance.css">
+  <link rel="stylesheet" href="../../public/assets/css/views/userinvestment.css">
+  <style>
+    html,body{min-height:100%;margin:0;background:#0A0D13;font-family:Vazirmatn,system-ui,sans-serif;}
+    body{background:radial-gradient(70% 60% at 10% 0%,rgba(240,185,11,.08),transparent),radial-gradient(60% 50% at 100% 100%,rgba(30,217,168,.06),transparent),#0A0D13;}
+    .preview-shell{padding:22px 0 40px;}
+
+    .theme-fab{position:fixed;left:20px;bottom:20px;z-index:9999;width:44px;height:44px;border-radius:50%;border:2px solid #F0B90B;background:#F0B90B;color:#1A1304;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px rgba(240,185,11,.55);transition:transform .2s,filter .2s;}
+    .theme-fab:hover{transform:scale(1.08);filter:brightness(1.05);}
+    .theme-fab .material-icons{font-size:20px;}
+  </style>
+</head>
+<body class="layout-no-sidebar">
+<div class="bn-navbar preview-navbar">
+  <div class="bn-nav-left">
+    <h5 class="mb-0" style="color:var(--bn-text-main);font-size:14px;font-weight:800;margin:0;opacity:.88;">سرمایه‌گذاری جدید</h5>
+  </div>
+  <div class="bn-nav-right">
+    <div class="bn-nav-actions">
+      <div class="bn-search-container"><button class="bn-search-toggle" type="button" title="جستجو"><span class="material-icons">search</span></button></div>
+      <a href="#" class="bn-nav-icon" title="تیکت‌ها"><span class="material-icons">support_agent</span></a>
+      <a href="#" class="bn-nav-icon" title="اعلان‌ها"><span class="material-icons">notifications</span></a>
+      <a href="#" class="bn-nav-icon" title="تنظیمات"><span class="material-icons">settings</span></a>
+    </div>
+    <div class="bn-user-profile"><div class="bn-user-info"><p class="bn-user-name">کاربر تست</p><div class="bn-user-status"><span class="bn-kyc-badge">Verified</span><span class="bn-xp-label">GOLD</span></div></div><div class="bn-user-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--bn-accent);color:#111;font-weight:900;">ک</div></div>
+  </div>
+</div>
+<div class="preview-shell">
+  <div id="investmentCreateRoot" class="inv-wrap" data-store-url="#preview" data-redirect-url="#" data-csrf="preview" data-min="10" data-max="10000" data-fee="10">
+    <section class="inv-hub-hero inv-hub-hero--compact">
+      <div class="inv-hub-hero__main"><div class="inv-hub-hero__icon"><i class="material-icons">add_chart</i></div><div><div class="inv-hub-hero__eyebrow">Investment Spoke</div><h1 class="inv-hub-hero__title">سرمایه‌گذاری جدید</h1><p class="inv-hub-hero__sub">فرم مرحله‌ای با اعتبارسنجی سریع، پیش‌نمایش کارمزد و تأیید ریسک.</p></div></div>
+      <a href="#" class="inv-btn inv-btn-ghost"><i class="material-icons">arrow_forward</i> بازگشت به مرکز</a>
+    </section>
+    <div class="inv-hub-layout">
+      <aside class="inv-hub-sidebar"><div class="inv-hub-card inv-module-card"><div class="inv-module-card__top"><div class="inv-module-card__icon"><i class="material-icons">hub</i></div><div><div class="inv-module-card__eyebrow">Module Hub</div><h2 class="inv-module-card__title">سرمایه‌گذاری</h2><p class="inv-module-card__desc">همه بخش‌ها از همین مرکز مدیریت می‌شوند.</p></div></div><nav class="inv-module-nav"><a class="inv-module-nav__item" href="#"><span class="inv-module-nav__icon"><i class="material-icons">space_dashboard</i></span><span class="inv-module-nav__body"><strong>مرکز سرمایه‌گذاری</strong><small>نمای کلی، وضعیت پلن و عملکرد</small></span><i class="material-icons inv-module-nav__chev">chevron_left</i></a><a class="inv-module-nav__item active" href="#"><span class="inv-module-nav__icon"><i class="material-icons">add_chart</i></span><span class="inv-module-nav__body"><strong>سرمایه‌گذاری جدید</strong><small>شروع پلن جدید بدون خروج از ماژول</small></span><i class="material-icons inv-module-nav__chev">chevron_left</i></a><a class="inv-module-nav__item" href="#"><span class="inv-module-nav__icon"><i class="material-icons">receipt_long</i></span><span class="inv-module-nav__body"><strong>تاریخچه سود و زیان</strong><small>گزارش کامل عملکرد سرمایه</small></span><i class="material-icons inv-module-nav__chev">chevron_left</i></a><a class="inv-module-nav__item" href="#"><span class="inv-module-nav__icon"><i class="material-icons">payments</i></span><span class="inv-module-nav__body"><strong>درخواست‌های برداشت</strong><small>پیگیری برداشت سود یا تسویه کامل</small></span><i class="material-icons inv-module-nav__chev">chevron_left</i></a></nav></div><div class="inv-hub-card inv-risk-mini"><div class="inv-risk-mini__head"><i class="material-icons">shield</i><span>کنترل ریسک</span></div><p>سرمایه‌گذاری تضمین سود ندارد. قبل از شروع، مبلغ، ریسک و دوره قفل برداشت را بررسی کنید.</p><div class="inv-risk-mini__meta"><span>Cooldown برداشت</span><strong>۷ روز</strong></div></div></aside>
+      <main class="inv-hub-main">
+        <section class="inv-settings-bar"><div class="inv-setting-item"><span class="inv-setting-item__lbl">حداقل سرمایه‌گذاری</span><span class="inv-setting-item__val inv-num">10.00 USDT</span></div><div class="inv-setting-item"><span class="inv-setting-item__lbl">حداکثر سرمایه‌گذاری</span><span class="inv-setting-item__val inv-num">10,000.00 USDT</span></div><div class="inv-setting-item"><span class="inv-setting-item__lbl">کارمزد پلتفرم روی سود</span><span class="inv-setting-item__val inv-num">10%</span></div><div class="inv-setting-item"><span class="inv-setting-item__lbl">قفل پس از برداشت</span><span class="inv-setting-item__val">۷ روز</span></div></section>
+        <div class="inv-create-layout">
+          <section class="inv-step-card"><div class="inv-step-card__head"><div><div class="inv-step-kicker">مرحله <span id="investStepNumber">۱</span> از ۳</div><h2 id="investStepTitle">تعیین مبلغ سرمایه‌گذاری</h2><p id="investStepSub">مبلغ را وارد کنید تا پیش‌نمایش کارمزد محاسبه شود.</p></div><div class="inv-stepper"><span class="inv-stepper__seg active" data-seg="1"><i></i></span><span class="inv-stepper__seg" data-seg="2"><i></i></span><span class="inv-stepper__seg" data-seg="3"><i></i></span></div></div>
+            <form id="investForm" class="inv-form" novalidate><input type="hidden" id="amountValue"><div class="inv-step-panels"><section class="inv-form-step current" data-step="1"><div class="inv-step-label"><i class="material-icons">payments</i> مبلغ سرمایه‌گذاری</div><div class="inv-amount-input-wrap" id="amountWrap"><div class="inv-amount-label-row"><span>مبلغ</span><span>محدوده مجاز: <b class="inv-num">10.00 - 10,000.00</b></span></div><div class="inv-amount-field-row"><input type="text" id="amount" inputmode="decimal" autocomplete="off" placeholder="0.00" dir="ltr"><span>USDT</span></div></div><div class="inv-field-error" id="amountError"><i class="material-icons">error_outline</i><span id="amountErrorText">مبلغ واردشده معتبر نیست.</span></div><div class="inv-quick-amounts"><button type="button" class="inv-quick-chip" data-amt="10">حداقل</button><button type="button" class="inv-quick-chip" data-amt="50">50.00</button><button type="button" class="inv-quick-chip" data-amt="10000">حداکثر</button></div><div class="inv-review-list inv-review-list--preview" id="feePreview"><div class="inv-review-row"><span>مبلغ انتخابی</span><strong class="inv-num" id="previewAmount">—</strong></div><div class="inv-review-row"><span>کارمزد پلتفرم روی سود</span><strong class="inv-num" id="previewFee">—</strong></div></div></section><section class="inv-form-step" data-step="2"><div class="inv-step-label inv-step-label--danger"><i class="material-icons">warning_amber</i> پذیرش ریسک</div><div class="inv-risk-banner inv-risk-banner--strong"><i class="material-icons">report_problem</i><span>این سرمایه‌گذاری تضمین سود ندارد و در شرایط بد بازار می‌تواند باعث از دست رفتن تمام سرمایه شود.</span></div><label class="inv-risk-check" for="risk_accepted"><input type="checkbox" id="risk_accepted" value="1"><span class="inv-risk-check__text"><strong>هشدار ریسک را مطالعه کردم</strong> و با آگاهی کامل از احتمال ضرر، این سرمایه‌گذاری را انجام می‌دهم.</span></label><div class="inv-rule-grid"><div class="inv-rule-item"><i class="material-icons">dangerous</i><span>احتمال ضرر تا ۱۰۰٪ سرمایه وجود دارد.</span></div><div class="inv-rule-item"><i class="material-icons">history</i><span>عملکرد گذشته تضمینی برای آینده نیست.</span></div><div class="inv-rule-item"><i class="material-icons">lock</i><span>پس از برداشت، ۷ روز امکان سرمایه‌گذاری جدید نیست.</span></div><div class="inv-rule-item"><i class="material-icons">schedule</i><span>برداشت‌ها طبق cooldown ۷ روزه بررسی می‌شوند.</span></div></div></section><section class="inv-form-step" data-step="3"><div class="inv-step-label"><i class="material-icons">fact_check</i> بازبینی نهایی</div><div class="inv-review-list"><div class="inv-review-row"><span>مبلغ سرمایه‌گذاری</span><strong class="inv-num" id="reviewAmount">—</strong></div><div class="inv-review-row"><span>کارمزد پلتفرم روی سود</span><strong class="inv-num" id="reviewFee">—</strong></div><div class="inv-review-row"><span>مبلغ درگیر در پلن</span><strong class="inv-num inv-text-gold" id="reviewNet">—</strong></div><div class="inv-review-row"><span>پذیرش ریسک</span><strong class="inv-text-up">تأیید شده</strong></div></div><div class="inv-notice-box"><i class="material-icons">info</i><span>با ثبت نهایی، مبلغ از کیف پول USDT شما برای ایجاد پلن سرمایه‌گذاری برداشت/قفل می‌شود.</span></div></section><section class="inv-form-step inv-success-step" data-step="4"><div class="inv-success-icon"><i class="material-icons">check</i></div><h3>درخواست سرمایه‌گذاری ثبت شد</h3><p id="successMessage">پلن شما با موفقیت ایجاد شد.</p></section></div><div class="inv-step-card__foot" id="investFoot"><button type="button" class="inv-btn inv-btn-secondary" id="btnBack" style="display:none;">بازگشت</button><button type="button" class="inv-btn inv-btn-primary" id="btnNext" disabled><span class="inv-btn-spinner"></span><span class="inv-btn-label">ادامه</span></button><button type="submit" class="inv-btn inv-btn-primary" id="submitBtn" style="display:none;" disabled><span class="inv-btn-spinner"></span><span class="inv-btn-label">تأیید و ثبت سرمایه‌گذاری</span></button></div></form></section>
+          <aside class="inv-risk-card"><div class="inv-risk-card__header"><i class="material-icons">shield</i> راهنمای سریع</div><ul class="inv-risk-list"><li><i class="material-icons">wallet</i><span>موجودی تقریبی USDT شما: <strong class="inv-num">1,000.0000</strong></span></li><li><i class="material-icons">verified_user</i><span>قبل از ثبت، مبلغ و کارمزد را در مرحله بازبینی کنترل کنید.</span></li><li><i class="material-icons">warning</i><span>اگر با ریسک بازار موافق نیستید، سرمایه‌گذاری را ثبت نکنید.</span></li></ul></aside>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+<script src="../../public/assets/js/views/userinvestmentcreate.js"></script>
+<button class="theme-fab" id="themeToggleBtn" title="تغییر تم"><span class="material-icons" id="themeIcon">light_mode</span></button>
+<script>
+  document.getElementById('themeToggleBtn')?.addEventListener('click', function(){
+    const html = document.documentElement;
+    const dark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', dark ? 'light' : 'dark');
+    document.getElementById('themeIcon').textContent = dark ? 'dark_mode' : 'light_mode';
+    document.body.style.background = dark ? '#F6F8FA' : '#0A0D13';
+  });
+</script>
+</body>
+</html>

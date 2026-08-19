@@ -1,0 +1,115 @@
+body {
+            background-color: #f8fafc;
+            font-family: 'Vazirmatn', sans-serif;
+            padding-bottom: 80px;
+        }
+        .header-banner {
+            background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+            color: #ffffff;
+            padding: 45px 0 35px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 25px rgba(16, 185, 129, 0.25);
+            border-bottom: 4px solid #6ee7b7;
+        }
+        .header-banner h1 {
+            font-weight: 900;
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .header-banner .badge-master {
+            background: #6ee7b7;
+            color: #047857;
+            font-size: 1rem;
+            font-weight: 800;
+            padding: 8px 18px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+        .scenario-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease;
+        }
+        .scenario-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.08);
+            border-color: #a7f3d0;
+        }
+        .card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 20px;
+        }
+        .scenario-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #047857;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .badge-passed {
+            background-color: #10b981;
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 8px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+        .badge-failed {
+            background-color: #ef4444;
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            padding: 8px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .details-box {
+            background-color: #ecfdf5;
+            border-radius: 12px;
+            padding: 22px;
+            font-size: 0.98rem;
+            color: #065f46;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            border-right: 4px solid #10b981;
+        }
+        .details-box code {
+            background-color: #d1fae5;
+            color: #047857;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            direction: ltr;
+            display: inline-block;
+            font-weight: 600;
+        }
+        .result-msg {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #047857;
+            background-color: #f0fdf4;
+            padding: 15px 25px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid #bbf7d0;
+        }

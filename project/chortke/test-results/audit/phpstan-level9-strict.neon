@@ -1,0 +1,20 @@
+# Independent audit configuration — no ignoreErrors and no baseline.
+# It is intentionally outside source configuration and must not become the production config.
+parameters:
+    level: 9
+    paths:
+        - /home/user/project/app/app
+        - /home/user/project/app/core
+    excludePaths:
+        - /home/user/project/app/app/Views/*
+        - /home/user/project/app/app/Cache/*
+        - /home/user/project/app/core/Cache/*
+    bootstrapFiles:
+        - /home/user/project/app/phpstan-bootstrap.php
+    reportUnmatchedIgnoredErrors: true
+    treatPhpDocTypesAsCertain: false
+    universalObjectCratesClasses:
+        - stdClass
+    parallel:
+        maximumNumberOfProcesses: 1
+        processTimeout: 600.0

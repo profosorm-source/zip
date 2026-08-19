@@ -1,0 +1,1 @@
+/* Compatibility placeholder for legacy generated asset layoutsguest.js. */

@@ -1,0 +1,46 @@
+PHPUnit 8.5.52 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.23
+Configuration: /home/user/project/app/phpunit.xml
+
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.                                                           9 / 9 (100%)
+
+Time: 495805.54 hours, Memory: 10.00 MB
+
+OK (9 tests, 134 assertions)

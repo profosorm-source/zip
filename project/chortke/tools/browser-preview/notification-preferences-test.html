@@ -1,0 +1,19 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>Notif Pref Test</title></head><body>
+<div id="supportNotificationPrefsRoot" data-update-url="https://mock.local/settings/notifications/update" data-csrf="csrf-test">
+<form id="prefsForm">
+<input type="checkbox" class="notif-master-toggle" data-channel="in_app" name="in_app_enabled" checked>
+<input type="checkbox" class="notif-master-toggle" data-channel="email" name="email_enabled">
+<input type="checkbox" class="notif-master-toggle" data-channel="push" name="push_enabled" checked>
+<input type="checkbox" class="notif-master-toggle" data-channel="sms" name="sms_enabled">
+<input type="checkbox" class="notif-type-toggle" data-channel="in_app" name="in_app_deposit" checked>
+<input type="checkbox" class="notif-type-toggle" data-channel="email" name="email_deposit">
+<input type="checkbox" class="notif-type-toggle" data-channel="push" name="push_security" checked>
+<input type="checkbox" class="notif-type-toggle" data-channel="sms" name="sms_security" checked>
+<input type="checkbox" id="dnd_enabled" name="dnd_enabled" checked>
+<input type="time" id="dnd_start" name="dnd_start" value="23:00">
+<input type="time" id="dnd_end" name="dnd_end" value="07:00">
+<button type="submit" id="saveBtn">save</button>
+</form>
+</div>
+<script src="../../public/assets/js/views/usernotificationspreferences.js"></script>
+</body></html>

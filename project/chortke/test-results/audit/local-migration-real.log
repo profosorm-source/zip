@@ -1,0 +1,6 @@
+{
+    "executed": 0,
+    "errors": [],
+    "message": "Database is already up to date."
+}
+[INFO] 2026-07-24 20:48:49 Session handler: Redis connected via Cache {"request_id":"df85d41ea14994e7deaa3ea154b3aabf","trace_id":"df85d41ea14994e7deaa3ea154b3aabf","span_id":"b8c7649c7ae1f657","parent_span_id":null,"type":"system","correlation_id":null}

@@ -1,0 +1,5 @@
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+Local financial runtime ready.
+Migration log: test-results/audit/runtime-migration.log
+Financial tests: test-results/audit/runtime-financial-tests.log
+PHPStan: test-results/audit/runtime-phpstan.log

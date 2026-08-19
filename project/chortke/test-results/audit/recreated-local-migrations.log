@@ -1,0 +1,7 @@
+{
+    "executed": 122,
+    "batch": 1,
+    "errors": [],
+    "message": "Successfully executed 122 migrations in batch #1."
+}
+[INFO] 2026-07-24 16:30:02 Session handler: Redis connected via Cache {"request_id":"d37ca7fcdd85d88b8c7b57b173299d52","trace_id":"d37ca7fcdd85d88b8c7b57b173299d52","span_id":"1d07acdfcf1c8665","parent_span_id":null,"type":"system","correlation_id":null}

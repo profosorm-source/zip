@@ -1,0 +1,382 @@
+PHPUnit 8.5.52 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.23
+Configuration: /home/user/project/app/phpunit.xml
+
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+F[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+F[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+E[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+E[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+E[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+E[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+E[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+E[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+E[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+E                                                        10 / 10 (100%)
+
+Time: 495809.08 hours, Memory: 12.00 MB
+
+There were 8 errors:
+
+1) Tests\Integration\Financial\FinancialSocialTaskEscrowInvariantTest::release_consumes_advertiser_lock_and_credits_executor_exactly_once
+Core\Exceptions\TransientException: سیستم در حال حاضر شلوغ است، لطفاً لحظاتی بعد تلاش کنید
+
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:156
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/FinancialSocialTaskEscrowInvariantTest.php:101
+/home/user/project/app/tests/Integration/Financial/FinancialSocialTaskEscrowInvariantTest.php:63
+
+Caused by
+PDOException: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`chortke_local`.`ledger_entries`, CONSTRAINT `fk_le_tx` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`transaction_id`) ON DELETE CASCADE)
+
+/home/user/project/app/core/QueryBuilder.php:992
+/home/user/project/app/core/Model.php:124
+/home/user/project/app/app/Models/LedgerEntry.php:57
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:25
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:59
+/home/user/project/app/app/Services/Wallet/WalletMutationService.php:280
+/home/user/project/app/app/Services/Wallet/WalletService.php:208
+/home/user/project/app/app/Services/Wallet/WalletService.php:114
+/home/user/project/app/core/Database.php:838
+/home/user/project/app/app/Services/Wallet/WalletService.php:110
+/home/user/project/app/core/TransactionWrapper.php:39
+/home/user/project/app/core/TransactionWrapper.php:62
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:135
+/home/user/project/app/app/Services/DistributedLockService.php:446
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:144
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/FinancialSocialTaskEscrowInvariantTest.php:101
+/home/user/project/app/tests/Integration/Financial/FinancialSocialTaskEscrowInvariantTest.php:63
+
+2) Tests\Integration\Financial\FinancialSocialTaskEscrowInvariantTest::refund_unlocks_advertiser_funds_without_an_extra_deposit
+Core\Exceptions\TransientException: سیستم در حال حاضر شلوغ است، لطفاً لحظاتی بعد تلاش کنید
+
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:156
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/FinancialSocialTaskEscrowInvariantTest.php:101
+/home/user/project/app/tests/Integration/Financial/FinancialSocialTaskEscrowInvariantTest.php:82
+
+Caused by
+PDOException: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`chortke_local`.`ledger_entries`, CONSTRAINT `fk_le_tx` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`transaction_id`) ON DELETE CASCADE)
+
+/home/user/project/app/core/QueryBuilder.php:992
+/home/user/project/app/core/Model.php:124
+/home/user/project/app/app/Models/LedgerEntry.php:57
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:25
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:59
+/home/user/project/app/app/Services/Wallet/WalletMutationService.php:280
+/home/user/project/app/app/Services/Wallet/WalletService.php:208
+/home/user/project/app/app/Services/Wallet/WalletService.php:114
+/home/user/project/app/core/Database.php:838
+/home/user/project/app/app/Services/Wallet/WalletService.php:110
+/home/user/project/app/core/TransactionWrapper.php:39
+/home/user/project/app/core/TransactionWrapper.php:62
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:135
+/home/user/project/app/app/Services/DistributedLockService.php:446
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:144
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/FinancialSocialTaskEscrowInvariantTest.php:101
+/home/user/project/app/tests/Integration/Financial/FinancialSocialTaskEscrowInvariantTest.php:82
+
+3) Tests\Integration\Financial\EscrowBudgetConsumptionInvariantTest::consumed_budget_reduces_locked_funds_without_refunding_buyer_balance
+Core\Exceptions\TransientException: سیستم در حال حاضر شلوغ است، لطفاً لحظاتی بعد تلاش کنید
+
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:156
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/EscrowBudgetConsumptionInvariantTest.php:88
+/home/user/project/app/tests/Integration/Financial/EscrowBudgetConsumptionInvariantTest.php:62
+
+Caused by
+PDOException: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`chortke_local`.`ledger_entries`, CONSTRAINT `fk_le_tx` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`transaction_id`) ON DELETE CASCADE)
+
+/home/user/project/app/core/QueryBuilder.php:992
+/home/user/project/app/core/Model.php:124
+/home/user/project/app/app/Models/LedgerEntry.php:57
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:25
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:59
+/home/user/project/app/app/Services/Wallet/WalletMutationService.php:280
+/home/user/project/app/app/Services/Wallet/WalletService.php:208
+/home/user/project/app/app/Services/Wallet/WalletService.php:114
+/home/user/project/app/core/Database.php:838
+/home/user/project/app/app/Services/Wallet/WalletService.php:110
+/home/user/project/app/core/TransactionWrapper.php:39
+/home/user/project/app/core/TransactionWrapper.php:62
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:135
+/home/user/project/app/app/Services/DistributedLockService.php:446
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:144
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/EscrowBudgetConsumptionInvariantTest.php:88
+/home/user/project/app/tests/Integration/Financial/EscrowBudgetConsumptionInvariantTest.php:62
+
+4) Tests\Integration\Financial\EscrowDisputeSplitInvariantTest::split_dispute_refunds_buyer_and_pays_seller_atomically
+Core\Exceptions\TransientException: سیستم در حال حاضر شلوغ است، لطفاً لحظاتی بعد تلاش کنید
+
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:156
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/EscrowDisputeSplitInvariantTest.php:8
+/home/user/project/app/tests/Integration/Financial/EscrowDisputeSplitInvariantTest.php:7
+
+Caused by
+PDOException: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`chortke_local`.`ledger_entries`, CONSTRAINT `fk_le_tx` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`transaction_id`) ON DELETE CASCADE)
+
+/home/user/project/app/core/QueryBuilder.php:992
+/home/user/project/app/core/Model.php:124
+/home/user/project/app/app/Models/LedgerEntry.php:57
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:25
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:59
+/home/user/project/app/app/Services/Wallet/WalletMutationService.php:280
+/home/user/project/app/app/Services/Wallet/WalletService.php:208
+/home/user/project/app/app/Services/Wallet/WalletService.php:114
+/home/user/project/app/core/Database.php:838
+/home/user/project/app/app/Services/Wallet/WalletService.php:110
+/home/user/project/app/core/TransactionWrapper.php:39
+/home/user/project/app/core/TransactionWrapper.php:62
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:135
+/home/user/project/app/app/Services/DistributedLockService.php:446
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:144
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/EscrowDisputeSplitInvariantTest.php:8
+/home/user/project/app/tests/Integration/Financial/EscrowDisputeSplitInvariantTest.php:7
+
+5) Tests\Integration\Financial\EscrowPartialSettlementInvariantTest::partial_payout_spends_locked_funds_credits_seller_once_and_preserves_money
+Core\Exceptions\TransientException: سیستم در حال حاضر شلوغ است، لطفاً لحظاتی بعد تلاش کنید
+
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:156
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/EscrowPartialSettlementInvariantTest.php:123
+/home/user/project/app/tests/Integration/Financial/EscrowPartialSettlementInvariantTest.php:64
+
+Caused by
+PDOException: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`chortke_local`.`ledger_entries`, CONSTRAINT `fk_le_tx` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`transaction_id`) ON DELETE CASCADE)
+
+/home/user/project/app/core/QueryBuilder.php:992
+/home/user/project/app/core/Model.php:124
+/home/user/project/app/app/Models/LedgerEntry.php:57
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:25
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:59
+/home/user/project/app/app/Services/Wallet/WalletMutationService.php:280
+/home/user/project/app/app/Services/Wallet/WalletService.php:208
+/home/user/project/app/app/Services/Wallet/WalletService.php:114
+/home/user/project/app/core/Database.php:838
+/home/user/project/app/app/Services/Wallet/WalletService.php:110
+/home/user/project/app/core/TransactionWrapper.php:39
+/home/user/project/app/core/TransactionWrapper.php:62
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:135
+/home/user/project/app/app/Services/DistributedLockService.php:446
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:144
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/EscrowPartialSettlementInvariantTest.php:123
+/home/user/project/app/tests/Integration/Financial/EscrowPartialSettlementInvariantTest.php:64
+
+6) Tests\Integration\Financial\InfluencerEscrowCommissionInvariantTest::release_splits_locked_buyer_funds_between_seller_and_platform_without_refund
+Core\Exceptions\TransientException: سیستم در حال حاضر شلوغ است، لطفاً لحظاتی بعد تلاش کنید
+
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:156
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/InfluencerEscrowCommissionInvariantTest.php:72
+/home/user/project/app/tests/Integration/Financial/InfluencerEscrowCommissionInvariantTest.php:48
+
+Caused by
+PDOException: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`chortke_local`.`ledger_entries`, CONSTRAINT `fk_le_tx` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`transaction_id`) ON DELETE CASCADE)
+
+/home/user/project/app/core/QueryBuilder.php:992
+/home/user/project/app/core/Model.php:124
+/home/user/project/app/app/Models/LedgerEntry.php:57
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:25
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:59
+/home/user/project/app/app/Services/Wallet/WalletMutationService.php:280
+/home/user/project/app/app/Services/Wallet/WalletService.php:208
+/home/user/project/app/app/Services/Wallet/WalletService.php:114
+/home/user/project/app/core/Database.php:838
+/home/user/project/app/app/Services/Wallet/WalletService.php:110
+/home/user/project/app/core/TransactionWrapper.php:39
+/home/user/project/app/core/TransactionWrapper.php:62
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:135
+/home/user/project/app/app/Services/DistributedLockService.php:446
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:144
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/InfluencerEscrowCommissionInvariantTest.php:72
+/home/user/project/app/tests/Integration/Financial/InfluencerEscrowCommissionInvariantTest.php:48
+
+7) Tests\Integration\Financial\VitrineEscrowCommissionInvariantTest::release_splits_usdt_locked_funds_between_seller_and_platform
+Core\Exceptions\TransientException: سیستم در حال حاضر شلوغ است، لطفاً لحظاتی بعد تلاش کنید
+
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:156
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/VitrineEscrowCommissionInvariantTest.php:13
+/home/user/project/app/tests/Integration/Financial/VitrineEscrowCommissionInvariantTest.php:11
+
+Caused by
+PDOException: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`chortke_local`.`ledger_entries`, CONSTRAINT `fk_le_tx` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`transaction_id`) ON DELETE CASCADE)
+
+/home/user/project/app/core/QueryBuilder.php:992
+/home/user/project/app/core/Model.php:124
+/home/user/project/app/app/Models/LedgerEntry.php:57
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:25
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:59
+/home/user/project/app/app/Services/Wallet/WalletMutationService.php:280
+/home/user/project/app/app/Services/Wallet/WalletService.php:208
+/home/user/project/app/app/Services/Wallet/WalletService.php:114
+/home/user/project/app/core/Database.php:838
+/home/user/project/app/app/Services/Wallet/WalletService.php:110
+/home/user/project/app/core/TransactionWrapper.php:39
+/home/user/project/app/core/TransactionWrapper.php:62
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:135
+/home/user/project/app/app/Services/DistributedLockService.php:446
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:144
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/VitrineEscrowCommissionInvariantTest.php:13
+/home/user/project/app/tests/Integration/Financial/VitrineEscrowCommissionInvariantTest.php:11
+
+8) Tests\Integration\Financial\WalletLockedFundsInvariantTest::spending_locked_funds_never_refunds_the_owner_and_is_idempotent
+Core\Exceptions\TransientException: سیستم در حال حاضر شلوغ است، لطفاً لحظاتی بعد تلاش کنید
+
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:156
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/WalletLockedFundsInvariantTest.php:74
+
+Caused by
+PDOException: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`chortke_local`.`ledger_entries`, CONSTRAINT `fk_le_tx` FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`transaction_id`) ON DELETE CASCADE)
+
+/home/user/project/app/core/QueryBuilder.php:992
+/home/user/project/app/core/Model.php:124
+/home/user/project/app/app/Models/LedgerEntry.php:57
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:25
+/home/user/project/app/app/Domain/Financial/Services/LedgerService.php:59
+/home/user/project/app/app/Services/Wallet/WalletMutationService.php:280
+/home/user/project/app/app/Services/Wallet/WalletService.php:208
+/home/user/project/app/app/Services/Wallet/WalletService.php:114
+/home/user/project/app/core/Database.php:838
+/home/user/project/app/app/Services/Wallet/WalletService.php:110
+/home/user/project/app/core/TransactionWrapper.php:39
+/home/user/project/app/core/TransactionWrapper.php:62
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:135
+/home/user/project/app/app/Services/DistributedLockService.php:446
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:144
+/home/user/project/app/core/IdempotencyKey.php:711
+/home/user/project/app/core/IdempotencyKey.php:604
+/home/user/project/app/app/Services/Shared/IdempotencyService.php:131
+/home/user/project/app/app/Services/Wallet/WalletService.php:143
+/home/user/project/app/app/Services/Wallet/WalletService.php:206
+/home/user/project/app/tests/Integration/Financial/WalletLockedFundsInvariantTest.php:74
+
+--
+
+There were 2 failures:
+
+1) Tests\Integration\Financial\FinancialCustomDealEscrowInvariantTest::generic_hold_and_release_preserve_money_and_settle_locked_funds
+{"ok":false,"error":"\u0633\u06cc\u0633\u062a\u0645 \u062f\u0631 \u062d\u0627\u0644 \u062d\u0627\u0636\u0631 \u0634\u0644\u0648\u063a \u0627\u0633\u062a\u060c \u0644\u0637\u0641\u0627\u064b \u0644\u062d\u0638\u0627\u062a\u06cc \u0628\u0639\u062f \u062a\u0644\u0627\u0634 \u06a9\u0646\u06cc\u062f"}
+Failed asserting that false is true.
+
+/home/user/project/app/tests/Integration/Financial/FinancialCustomDealEscrowInvariantTest.php:67
+
+2) Tests\Integration\Financial\FinancialCustomDealEscrowInvariantTest::generic_refund_unlocks_buyer_funds_without_creating_money
+Failed asserting that 0 is greater than 0.
+
+/home/user/project/app/tests/Integration/Financial/FinancialCustomDealEscrowInvariantTest.php:97
+
+ERRORS!
+Tests: 10, Assertions: 2, Errors: 8, Failures: 2.

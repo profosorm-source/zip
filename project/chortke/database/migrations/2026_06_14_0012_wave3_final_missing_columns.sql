@@ -1,0 +1,24 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Wave 3 final missing columns from deep sweep
+ALTER TABLE `referral_commissions`
+  ADD COLUMN IF NOT EXISTS `referred_user_id` INT(10) UNSIGNED NULL,
+  ADD COLUMN IF NOT EXISTS `source_type` VARCHAR(50) DEFAULT 'general',
+  ADD COLUMN IF NOT EXISTS `context` LONGTEXT NULL,
+  ADD COLUMN IF NOT EXISTS `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  ADD COLUMN IF NOT EXISTS `paid_at` TIMESTAMP NULL DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `commission_date` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP;
+UPDATE `referral_commissions` SET `referred_user_id` = COALESCE(`referred_user_id`, `referred_id`) WHERE `referred_user_id` IS NULL;
+
+ALTER TABLE `story_orders`
+  ADD COLUMN IF NOT EXISTS `media_path` VARCHAR(255) NULL,
+  ADD COLUMN IF NOT EXISTS `actual_publish_time` DATETIME NULL,
+  ADD COLUMN IF NOT EXISTS `proof_screenshot` VARCHAR(255) NULL,
+  ADD COLUMN IF NOT EXISTS `proof_video` VARCHAR(255) NULL,
+  ADD COLUMN IF NOT EXISTS `buyer_check_notified_at` TIMESTAMP NULL,
+  ADD COLUMN IF NOT EXISTS `customer_rating` INT NULL,
+  ADD COLUMN IF NOT EXISTS `customer_review` TEXT NULL,
+  ADD COLUMN IF NOT EXISTS `reviewed_by` INT(10) UNSIGNED NULL,
+  ADD COLUMN IF NOT EXISTS `reviewed_at` TIMESTAMP NULL;
+
+SET FOREIGN_KEY_CHECKS = 1;

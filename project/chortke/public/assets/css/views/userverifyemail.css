@@ -1,0 +1,50 @@
+.email-badge {
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+            border-right: 4px solid var(--primary);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #00697a;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .email-badge .material-icons { color: var(--primary); font-size: 20px; }
+        .code-input {
+            letter-spacing: 8px;
+            font-size: 24px;
+            font-family: monospace;
+            text-align: center;
+            text-transform: uppercase;
+            border: 2px solid var(--primary) !important;
+            border-radius: 10px !important;
+            padding: 14px !important;
+            color: #333;
+        }
+        .code-input:focus {
+            box-shadow: 0 0 0 3px rgba(0,188,212,0.15) !important;
+        }
+        .resend-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 0;
+            font-family: inherit;
+        }
+        .resend-btn:hover { text-decoration: underline; color: var(--primary-dark); }
+        .resend-btn:disabled { color: #aaa; cursor: default; text-decoration: none; }
+        .steps {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: #aaa;
+            justify-content: center;
+        }
+        .steps .step { display:flex; align-items:center; gap:4px; }
+        .steps .step.done { color: var(--primary); }
+        .steps .step .material-icons { font-size: 14px; }
+        .steps .sep { color:#ddd; }

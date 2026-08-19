@@ -1,0 +1,16 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Dispute compatibility for influencer marketplace
+ALTER TABLE `disputes`
+  ADD COLUMN IF NOT EXISTS `peer_deadline` TIMESTAMP NULL,
+  ADD COLUMN IF NOT EXISTS `resolution_note` TEXT NULL,
+  ADD COLUMN IF NOT EXISTS `admin_decision` VARCHAR(80) NULL,
+  ADD COLUMN IF NOT EXISTS `admin_note` TEXT NULL,
+  ADD COLUMN IF NOT EXISTS `penalty_amount` DECIMAL(24,8) NULL,
+  ADD COLUMN IF NOT EXISTS `penalty_currency` VARCHAR(10) NULL,
+  ADD COLUMN IF NOT EXISTS `penalty_target` VARCHAR(50) NULL,
+  ADD COLUMN IF NOT EXISTS `site_tax_amount` DECIMAL(24,8) NULL,
+  ADD COLUMN IF NOT EXISTS `refund_percent` DECIMAL(5,2) NULL,
+  ADD COLUMN IF NOT EXISTS `resolved_by` INT(10) UNSIGNED NULL;
+
+SET FOREIGN_KEY_CHECKS = 1;

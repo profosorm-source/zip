@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/8.5/phpunit.xsd"
+         bootstrap="bootstrap/testing.php"
+         executionOrder="default"
+         beStrictAboutOutputDuringTests="true"
+         failOnRisky="true"
+         verbose="true"
+         colors="true">
+    <testsuites>
+        <testsuite name="Chaos and Failure Recovery Tests">
+            <directory>tests/Chaos</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <env name="APP_ENV" value="testing" force="true"/>
+        <ini name="display_errors" value="On"/>
+        <ini name="display_startup_errors" value="On"/>
+        <ini name="error_reporting" value="24575"/>
+    </php>
+</phpunit>

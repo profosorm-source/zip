@@ -1,0 +1,501 @@
+<?php
+// ─── Admin Sidebar Partial v2 ──────────────────────────────────
+// طراحی حرفه‌ای مبتنی بر نمونه admin-panel.html
+$uri   = $_SERVER['REQUEST_URI'] ?? '/';
+$ac    = fn(string $p) => str_contains($uri, $p) ? 'active' : '';
+$openIf = function(array $paths) use ($uri): string {
+    foreach ($paths as $p) {
+        if (str_contains($uri, $p)) return 'open';
+    }
+    return '';
+};
+?>
+<!-- ══════════════════════════════════════════
+     ADMIN SIDEBAR
+     ══════════════════════════════════════════ -->
+<aside class="sidebar" id="adminSidebar">
+
+    <!-- Logo -->
+    <div class="sidebar-logo">
+        <?php $__adminLogo = site_logo('main'); ?>
+        <?php if ($__adminLogo): ?>
+            <img src="<?= e($__adminLogo) ?>" alt="<?= e(setting('site_name','چرتکه')) ?>" class="admin-logo-img">
+        <?php else: ?>
+            <div class="sidebar-logo-icon">چ</div>
+        <?php endif; ?>
+        <div class="sidebar-logo-text">
+            <h2><?= e(setting('site_name', 'چورتکه')) ?></h2>
+            <span>پنل مدیریت سیستم</span>
+        </div>
+    </div>
+
+    <!-- Admin Info -->
+    <div class="sidebar-admin-info">
+        <div class="admin-avatar"><?= strtoupper($firstLetter ?? 'م') ?></div>
+        <div class="admin-info-text">
+            <strong><?= e($fullName ?? 'مدیر') ?></strong>
+            <small>● آنلاین</small>
+        </div>
+        <?php // BUGFIX-SIDEBAR-DB-IN-VIEW-2026-06: counters now come from sidebar_badges()
+              $urgent = (int)($sidebarBadges['withdrawals_pending'] ?? 0)
+                       + (int)($sidebarBadges['kyc_pending'] ?? 0);
+              if ($urgent > 0): ?>
+        <div class="admin-info-badge"><?= fa_number($urgent) ?> مورد</div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Search -->
+    <div class="sidebar-search">
+        <span class="material-icons sidebar-search-icon">search</span>
+        <input type="text" id="sidebarMenuSearch" placeholder="جستجو در منو...">
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav" id="sidebarNav">
+
+        <!-- داشبورد -->
+        <div class="nav-section">
+            <a class="nav-item <?= e($ac('/admin/dashboard')) ?>" href="<?= url('/admin/dashboard') ?>">
+                <span class="material-icons nav-icon">dashboard</span>
+                <span class="nav-label">داشبورد</span>
+            </a>
+        </div>
+
+        <!-- ─── کاربران ─── -->
+        <div class="nav-section">
+            <div class="nav-section-label">کاربران</div>
+
+            <div class="nav-item has-sub <?= e($openIf(['/admin/users', '/admin/roles', '/admin/levels', '/admin/kyc'])) ?>" data-submenu-toggle">
+                <span class="material-icons nav-icon">group</span>
+                <span class="nav-label">مدیریت کاربران</span>
+                <span class="material-icons nav-arrow">chevron_left</span>
+            </div>
+            <div class="nav-submenu <?= e($openIf(['/admin/users', '/admin/roles', '/admin/levels', '/admin/kyc'])) ?>">
+                <a class="nav-sub-item <?= e($ac('/admin/users')) ?>" href="<?= url('/admin/users') ?>">
+                    <span class="nav-sub-dot"></span>همه کاربران
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/roles')) ?>" href="<?= url('/admin/roles') ?>">
+                    <span class="nav-sub-dot"></span>نقش‌ها و مجوزها
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/levels')) ?>" href="<?= url('/admin/levels') ?>">
+                    <span class="nav-sub-dot"></span>سطح‌بندی کاربران
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/referral')) ?>" href="<?= url('/admin/referral') ?>">
+                    <span class="nav-sub-dot"></span>سیستم معرفی
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/social-accounts')) ?>" href="<?= url('/admin/social-accounts') ?>">
+                    <span class="nav-sub-dot"></span>حساب‌های اجتماعی
+                </a>
+            </div>
+
+            <a class="nav-item <?= e($ac('/admin/kyc')) ?>" href="<?= url('/admin/kyc') ?>">
+                <span class="material-icons nav-icon">how_to_reg</span>
+                <span class="nav-label">بررسی KYC</span>
+                <?php $kycPending = (int)($sidebarBadges['kyc_pending'] ?? 0);
+                      if ($kycPending > 0): ?>
+                    <span class="nav-badge badge-orange"><?= fa_number($kycPending) ?></span>
+                <?php endif; ?>
+            </a>
+
+            <div class="nav-item has-sub <?= e($openIf(['/admin/account-deletion'])) ?>" data-submenu-toggle">
+                <span class="material-icons nav-icon">person_remove</span>
+                <span class="nav-label">حذف حساب کاربری</span>
+                <span class="material-icons nav-arrow">chevron_left</span>
+            </div>
+            <div class="nav-submenu <?= e($openIf(['/admin/account-deletion'])) ?>">
+                <a class="nav-sub-item <?= e($ac('/admin/account-deletion/pending')) ?>" href="<?= url('/admin/account-deletion/pending') ?>">
+                    <span class="nav-sub-dot"></span>درخواست‌های در انتظار
+                    <?php $pendingDeletions = (int)($sidebarBadges['account_deletions'] ?? 0);
+                          if ($pendingDeletions > 0): ?>
+                        <span class="nav-badge badge-orange" class="nav-badge-ms"><?= fa_number($pendingDeletions) ?></span>
+                    <?php endif; ?>
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/account-deletion/history')) ?>" href="<?= url('/admin/account-deletion/history') ?>">
+                    <span class="nav-sub-dot"></span>سابقه حذف‌شدگی‌ها
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/account-deletion/stats')) ?>" href="<?= url('/admin/account-deletion/stats') ?>">
+                    <span class="nav-sub-dot"></span>آمار
+                </a>
+            </div>
+        </div>
+
+        <!-- ─── مالی ─── -->
+        <div class="nav-section">
+            <div class="nav-section-label">مالی و تراکنش‌ها</div>
+
+            <div class="nav-item has-sub <?= e($openIf(['/admin/transactions', '/admin/manual-deposits', '/admin/crypto-deposits', '/admin/gateway-payments'])) ?>" data-submenu-toggle">
+                <span class="material-icons nav-icon">account_balance_wallet</span>
+                <span class="nav-label">کیف پول و تراکنش‌ها</span>
+                <span class="material-icons nav-arrow">chevron_left</span>
+            </div>
+            <div class="nav-submenu <?= e($openIf(['/admin/transactions', '/admin/manual-deposits', '/admin/crypto-deposits', '/admin/gateway-payments'])) ?>">
+                <a class="nav-sub-item <?= e($ac('/admin/transactions')) ?>" href="<?= url('/admin/transactions') ?>">
+                    <span class="nav-sub-dot"></span>همه تراکنش‌ها
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/manual-deposits')) ?>" href="<?= url('/admin/manual-deposits') ?>">
+                    <span class="nav-sub-dot"></span>واریزهای دستی
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/crypto-deposits')) ?>" href="<?= url('/admin/crypto-deposits') ?>">
+                    <span class="nav-sub-dot"></span>واریزهای کریپتو
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/gateway-payments')) ?>" href="<?= url('/admin/gateway-payments') ?>">
+                    <span class="nav-sub-dot"></span>پرداخت‌های معلق درگاه
+                    <?php $gpPending = (int)($sidebarBadges['payment_logs_pending'] ?? 0);
+                          if ($gpPending > 0): ?>
+                        <span class="nav-badge badge-orange" class="nav-badge-ms"><?= fa_number($gpPending) ?></span>
+                    <?php endif; ?>
+                </a>
+            </div>
+
+            <a class="nav-item <?= e($ac('/admin/withdrawals')) ?>" href="<?= url('/admin/withdrawals') ?>">
+                <span class="material-icons nav-icon">payments</span>
+                <span class="nav-label">درخواست برداشت</span>
+                <?php $wPending = (int)($sidebarBadges['withdrawals_pending'] ?? 0);
+                      if ($wPending > 0): ?>
+                    <span class="nav-badge badge-orange"><?= fa_number($wPending) ?></span>
+                <?php endif; ?>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/bank-cards')) ?>" href="<?= url('/admin/bank-cards') ?>">
+                <span class="material-icons nav-icon">credit_card</span>
+                <span class="nav-label">کارت‌های بانکی</span>
+            </a>
+        </div>
+
+        <!-- ─── سرمایه‌گذاری ─── -->
+        <div class="nav-section">
+            <div class="nav-section-label">سرمایه‌گذاری</div>
+
+            <div class="nav-item has-sub <?= e($openIf(['/admin/investment'])) ?>" data-submenu-toggle">
+                <span class="material-icons nav-icon">trending_up</span>
+                <span class="nav-label">سرمایه‌گذاری</span>
+                <span class="material-icons nav-arrow">chevron_left</span>
+            </div>
+            <div class="nav-submenu <?= e($openIf(['/admin/investment'])) ?>">
+                <a class="nav-sub-item <?= (str_contains($uri,'/admin/investment') && !str_contains($uri,'/trades') && !str_contains($uri,'/apply-profit') && !str_contains($uri,'/withdrawals')) ? 'active' : '' ?>"
+                   href="<?= url('/admin/investment') ?>">
+                    <span class="nav-sub-dot"></span>سرمایه‌گذاری‌ها
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/investment/trades')) ?>" href="<?= url('/admin/investment/trades') ?>">
+                    <span class="nav-sub-dot"></span>تریدها
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/investment/apply-profit')) ?>" href="<?= url('/admin/investment/apply-profit') ?>">
+                    <span class="nav-sub-dot"></span>اعمال سود/ضرر
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/investment/withdrawals')) ?>" href="<?= url('/admin/investment/withdrawals') ?>">
+                    <span class="nav-sub-dot"></span>برداشت سرمایه
+                </a>
+            </div>
+        </div>
+
+        <!-- ─── تسک‌ها و تبلیغات (Unified) ─── -->
+        <div class="nav-section">
+            <div class="nav-section-label">تبلیغات، تسک‌ها و کمپین‌ها</div>
+
+            <a class="nav-item <?= e($ac('/admin/ads')) ?>" href="<?= url('/admin/ads') ?>">
+                <span class="material-icons nav-icon">campaign</span>
+                <span class="nav-label">داشبورد یکپارچه تبلیغات</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/custom-tasks')) ?>" href="<?= url('/admin/custom-tasks') ?>">
+                <span class="material-icons nav-icon">check_box</span>
+                <span class="nav-label">تسک‌های سفارشی</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/social-tasks')) ?>" href="<?= url('/admin/social-tasks') ?>">
+                <span class="material-icons nav-icon">group</span>
+                <span class="nav-label">شبکه‌های اجتماعی</span>
+            </a>
+
+            <div class="nav-item has-sub <?= e($openIf(['/admin/banners'])) ?>" data-submenu-toggle">
+                <span class="material-icons nav-icon">view_carousel</span>
+                <span class="nav-label">بنرها</span>
+                <span class="material-icons nav-arrow">chevron_left</span>
+            </div>
+            <div class="nav-submenu <?= e($openIf(['/admin/banners'])) ?>">
+                <a class="nav-sub-item <?= (str_contains($uri,'/admin/banners') && !str_contains($uri,'/placements')) ? 'active' : '' ?>"
+                   href="<?= url('/admin/banners') ?>">
+                    <span class="nav-sub-dot"></span>مدیریت بنرها
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/banners/placements')) ?>" href="<?= url('/admin/banners/placements') ?>">
+                    <span class="nav-sub-dot"></span>جایگاه‌های بنر
+                </a>
+            </div>
+
+            <a class="nav-item <?= e($ac('/admin/seo-ad')) ?>" href="<?= url('/admin/seo-ad') ?>">
+                <span class="material-icons nav-icon">search</span>
+                <span class="nav-label">SEO و کلیک</span>
+            </a>
+        </div>
+
+        <!-- ─── محتوا ─── -->
+        <div class="nav-section">
+            <div class="nav-section-label">محتوا و مدیریت</div>
+
+            <div class="nav-item has-sub <?= e($openIf(['/admin/content', '/admin/influencer'])) ?>" data-submenu-toggle">
+                <span class="material-icons nav-icon">campaign</span>
+                <span class="nav-label">محتوا و رسانه</span>
+                <span class="material-icons nav-arrow">chevron_left</span>
+            </div>
+            <div class="nav-submenu <?= e($openIf(['/admin/content', '/admin/influencer'])) ?>">
+                <a class="nav-sub-item <?= (str_contains($uri,'/admin/content') && !str_contains($uri,'/revenues')) ? 'active' : '' ?>"
+                   href="<?= url('/admin/content') ?>">
+                    <span class="nav-sub-dot"></span>مدیریت محتوا
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/content/revenues')) ?>" href="<?= url('/admin/content/revenues') ?>">
+                    <span class="nav-sub-dot"></span>درآمد محتوا
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/influencer/orders')) ?>" href="<?= url('/admin/influencer/orders') ?>">
+                    <span class="nav-sub-dot"></span>سفارش‌های اینفلوئنسر
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/influencer/profiles')) ?>" href="<?= url('/admin/influencer/profiles') ?>">
+                    <span class="nav-sub-dot"></span>پروفایل‌های اینفلوئنسر
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/influencer/verifications')) ?>" href="<?= url('/admin/influencer/verifications') ?>">
+                    <span class="nav-sub-dot"></span>درخواست‌های تایید
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/influencer/disputes')) ?>" href="<?= url('/admin/influencer/disputes') ?>">
+                    <span class="nav-sub-dot"></span>اختلاف‌ها
+                </a>
+            </div>
+
+            <div class="nav-item has-sub <?= e($openIf(['/admin/vitrine'])) ?>" data-submenu-toggle">
+                <span class="material-icons nav-icon">storefront</span>
+                <span class="nav-label">ویترین</span>
+                <span class="material-icons nav-arrow">chevron_left</span>
+            </div>
+            <div class="nav-submenu <?= e($openIf(['/admin/vitrine'])) ?>">
+                <a class="nav-sub-item <?= e($ac('/admin/vitrine') && !str_contains($uri,'/settings') ? 'active' : '') ?>"
+                   href="<?= url('/admin/vitrine') ?>">
+                    <span class="nav-sub-dot"></span>مدیریت آگهی‌ها
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/vitrine/settings')) ?>"
+                   href="<?= url('/admin/vitrine/settings') ?>">
+                    <span class="nav-sub-dot"></span>تنظیمات ویترین
+                </a>
+            </div>
+
+            <a class="nav-item <?= e($ac('/admin/lottery')) ?>" href="<?= url('/admin/lottery') ?>">
+                <span class="material-icons nav-icon">casino</span>
+                <span class="nav-label">قرعه‌کشی</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/prediction')) ?>" href="<?= url('/admin/prediction') ?>">
+                <span class="material-icons nav-icon">psychology</span>
+                <span class="nav-label">پیش‌بینی</span>
+            </a>
+
+            <div class="nav-item has-sub <?= e($openIf(['/admin/coupons'])) ?>" data-submenu-toggle>
+                <span class="material-icons nav-icon">local_offer</span>
+                <span class="nav-label">کوپن‌ها</span>
+                <span class="material-icons nav-arrow">chevron_left</span>
+            </div>
+            <div class="nav-submenu <?= e($openIf(['/admin/coupons'])) ?>">
+                <a class="nav-sub-item <?= (str_contains($uri,'/admin/coupons') && !str_contains($uri,'/redemptions') && !str_contains($uri,'/statistics')) ? 'active' : '' ?>"
+                   href="<?= url('/admin/coupons') ?>">
+                    <span class="nav-sub-dot"></span>لیست کوپن‌ها
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/coupons/statistics')) ?>" href="<?= url('/admin/coupons/statistics') ?>">
+                    <span class="nav-sub-dot"></span>آمار کوپن‌ها
+                </a>
+            </div>
+        </div>
+
+        <!-- ─── پشتیبانی ─── -->
+        <div class="nav-section">
+            <div class="nav-section-label">پشتیبانی</div>
+
+            <a class="nav-item <?= e($ac('/admin/tickets')) ?>" href="<?= url('/admin/tickets') ?>">
+                <span class="material-icons nav-icon">support_agent</span>
+                <span class="nav-label">تیکت‌های پشتیبانی</span>
+                <?php $tOpen = (int)($sidebarBadges['tickets_open'] ?? 0);
+                      if ($tOpen > 0): ?>
+                    <span class="nav-badge badge-red"><?= fa_number($tOpen) ?></span>
+                <?php endif; ?>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/bug-reports')) ?>" href="<?= url('/admin/bug-reports') ?>">
+                <span class="material-icons nav-icon">bug_report</span>
+                <span class="nav-label">گزارش‌های باگ</span>
+                <?php $bugOpen = (int)($sidebarBadges['bug_reports'] ?? 0); ?>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/notifications/send')) ?>" href="<?= url('/admin/notifications/send') ?>">
+                <span class="material-icons nav-icon">notification_add</span>
+                <span class="nav-label">ارسال اعلان</span>
+            </a>
+
+            <a class="nav-item <?= (str_contains($uri,'/admin/notifications') && !str_contains($uri,'/send')) ? 'active' : '' ?>"
+               href="<?= url('/admin/notifications') ?>">
+                <span class="material-icons nav-icon">notifications</span>
+                <span class="nav-label">اعلان‌ها</span>
+            </a>
+        </div>
+
+        <!-- ─── گزارش‌ها ─── -->
+        <div class="nav-section">
+            <div class="nav-section-label">گزارش‌ها و آنالیتیکس</div>
+
+            <a class="nav-item <?= e($ac('/admin/kpi')) ?>" href="<?= url('/admin/kpi') ?>">
+                <span class="material-icons nav-icon">analytics</span>
+                <span class="nav-label">KPI و آنالیتیکس</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/custom-tasks/reports')) ?>" href="<?= url('/admin/custom-tasks/reports') ?>">
+                <span class="material-icons nav-icon">summarize</span>
+                <span class="nav-label">گزارش تسک‌ها</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/fraud')) ?>" href="<?= url('/admin/fraud') ?>">
+                <span class="material-icons nav-icon">security</span>
+                <span class="nav-label">داشبورد ضدتقلب</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/audit-trail')) ?>" href="<?= url('/admin/audit-trail') ?>">
+                <span class="material-icons nav-icon">manage_search</span>
+                <span class="nav-label">Audit Trail</span>
+            </a>
+
+            <a class="nav-item <?= $ac('/admin/logs') || $ac('/admin/activity-logs') ? 'active' : '' ?>"
+               href="<?= url('/admin/logs') ?>">
+                <span class="material-icons nav-icon">history</span>
+                <span class="nav-label">لاگ فعالیت‌ها</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/export')) ?>" href="<?= url('/admin/export') ?>">
+                <span class="material-icons nav-icon">file_download</span>
+                <span class="nav-label">خروجی CSV</span>
+            </a>
+        </div>
+
+        <!-- ─── سیستم ─── -->
+        <div class="nav-section">
+            <div class="nav-section-label">سیستم</div>
+
+            <a class="nav-item <?= e($ac('/admin/cron')) ?>" href="<?= url('/admin/cron') ?>">
+                <span class="material-icons nav-icon">schedule</span>
+                <span class="nav-label">Cron Jobs</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/email-queue')) ?>" href="<?= url('/admin/email-queue') ?>">
+                <span class="material-icons nav-icon">mark_email_unread</span>
+                <span class="nav-label">صف ایمیل</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/api-tokens')) ?>" href="<?= url('/admin/api-tokens') ?>">
+                <span class="material-icons nav-icon">vpn_key</span>
+                <span class="nav-label">توکن‌های API</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/cache')) ?>" href="<?= url('/admin/cache') ?>">
+                <span class="material-icons nav-icon">cached</span>
+                <span class="nav-label">مدیریت Cache</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/database-health')) ?>" href="<?= url('/admin/database-health') ?>">
+                <span class="material-icons nav-icon">dns</span>
+                <span class="nav-label">سلامت دیتابیس</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/features')) ?>" href="<?= url('/admin/features') ?>">
+                <span class="material-icons nav-icon">toggle_on</span>
+                <span class="nav-label">Feature Flags</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/backups')) ?>" href="<?= url('/admin/backups') ?>">
+                <span class="material-icons nav-icon">backup</span>
+                <span class="nav-label">پشتیبان‌گیری دیتابیس</span>
+            </a>
+        </div>
+
+        <!-- ─── تنظیمات ─── -->
+        <div class="nav-section">
+            <div class="nav-section-label">تنظیمات</div>
+
+            <a class="nav-item <?= e($ac('/admin/settings')) ?>" href="<?= url('/admin/settings') ?>">
+                <span class="material-icons nav-icon">settings</span>
+                <span class="nav-label">تنظیمات سیستم</span>
+            </a>
+
+            <a class="nav-item <?= e($ac('/admin/captcha')) ?>" href="<?= url('/admin/captcha/settings') ?>">
+                <span class="material-icons nav-icon">verified</span>
+                <span class="nav-label">تنظیمات کپچا</span>
+            </a>
+        </div>
+
+        <!-- ─── مانیتورینگ سیستم (Sentry) ─── -->
+        <div class="nav-section">
+            <div class="nav-section-label">مانیتورینگ</div>
+
+            <div class="nav-item has-sub <?= e($openIf(['/admin/sentry'])) ?>" data-submenu-toggle">
+                <span class="material-icons nav-icon">shield</span>
+                <span class="nav-label">مانیتورینگ سیستم</span>
+                <span class="material-icons nav-arrow">chevron_left</span>
+                <?php $unresolvedCount = (int)($sidebarBadges['sentry_unresolved'] ?? 0);
+                      if ($unresolvedCount > 0): ?>
+                        <span class="nav-badge" class="nav-badge-red">
+                            <?= fa_number($unresolvedCount) ?>
+                        </span>
+                <?php endif; ?>
+            </div>
+            <div class="nav-submenu <?= e($openIf(['/admin/sentry'])) ?>">
+                <a class="nav-sub-item <?= e($ac('/admin/sentry') && !str_contains($uri, '/admin/sentry/')) ?>" href="<?= url('/admin/sentry') ?>">
+                    <span class="nav-sub-dot"></span>داشبورد کلی
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/sentry/issues')) ?>" href="<?= url('/admin/sentry/issues') ?>">
+                    <span class="nav-sub-dot"></span>خطاها و Issues
+                    <?php if (isset($unresolvedCount) && $unresolvedCount > 0): ?>
+                        <span class="nav-badge-red-sm">
+                            <?= fa_number($unresolvedCount) ?>
+                        </span>
+                    <?php endif; ?>
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/sentry/performance')) ?>" href="<?= url('/admin/sentry/performance') ?>">
+                    <span class="nav-sub-dot"></span>عملکرد سیستم
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/sentry/analytics')) ?>" href="<?= url('/admin/sentry/analytics') ?>">
+                    <span class="nav-sub-dot"></span>تحلیل و روندها
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/sentry/alerts')) ?>" href="<?= url('/admin/sentry/alerts') ?>">
+                    <span class="nav-sub-dot"></span>مدیریت هشدارها
+                    <?php $alertCount = (int)($sidebarBadges['system_alerts_active'] ?? 0);
+                          if ($alertCount > 0): ?>
+                            <span class="nav-badge-orange-sm">
+                                <?= fa_number($alertCount) ?>
+                            </span>
+                    <?php endif; ?>
+                </a>
+                <a class="nav-sub-item <?= e($ac('/admin/sentry/audit')) ?>" href="<?= url('/admin/sentry/audit') ?>">
+                    <span class="nav-sub-dot"></span>Audit Trail
+                </a>
+            </div>
+        </div>
+
+        <!-- بازگشت -->
+        <div class="nav-section">
+            <a class="nav-item" href="<?= url('/dashboard') ?>">
+                <span class="material-icons nav-icon">home</span>
+                <span class="nav-label">بازگشت به سایت</span>
+            </a>
+        </div>
+
+    </nav>
+
+    <!-- Footer -->
+    <div class="sidebar-footer">
+        <div class="sidebar-footer-links">
+            <a class="sidebar-footer-btn" href="<?= url('/admin/settings') ?>">
+                <span class="material-icons">settings</span>
+                <span>تنظیمات</span>
+            </a>
+            <form method="POST" action="<?= url('/logout') ?>" class="sidebar-footer-form">
+                <?= csrf_field() ?>
+                <button type="submit" class="sidebar-footer-btn w-100 sidebar-logout-btn">
+                    <span class="material-icons">logout</span>
+                    <span>خروج</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+</aside>

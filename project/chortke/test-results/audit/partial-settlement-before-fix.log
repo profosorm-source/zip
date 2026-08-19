@@ -1,0 +1,23 @@
+PHPUnit 8.5.52 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.23
+Configuration: /home/user/project/app/phpunit.xml
+
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+E                                                                   1 / 1 (100%)
+
+Time: 495805.21 hours, Memory: 10.00 MB
+
+There was 1 error:
+
+1) Tests\Integration\Financial\EscrowPartialSettlementInvariantTest::partial_payout_spends_locked_funds_credits_seller_once_and_preserves_money
+Error: Typed property App\Services\EscrowService::$walletService must not be accessed before initialization
+
+/home/user/project/app/app/Services/EscrowService.php:369
+/home/user/project/app/core/Database.php:838
+/home/user/project/app/app/Services/EscrowService.php:332
+/home/user/project/app/tests/Integration/Financial/EscrowPartialSettlementInvariantTest.php:64
+
+ERRORS!
+Tests: 1, Assertions: 1, Errors: 1.

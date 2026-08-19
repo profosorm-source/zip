@@ -1,0 +1,949 @@
+PHPUnit 8.5.52 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.23
+Configuration: /home/user/project/app/phpunit.xml
+
+.............................................................   61 / 2215 (  2%)
+.........................................................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+..  122 / 2215 (  5%)
+.......................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+.....................................  183 / 2215 (  8%)
+..........................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+RESULT: {"success":true,"message":"پرداخت با موفقیت تکمیل شد","ref_id":"ref123"}
+........[Sentry] Handler not initialized — skipping capture.
+..........................  244 / 2215 ( 11%)
+.............................................................  305 / 2215 ( 13%)
+.......F.....................................................  366 / 2215 ( 16%)
+.............................................................  427 / 2215 ( 19%)
+.............................................................  488 / 2215 ( 22%)
+.............................................................  549 / 2215 ( 24%)
+.............................................................  610 / 2215 ( 27%)
+.....[Sentry] Handler not initialized — skipping capture.
+..........................[Sentry] Handler not initialized — skipping capture.
+..............................  671 / 2215 ( 30%)
+...................................[Sentry] Handler not initialized — skipping capture.
+..........................  732 / 2215 ( 33%)
+....................................[queue:work] error: Connection failed
+.........................  793 / 2215 ( 35%)
+.............................................................  854 / 2215 ( 38%)
+.............................................................  915 / 2215 ( 41%)
+.............................................................  976 / 2215 ( 44%)
+............................................................. 1037 / 2215 ( 46%)
+............................................................. 1098 / 2215 ( 49%)
+............................................................. 1159 / 2215 ( 52%)
+............................................................. 1220 / 2215 ( 55%)
+............................................................. 1281 / 2215 ( 57%)
+.......................Failed to log event dispatched info: Logger is broken
+..[EventDispatcher] reconstruction failed for NonExistentEventClassThatWillFail in event 'test.queued.event', falling back to GenericEvent
+.[EventDispatcher] reconstruction failed for  in event 'test.no_class.event', falling back to GenericEvent
+..................................[fallback-logger][critical] cache.redis.fallback_to_file {"error":"Connection refused","require_redis":false,"production":false,"warning":"File fallback is unsafe for distributed systems — set CACHE_REQUIRE_REDIS=true"}
+[fallback-logger][info] Session handler: Fallback to file
+. 1342 / 2215 ( 60%)
+[fallback-logger][info] Session handler: Fallback to file
+.[fallback-logger][info] Session handler: Fallback to file
+.[fallback-logger][info] Session handler: Fallback to file
+........................................................... 1403 / 2215 ( 63%)
+............................................................. 1464 / 2215 ( 66%)
+............................................[fallback-logger][info] Session handler: Fallback to file
+................. 1525 / 2215 ( 68%)
+.........................................[fallback-logger][error] queue.redis.push_failed_falling_back {"job":"App\\\\Jobs\\\\LogPerformanceJob","queue":"analytics","error":"Redis connection failure"}
+.................... 1586 / 2215 ( 71%)
+............................................................. 1647 / 2215 ( 74%)
+............................................................. 1708 / 2215 ( 77%)
+............................................................. 1769 / 2215 ( 79%)
+......................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+..[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.........................[Sentry] Handler not initialized — skipping capture.
+........... 1830 / 2215 ( 82%)
+.....................................[Sentry] Handler not initialized — skipping capture.
+........................ 1891 / 2215 ( 85%)
+............................................................. 1952 / 2215 ( 88%)
+............................................................. 2013 / 2215 ( 90%)
+............................................................. 2074 / 2215 ( 93%)
+............................................................. 2135 / 2215 ( 96%)
+[fallback-logger][critical] cache.redis.fallback_to_file {"error":"Connection refused","require_redis":false,"production":false,"warning":"File fallback is unsafe for distributed systems — set CACHE_REQUIRE_REDIS=true"}
+.EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE[fallback-logger][critical] cache.redis.fallback_to_file {"error":"Connection refused","require_redis":false,"production":false,"warning":"File fallback is unsafe for distributed systems — set CACHE_REQUIRE_REDIS=true"}
+................ 2196 / 2215 ( 99%)
+..[Sentry] Handler not initialized — skipping capture.
+[GlobalException] RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused in /home/user/project/app/core/Database.php:182
+[Sentry] Handler not initialized — skipping capture.
+FSSSSSSSSSS......                                           2215 / 2215 (100%)
+
+Time: 495804.99 hours, Memory: 92.50 MB
+
+There were 44 errors:
+
+1) Tests\Integration\Database\DatabaseIntegrationTest::database_can_connect_and_ping
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+2) Tests\Integration\Database\DatabaseIntegrationTest::fetchAll_returns_array
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+3) Tests\Integration\Database\DatabaseIntegrationTest::prepare_returns_statement
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+4) Tests\Integration\Database\DatabaseIntegrationTest::query_returns_statement
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+5) Tests\Integration\Database\DatabaseIntegrationTest::transaction_commit_works
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+6) Tests\Integration\Database\DatabaseIntegrationTest::transaction_rollback_works
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+7) Tests\Integration\Database\DatabaseIntegrationTest::select_returns_array
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+8) Tests\Integration\Database\DatabaseIntegrationTest::nested_transaction_with_savepoint_works
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+9) Tests\Integration\Database\DatabaseIntegrationTest::fetch_returns_null_for_no_rows
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+10) Tests\Integration\Database\DatabaseIntegrationTest::fetch_returns_object_for_existing_table
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+11) Tests\Integration\Database\DatabaseIntegrationTest::fetchColumn_returns_value
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+12) Tests\Integration\Database\DatabaseIntegrationTest::table_returns_query_builder_that_works
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+13) Tests\Integration\Database\DatabaseIntegrationTest::selectOne_returns_object_or_null
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+14) Tests\Integration\Database\DatabaseIntegrationTest::parameterized_queries_work
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+15) Tests\Integration\Database\DatabaseIntegrationTest::named_parameter_queries_work
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Database/DatabaseIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+16) Tests\Integration\Services\FinancialIntegrationTest::referral_commissions_table_is_queryable
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+17) Tests\Integration\Services\FinancialIntegrationTest::payment_logs_table_is_queryable
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+18) Tests\Integration\Services\FinancialIntegrationTest::bank_cards_table_is_queryable
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+19) Tests\Integration\Services\FinancialIntegrationTest::escrow_table_is_queryable
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+20) Tests\Integration\Services\FinancialIntegrationTest::withdrawals_table_is_queryable
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+21) Tests\Integration\Services\FinancialIntegrationTest::deposits_table_is_queryable
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+22) Tests\Integration\Services\FinancialIntegrationTest::can_sum_transactions_by_type
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+23) Tests\Integration\Services\FinancialIntegrationTest::transactions_table_has_expected_schema
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+24) Tests\Integration\Services\FinancialIntegrationTest::wallets_table_has_expected_schema
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+25) Tests\Integration\Services\FinancialIntegrationTest::transaction_create_and_rollback_works
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/FinancialIntegrationTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+26) Tests\Integration\Services\SchemaIntegrityTest::transactions_table_has_all_required_columns
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/SchemaIntegrityTest.php:21
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/SchemaIntegrityTest.php:21
+/home/user/project/app/vendor/bin/phpunit:122
+
+27) Tests\Integration\Services\SchemaIntegrityTest::wallets_table_has_all_required_columns
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/SchemaIntegrityTest.php:21
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/SchemaIntegrityTest.php:21
+/home/user/project/app/vendor/bin/phpunit:122
+
+28) Tests\Integration\Services\SchemaIntegrityTest::feature_flags_table_has_expected_columns
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/SchemaIntegrityTest.php:21
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/SchemaIntegrityTest.php:21
+/home/user/project/app/vendor/bin/phpunit:122
+
+29) Tests\Integration\Services\SchemaIntegrityTest::users_table_has_all_required_columns
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/SchemaIntegrityTest.php:21
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/SchemaIntegrityTest.php:21
+/home/user/project/app/vendor/bin/phpunit:122
+
+30) Tests\Integration\Services\SchemaIntegrityTest::all_core_tables_exist
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/SchemaIntegrityTest.php:21
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/SchemaIntegrityTest.php:21
+/home/user/project/app/vendor/bin/phpunit:122
+
+31) Tests\Integration\Services\SchemaIntegrityTest::no_table_has_zero_rows_if_seed_data_expected
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/SchemaIntegrityTest.php:21
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/SchemaIntegrityTest.php:21
+/home/user/project/app/vendor/bin/phpunit:122
+
+32) Tests\Integration\Services\UserServiceIntegrationTest::can_list_users_with_pagination
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+33) Tests\Integration\Services\UserServiceIntegrationTest::can_count_active_users
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+34) Tests\Integration\Services\UserServiceIntegrationTest::roles_table_exists_and_has_data
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+35) Tests\Integration\Services\UserServiceIntegrationTest::system_settings_table_exists_and_has_data
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+36) Tests\Integration\Services\UserServiceIntegrationTest::feature_flags_table_exists
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+37) Tests\Integration\Services\UserServiceIntegrationTest::transactions_table_exists
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+38) Tests\Integration\Services\UserServiceIntegrationTest::wallets_table_has_entries_for_users
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+39) Tests\Integration\Services\UserServiceIntegrationTest::database_query_builder_can_chain_methods
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+40) Tests\Integration\Services\UserServiceIntegrationTest::database_has_seed_users
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+41) Tests\Integration\Services\UserServiceIntegrationTest::can_fetch_user_by_id
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+42) Tests\Integration\Services\UserServiceIntegrationTest::users_table_has_required_columns
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+43) Tests\Integration\Services\UserServiceIntegrationTest::can_search_users_by_email
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+44) Tests\Integration\Services\UserServiceIntegrationTest::database_query_builder_count_works
+RuntimeException: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:182
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+Caused by
+PDOException: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/core/Database.php:160
+/home/user/project/app/core/Database.php:81
+/home/user/project/app/core/Database.php:179
+/home/user/project/app/tests/Integration/Services/UserServiceIntegrationTest.php:23
+/home/user/project/app/vendor/bin/phpunit:122
+
+--
+
+There were 2 failures:
+
+1) Tests\Unit\ComprehensiveSecurityTest::http_only_cookie_flag_is_configured
+Real .env must not be committed to the repository
+Failed asserting that true is false.
+
+/home/user/project/app/tests/Unit/ComprehensiveSecurityTest.php:254
+/home/user/project/app/vendor/bin/phpunit:122
+
+2) Tests\Integration\HomePageTest::testHomePageReturnsRenderedHtml
+Failed asserting that '[ERROR] 2026-07-24 16:29:35 settings.load_failed {"request_id":"REQ_20260724162935_becb500d94082369","trace_id":"REQ_20260724162935_becb500d94082369","span_id":"339a5dd5bdc1b651","parent_span_id":null,"error":"Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused","type":"system","correlation_id":null}\n
+[ERROR] 2026-07-24 16:29:35 settings.load_failed {"request_id":"REQ_20260724162935_becb500d94082369","trace_id":"REQ_20260724162935_becb500d94082369","span_id":"1c1d919672a21752","parent_span_id":null,"error":"Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused","type":"system","correlation_id":null}\n
+[ERROR] 2026-07-24 16:29:35 settings.load_failed {"request_id":"REQ_20260724162935_becb500d94082369","trace_id":"REQ_20260724162935_becb500d94082369","span_id":"98dcb3aa5bd821d8","parent_span_id":null,"error":"Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused","type":"system","correlation_id":null}\n
+[ERROR] 2026-07-24 16:29:35 settings.load_failed {"request_id":"REQ_20260724162935_becb500d94082369","trace_id":"REQ_20260724162935_becb500d94082369","span_id":"63db5ff6d434b104","parent_span_id":null,"error":"Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused","type":"system","correlation_id":"a227601d60ec4ead90b37807c51e4abf"}\n
+[ERROR] 2026-07-24 16:29:35 settings.load_failed {"request_id":"REQ_20260724162935_becb500d94082369","trace_id":"REQ_20260724162935_becb500d94082369","span_id":"ecafdbe7684dd256","parent_span_id":null,"error":"Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused","type":"system","correlation_id":"a227601d60ec4ead90b37807c51e4abf"}\n
+[DEBUG] 2026-07-24 16:29:35 [Container] Resolved nullable '$financialEscrow' as null due to: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused {"request_id":"REQ_20260724162935_becb500d94082369","trace_id":"REQ_20260724162935_becb500d94082369","span_id":"f0a165eb56c3998c","parent_span_id":null,"type":"system","correlation_id":"a227601d60ec4ead90b37807c51e4abf"}\n
+[DEBUG] 2026-07-24 16:29:35 [Container] Resolved nullable '$escrowService' as null due to: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused {"request_id":"REQ_20260724162935_becb500d94082369","trace_id":"REQ_20260724162935_becb500d94082369","span_id":"b54c7c706164c9c2","parent_span_id":null,"type":"system","correlation_id":"a227601d60ec4ead90b37807c51e4abf"}\n
+[WARNING] 2026-07-24 16:29:35 home.analytics_unavailable {"request_id":"REQ_20260724162935_becb500d94082369","trace_id":"REQ_20260724162935_becb500d94082369","span_id":"41e78b247fb8ba55","parent_span_id":null,"error":"Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused","type":"system","correlation_id":"a227601d60ec4ead90b37807c51e4abf"}\n
+[ERROR] 2026-07-24 16:29:35 middleware.performance_logging.failed {"request_id":"REQ_20260724162935_becb500d94082369","trace_id":"REQ_20260724162935_becb500d94082369","span_id":"2094e5c4162fe4d5","parent_span_id":null,"channel":"middleware","error":"Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused","file":"\/home\/user\/project\/app\/core\/Database.php","line":182,"type":"system","correlation_id":"a227601d60ec4ead90b37807c51e4abf"}\n
+<!DOCTYPE html>\n
+<html lang="fa" dir="rtl">\n
+<head><meta charset="UTF-8"><title>خطای سیستمی</title>\n
+<style>body{font-family:Tahoma,sans-serif;background:#f5f5f5;padding:40px;direction:rtl}\n
+.box{background:#fff;border-radius:12px;padding:30px;max-width:800px;margin:0 auto;box-shadow:0 2px 20px rgba(0,0,0,.1)}\n
+h1{color:#e53935;font-size:20px}pre{background:#f8f8f8;padding:15px;border-radius:8px;overflow-x:auto;font-size:13px;direction:ltr;text-align:left}\n
+.file{color:#666;font-size:13px}</style></head>\n
+<body><div class="box">\n
+<h1>⚠️ خطای سیستمی (HTTP 500)</h1>\n
+<p><strong>Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused</strong></p>\n
+<p class="file">📁 /home/user/project/app/core/Database.php:182</p>\n
+<pre>#0 /home/user/project/app/core/Database.php(407): Core\Database-&gt;ensureConnected()\n
+#1 /home/user/project/app/core/Database.php(385): Core\Database-&gt;executeStatement()\n
+#2 /home/user/project/app/app/Models/BannerPlacement.php(50): Core\Database-&gt;fetch()\n
+#3 /home/user/project/app/app/Services/BannerService.php(86): App\Models\BannerPlacement-&gt;findBySlug()\n
+#4 /home/user/project/app/app/Controllers/HomeController.php(59): App\Services\BannerService-&gt;getActiveBanners()\n
+#5 [internal function]: App\Controllers\HomeController-&gt;index()\n
+#6 /home/user/project/app/core/Router.php(301): ReflectionMethod-&gt;invokeArgs()\n
+#7 /home/user/project/app/core/Router.php(233): Core\Router-&gt;executeAction()\n
+#8 /home/user/project/app/core/Pipeline.php(63): Core\Router-&gt;{closure:{closure:Core\Router::dispatch():203}:231}()\n
+#9 /home/user/project/app/core/Pipeline.php(54): Core\Pipeline-&gt;{closure:Core\Pipeline::prepareDestination():62}()\n
+#10 /home/user/project/app/core/Router.php(231): Core\Pipeline-&gt;then()\n
+#11 /home/user/project/app/core/Pipeline.php(63): Core\Router-&gt;{closure:Core\Router::dispatch():203}()\n
+#12 /home/user/project/app/core/Pipeline.php(90): Core\Pipeline-&gt;{closure:Core\Pipeline::prepareDestination():62}()\n
+#13 /home/user/project/app/app/Middleware/TracingMiddleware.php(67): Core\Pipeline-&gt;{closure:{closure:{closure:Core\Pipeline::carry():72}:73}:88}()\n
+#14 /home/user/project/app/core/Pipeline.php(98): App\Middleware\TracingMiddleware-&gt;handle()\n
+#15 /home/user/project/app/core/Pipeline.php(90): Core\Pipeline-&gt;{closure:{closure:Core\Pipeline::carry():72}:73}()\n
+#16 /home/user/project/app/app/Middleware/LoggingMiddleware.php(43): Core\Pipeline-&gt;{closure:{closure:{closure:Core\Pipeline::carry():72}:73}:88}()\n
+#17 /home/user/project/app/core/Pipeline.php(98): App\Middleware\LoggingMiddleware-&gt;handle()\n
+#18 /home/user/project/app/core/Pipeline.php(90): Core\Pipeline-&gt;{closure:{closure:Core\Pipeline::carry():72}:73}()\n
+#19 /home/user/project/app/app/Middleware/SafeModeMiddleware.php(54): Core\Pipeline-&gt;{closure:{closure:{closure:Core\Pipeline::carry():72}:73}:88}()\n
+#20 /home/user/project/app/core/Pipeline.php(98): App\Middleware\SafeModeMiddleware-&gt;handle()\n
+#21 /home/user/project/app/core/Pipeline.php(90): Core\Pipeline-&gt;{closure:{closure:Core\Pipeline::carry():72}:73}()\n
+#22 /home/user/project/app/app/Middleware/MaintenanceMiddleware.php(40): Core\Pipeline-&gt;{closure:{closure:{closure:Core\Pipeline::carry():72}:73}:88}()\n
+#23 /home/user/project/app/core/Pipeline.php(98): App\Middleware\MaintenanceMiddleware-&gt;handle()\n
+#24 /home/user/project/app/core/Pipeline.php(90): Core\Pipeline-&gt;{closure:{closure:Core\Pipeline::carry():72}:73}()\n
+#25 /home/user/project/app/app/Middleware/CorsMiddleware.php(27): Core\Pipeline-&gt;{closure:{closure:{closure:Core\Pipeline::carry():72}:73}:88}()\n
+#26 /home/user/project/app/core/Pipeline.php(98): App\Middleware\CorsMiddleware-&gt;handle()\n
+#27 /home/user/project/app/core/Pipeline.php(90): Core\Pipeline-&gt;{closure:{closure:Core\Pipeline::carry():72}:73}()\n
+#28 /home/user/project/app/app/Middleware/SecurityHeadersMiddleware.php(32): Core\Pipeline-&gt;{closure:{closure:{closure:Core\Pipeline::carry():72}:73}:88}()\n
+#29 /home/user/project/app/core/Pipeline.php(98): App\Middleware\SecurityHeadersMiddleware-&gt;handle()\n
+#30 /home/user/project/app/core/Pipeline.php(90): Core\Pipeline-&gt;{closure:{closure:Core\Pipeline::carry():72}:73}()\n
+#31 /home/user/project/app/app/Middleware/HttpsMiddleware.php(51): Core\Pipeline-&gt;{closure:{closure:{closure:Core\Pipeline::carry():72}:73}:88}()\n
+#32 /home/user/project/app/core/Pipeline.php(98): App\Middleware\HttpsMiddleware-&gt;handle()\n
+#33 /home/user/project/app/core/Pipeline.php(90): Core\Pipeline-&gt;{closure:{closure:Core\Pipeline::carry():72}:73}()\n
+#34 /home/user/project/app/app/Middleware/ConcurrentRequestMiddleware.php(62): Core\Pipeline-&gt;{closure:{closure:{closure:Core\Pipeline::carry():72}:73}:88}()\n
+#35 /home/user/project/app/core/Pipeline.php(98): App\Middleware\ConcurrentRequestMiddleware-&gt;handle()\n
+#36 /home/user/project/app/core/Pipeline.php(90): Core\Pipeline-&gt;{closure:{closure:Core\Pipeline::carry():72}:73}()\n
+#37 /home/user/project/app/app/Middleware/SessionMiddleware.php(34): Core\Pipeline-&gt;{closure:{closure:{closure:Core\Pipeline::carry():72}:73}:88}()\n
+#38 /home/user/project/app/core/Pipeline.php(98): App\Middleware\SessionMiddleware-&gt;handle()\n
+#39 /home/user/project/app/core/Pipeline.php(90): Core\Pipeline-&gt;{closure:{closure:Core\Pipeline::carry():72}:73}()\n
+#40 /home/user/project/app/app/Middleware/GlobalExceptionMiddleware.php(16): Core\Pipeline-&gt;{closure:{closure:{closure:Core\Pipeline::carry():72}:73}:88}()\n
+#41 /home/user/project/app/core/Pipeline.php(98): App\Middleware\GlobalExceptionMiddleware-&gt;handle()\n
+#42 /home/user/project/app/core/Pipeline.php(54): Core\Pipeline-&gt;{closure:{closure:Core\Pipeline::carry():72}:73}()\n
+#43 /home/user/project/app/core/Router.php(203): Core\Pipeline-&gt;then()\n
+#44 /home/user/project/app/core/Application.php(130): Core\Router-&gt;dispatch()\n
+#45 /home/user/project/app/tests/Integration/HomePageTest.php(101): Core\Application-&gt;run()\n
+#46 /home/user/project/app/vendor/phpunit/phpunit/src/Framework/TestCase.php(1504): Tests\Integration\HomePageTest-&gt;testHomePageReturnsRenderedHtml()\n
+#47 /home/user/project/app/vendor/phpunit/phpunit/src/Framework/TestCase.php(1124): PHPUnit\Framework\TestCase-&gt;runTest()\n
+#48 /home/user/project/app/vendor/phpunit/phpunit/src/Framework/TestResult.php(705): PHPUnit\Framework\TestCase-&gt;runBare()\n
+#49 /home/user/project/app/vendor/phpunit/phpunit/src/Framework/TestCase.php(850): PHPUnit\Framework\TestResult-&gt;run()\n
+#50 /home/user/project/app/vendor/phpunit/phpunit/src/Framework/TestSuite.php(626): PHPUnit\Framework\TestCase-&gt;run()\n
+#51 /home/user/project/app/vendor/phpunit/phpunit/src/Framework/TestSuite.php(626): PHPUnit\Framework\TestSuite-&gt;run()\n
+#52 /home/user/project/app/vendor/phpunit/phpunit/src/Framework/TestSuite.php(626): PHPUnit\Framework\TestSuite-&gt;run()\n
+#53 /home/user/project/app/vendor/phpunit/phpunit/src/TextUI/TestRunner.php(645): PHPUnit\Framework\TestSuite-&gt;run()\n
+#54 /home/user/project/app/vendor/phpunit/phpunit/src/TextUI/Command.php(236): PHPUnit\TextUI\TestRunner-&gt;doRun()\n
+#55 /home/user/project/app/vendor/phpunit/phpunit/src/TextUI/Command.php(195): PHPUnit\TextUI\Command-&gt;run()\n
+#56 /home/user/project/app/vendor/phpunit/phpunit/phpunit(98): PHPUnit\TextUI\Command::main()\n
+#57 /home/user/project/app/vendor/bin/phpunit(122): include(&#039;...&#039;)\n
+#58 {main}</pre>\n
+<p style="margin-top:20px"><a href="javascript:history.back()" style="color:#1976d2">← بازگشت</a></p>\n
+</div></body></html>' contains "چرتکه".
+
+/home/user/project/app/tests/Integration/HomePageTest.php:105
+/home/user/project/app/vendor/bin/phpunit:122
+
+--
+
+There were 10 skipped tests:
+
+1) Tests\Integration\Distributed\DistributedPatternsTest::test_can_insert_valid_outbox_event
+Database not available: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/tests/Integration/Distributed/DistributedPatternsTest.php:32
+/home/user/project/app/vendor/bin/phpunit:122
+
+2) Tests\Integration\Distributed\DistributedPatternsTest::test_correlation_id_is_supported_in_logging
+Database not available: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/tests/Integration/Distributed/DistributedPatternsTest.php:32
+/home/user/project/app/vendor/bin/phpunit:122
+
+3) Tests\Integration\Distributed\DistributedPatternsTest::test_can_insert_valid_idempotency_key
+Database not available: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/tests/Integration/Distributed/DistributedPatternsTest.php:32
+/home/user/project/app/vendor/bin/phpunit:122
+
+4) Tests\Integration\Distributed\DistributedPatternsTest::test_simulate_traceable_event_command
+Database not available: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/tests/Integration/Distributed/DistributedPatternsTest.php:32
+/home/user/project/app/vendor/bin/phpunit:122
+
+5) Tests\Integration\Distributed\DistributedPatternsTest::test_full_outbox_flow_with_correlation
+Database not available: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/tests/Integration/Distributed/DistributedPatternsTest.php:32
+/home/user/project/app/vendor/bin/phpunit:122
+
+6) Tests\Integration\Distributed\DistributedPatternsTest::test_outbox_publish_command_executes
+Database not available: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/tests/Integration/Distributed/DistributedPatternsTest.php:32
+/home/user/project/app/vendor/bin/phpunit:122
+
+7) Tests\Integration\Distributed\DistributedPatternsTest::test_queue_work_command_executes
+Database not available: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/tests/Integration/Distributed/DistributedPatternsTest.php:32
+/home/user/project/app/vendor/bin/phpunit:122
+
+8) Tests\Integration\Distributed\DistributedPatternsTest::test_fixed_cli_commands_run
+Database not available: Database reconnection failed: SQLSTATE[HY000] [2002] Connection refused
+
+/home/user/project/app/tests/Integration/Distributed/DistributedPatternsTest.php:32
+/home/user/project/app/vendor/bin/phpunit:122
+
+9) Tests\Integration\Distributed\HealthEndpointsTest::test_health_distributed_endpoint_exists_or_skips
+Web server not running on 8090 or endpoint not reachable. Start with php -S 127.0.0.1:8090 -t public
+
+/home/user/project/app/tests/Integration/Distributed/HealthEndpointsTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+10) Tests\Integration\Distributed\HealthEndpointsTest::test_metrics_distributed_returns_prometheus_or_json
+Web server not reachable for metrics test.
+
+/home/user/project/app/tests/Integration/Distributed/HealthEndpointsTest.php:38
+/home/user/project/app/vendor/bin/phpunit:122
+
+ERRORS!
+Tests: 2215, Assertions: 4119, Errors: 44, Failures: 2, Skipped: 10.

@@ -1,0 +1,675 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services;
+
+use Core\Database;
+use App\Contracts\CacheInterface;
+use App\Models\BulkOperation;
+use App\Contracts\NotificationServiceInterface;
+use App\Contracts\LoggerInterface;
+
+/**
+ * سرویس عملیات گروهی
+ * 
+ * قابل استفاده برای هر Module برای انجام عملیات دسته‌جمعی
+ * - تغییرات گروهی
+ * - حذف گروهی
+ * - صادرات
+ * - وارد‌سازی
+ * 
+ * @package App\Services
+ */
+class BulkOperationsService
+{
+    private BulkOperation $bulkOperationModel;
+    private ?NotificationServiceInterface $notificationService;
+    private CacheInterface $cache;
+    private \Core\PathResolver $paths;
+
+    private const MAX_BULK_ITEMS = 1000;
+    private const BATCH_SIZE = 100;
+
+    private \Core\Database $db;
+    private \App\Contracts\LoggerInterface $logger;
+    private ?\App\Contracts\OutboxServiceInterface $outbox = null;
+    public function __construct(
+        \Core\Database $db,
+        \App\Contracts\LoggerInterface $logger,
+        BulkOperation $bulkOperationModel,
+        CacheInterface $cache,
+        \Core\PathResolver $paths,
+        ?NotificationServiceInterface $notificationService = null,
+        ?\App\Contracts\OutboxServiceInterface $outbox = null
+    ) {
+        $this->db = $db;
+        $this->logger = $logger;
+        $this->outbox = $outbox;
+        $this->bulkOperationModel = $bulkOperationModel;
+        $this->cache = $cache;
+        $this->paths = $paths;
+        $this->notificationService = $notificationService;
+    }
+
+    /**
+     * به‌روزرسانی گروهی
+     * 
+     * @param string $table نام جدول
+     * @param list<int|string> $ids آرایه IDها
+     * @param array<string, mixed> $data داده‌های جدید ['column' => 'value']
+     * @param string $idColumn نام ستون ID (پیش‌فرض: 'id')
+     * @return array{success:true,message:string,data:array{updated:int}} نتیجه عملیات
+     */
+    public function bulkUpdate(
+        string $table,
+        array $ids,
+        array $data,
+        string $idColumn = 'id'
+    ): array {
+        if (empty($ids)) {
+            throw new \Core\Exceptions\BusinessException('هیچ آیتمی انتخاب نشده است.');
+        }
+
+        if (count($ids) > self::MAX_BULK_ITEMS) {
+            throw new \Core\Exceptions\BusinessException('حداکثر ' . self::MAX_BULK_ITEMS . ' آیتم قابل پردازش است.');
+        }
+
+        if (empty($data)) {
+            throw new \Core\Exceptions\BusinessException('داده‌ای برای به‌روزرسانی وجود ندارد.');
+        }
+
+        try {
+            $this->db->beginTransaction();
+
+            $updated = 0;
+            $batches = array_chunk($ids, self::BATCH_SIZE);
+
+            foreach ($batches as $batch) {
+                $updated += $this->bulkOperationModel->applyBatchUpdate($table, $batch, $data, $idColumn);
+            }
+
+            $this->db->commit();
+
+            $this->logOperation('bulk_update', $table, [
+                'count' => $updated,
+                'data' => $data,
+            ]);
+
+            return [
+                'success' => true,
+                'message' => "{$updated} رکورد به‌روز شد.",
+                'data' => ['updated' => $updated]
+            ];
+
+        } catch (\Exception $e) {
+            $this->db->rollback();
+            $this->logger->error('bulk_update', ['error' => $e->getMessage(), 'exception' => get_class($e)]);
+            
+            throw new \Core\Exceptions\BusinessException('خطا در به‌روزرسانی گروهی.');
+        }
+    }
+
+    /**
+     * حذف نرم گروهی
+     * 
+     * @param string $table
+     * @param list<int|string> $ids
+     * @param string $idColumn
+     * @param string $deletedColumn نام ستون soft delete
+     * @return array{success:true,message:string,data:array{updated:int}}
+     */
+    public function bulkSoftDelete(
+        string $table,
+        array $ids,
+        string $idColumn = 'id',
+        string $deletedColumn = 'is_deleted'
+    ): array {
+        return $this->bulkUpdate($table, $ids, [
+            $deletedColumn => 1,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ], $idColumn);
+    }
+
+    /**
+     * حذف سخت گروهی (استفاده با احتیاط!)
+     * 
+     * @param string $table
+     * @param list<mixed> $ids
+     * @param string $idColumn
+     * @param bool $confirm تأیید حذف
+     * @return array<string, mixed>
+     */
+    public function bulkHardDelete(
+        string $table,
+        array $ids,
+        string $idColumn = 'id',
+        bool $confirm = false
+    ): array {
+        if (!$confirm) {
+            throw new \Core\Exceptions\BusinessException('حذف سخت نیاز به تأیید دارد.');
+        }
+
+        $normalizedIds = [];
+        foreach ($ids as $id) {
+            if (is_int($id) || is_string($id)) {
+                $normalizedIds[] = $id;
+            }
+        }
+        $ids = $normalizedIds;
+
+        if (empty($ids)) {
+            throw new \Core\Exceptions\BusinessException('هیچ آیتمی انتخاب نشده است.');
+        }
+
+        if (count($ids) > self::MAX_BULK_ITEMS) {
+            throw new \Core\Exceptions\BusinessException('حداکثر ' . self::MAX_BULK_ITEMS . ' آیتم قابل پردازش است.');
+        }
+
+        try {
+            $this->db->beginTransaction();
+
+            $deleted = 0;
+            $batches = array_chunk($ids, self::BATCH_SIZE);
+
+            foreach ($batches as $batch) {
+                $deleted += $this->bulkOperationModel->applyBatchDelete($table, $batch, $idColumn);
+            }
+
+            $this->db->commit();
+
+            $this->logOperation('bulk_hard_delete', $table, [
+                'count' => $deleted,
+            ], 'warning');
+
+            return [
+                'success' => true,
+                'message' => "{$deleted} رکورد حذف شد.",
+                'data' => ['deleted' => $deleted]
+            ];
+
+        } catch (\Exception $e) {
+            $this->db->rollback();
+            $this->logger->error('bulk_hard_delete', ['error' => $e->getMessage(), 'exception' => get_class($e)]);
+            
+            throw new \Core\Exceptions\BusinessException('خطا در حذف گروهی.');
+        }
+    }
+
+    /**
+     * صادرات به CSV
+     * 
+     * @param string $sql کوئری SELECT
+     * @param array<string, mixed> $params پارامترهای کوئری
+     * @param list<string> $headers هدرهای CSV (فارسی)
+     * @param string $filename نام فایل
+     * @return array<string, mixed>
+     */
+    /**
+     * @param string|array<mixed> $sqlOrRows
+     * @param array<int|string, mixed> $params
+     * @param list<string> $headers
+     * @return array<string, mixed>
+     */
+    public function exportToCSV(
+        string|array $sqlOrRows,
+        array $params = [],
+        array $headers = [],
+        string $filename = 'export'
+    ): array {
+        try {
+            // ایجاد نام فایل
+            $filename = $this->sanitizeFilename($filename);
+            $filename .= '_' . date('Y-m-d_His') . '.csv';
+            
+            $filepath = $this->getStoragePath('exports/' . $filename);
+
+            // اطمینان از وجود دایرکتوری
+            $dir = dirname($filepath);
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+
+            $rows = null;
+            if (is_array($sqlOrRows)) {
+                $rows = $sqlOrRows;
+            } else {
+                $stmt = $this->db->query($sqlOrRows, $params);
+            }
+
+            // ایجاد فایل CSV
+            $file = fopen($filepath, 'w');
+            if ($file === false) {
+                throw new \Core\Exceptions\BusinessException('امکان ایجاد فایل خروجی وجود ندارد.');
+            }
+            
+            // UTF-8 BOM برای Excel
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            $count = 0;
+            $firstRow = true;
+
+            if ($rows !== null) {
+                foreach ($rows as $row) {
+                    $row = is_object($row) ? (array)$row : (array)$row;
+                    if ($firstRow) {
+                        if (empty($headers)) {
+                            $headers = array_keys((array)$row);
+                        }
+                        fputcsv($file, (array)$headers);
+                        $firstRow = false;
+                    }
+                    $csvRow = array_map(
+                        static fn($v): bool|float|int|string|null => is_scalar($v) || $v === null ? $v : str_value($v),
+                        array_values((array)$row)
+                    );
+                    fputcsv($file, $csvRow);
+                    $count++;
+                }
+            } else {
+                while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+                    if ($firstRow) {
+                        if (empty($headers)) {
+                            $headers = array_keys((array)$row);
+                        }
+                        fputcsv($file, (array)$headers);
+                        $firstRow = false;
+                    }
+                    $csvRow = array_map(
+                        static fn($v): bool|float|int|string|null => is_scalar($v) || $v === null ? $v : str_value($v),
+                        array_values((array)$row)
+                    );
+                    fputcsv($file, $csvRow);
+                    $count++;
+                }
+            }
+
+            fclose($file);
+
+            if ($count === 0) {
+                @unlink($filepath);
+                throw new \Core\Exceptions\BusinessException('هیچ داده‌ای برای صادرات وجود ندارد.');
+            }
+
+            $this->logOperation('export_csv', $filename, [
+                'count' => $count,
+            ]);
+
+            return [
+                'success' => true,
+                'message' => $count . ' رکورد صادر شد.',
+                'data' => [
+                    'file_path' => $filepath,
+                    'filename' => $filename,
+                    'count' => $count,
+                ]
+            ];
+
+        } catch (\Exception $e) {
+            $this->logger->error('export_csv', ['error' => $e->getMessage(), 'exception' => get_class($e)]);
+            throw new \Core\Exceptions\BusinessException('خطا در صادرات فایل: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * صادرات به JSON
+     * 
+     * @param string $sql
+     * @param array<string, mixed> $params
+     * @param string $filename
+     * @return array<string, mixed>
+     */
+    public function exportToJSON(
+        string $sql,
+        array $params = [],
+        string $filename = 'export'
+    ): array {
+        try {
+            $filename = $this->sanitizeFilename($filename);
+            $filename .= '_' . date('Y-m-d_His') . '.json';
+            
+            $filepath = $this->getStoragePath('exports/' . $filename);
+
+            $dir = dirname($filepath);
+            if (!is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+
+            $stmt = $this->db->query($sql, $params);
+            
+            $file = fopen($filepath, 'w');
+            if ($file === false) {
+                throw new \Core\Exceptions\BusinessException('امکان ایجاد فایل خروجی وجود ندارد.');
+            }
+            fwrite($file, "[\n");
+            
+            $count = 0;
+            $first = true;
+            
+            while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+                if (!$first) {
+                    fwrite($file, ",\n");
+                }
+                fwrite($file, (string)json_encode($row, JSON_UNESCAPED_UNICODE));
+                $first = false;
+                $count++;
+            }
+            
+            fwrite($file, "\n]");
+            fclose($file);
+
+            if ($count === 0) {
+                @unlink($filepath);
+                throw new \Core\Exceptions\BusinessException('هیچ داده‌ای برای صادرات وجود ندارد.');
+            }
+
+            $this->logOperation('export_json', $filename, [
+                'count' => $count,
+            ]);
+
+            return [
+                'success' => true,
+                'message' => $count . ' رکورد صادر شد.',
+                'data' => [
+                    'file_path' => $filepath,
+                    'filename' => $filename,
+                    'count' => $count,
+                ]
+            ];
+
+        } catch (\Exception $e) {
+            $this->logger->error('export_json', ['error' => $e->getMessage(), 'exception' => get_class($e)]);
+            throw new \Core\Exceptions\BusinessException('خطا در صادرات فایل.');
+        }
+    }
+
+    /**
+     * وارد‌سازی از CSV
+     * 
+     * @param string $filePath مسیر فایل
+     * @param callable $processor تابع پردازش هر سطر: fn($row) => bool
+     * @param bool $hasHeader آیا سطر اول header است؟
+     * @return array<string, mixed>
+     */
+    public function importFromCSV(
+        string $filePath,
+        callable $processor,
+        bool $hasHeader = true
+    ): array {
+        if (!file_exists($filePath)) {
+            throw new \Core\Exceptions\BusinessException('فایل یافت نشد.');
+        }
+
+        try {
+            $file = fopen($filePath, 'r');
+            if ($file === false) {
+                throw new \Core\Exceptions\BusinessException('امکان باز کردن فایل وجود ندارد.');
+            }
+            
+            if ($hasHeader) {
+                fgetcsv($file); // Skip header
+            }
+
+            $results = [
+                'total' => 0,
+                'success' => 0,
+                'failed' => 0,
+                'errors' => [],
+            ];
+
+            $this->db->beginTransaction();
+
+            while (($row = fgetcsv($file)) !== FALSE) {
+                $results['total']++;
+
+                try {
+                    if ($processor($row)) {
+                        $results['success']++;
+                    } else {
+                        $results['failed']++;
+                        $results['errors'][] = "Row {$results['total']}: پردازش ناموفق";
+                    }
+                } catch (\Exception $e) {
+                    $results['failed']++;
+                    $results['errors'][] = "Row {$results['total']}: " . $e->getMessage();
+                }
+            }
+
+            fclose($file);
+            $this->db->commit();
+
+            $this->logOperation('import_csv', basename($filePath), $results);
+
+            return [
+                'success' => true,
+                'message' => "{$results['success']} از {$results['total']} رکورد وارد شد.",
+                'data' => $results
+            ];
+
+        } catch (\Exception $e) {
+            $this->db->rollback();
+            $this->logger->error('import_csv', ['error' => $e->getMessage(), 'exception' => get_class($e)]);
+            
+            throw new \Core\Exceptions\BusinessException('خطا در وارد‌سازی فایل.');
+        }
+    }
+
+    /**
+     * ارسال نوتیفیکیشن گروهی
+     * 
+     * @param array<string, mixed> $userIds
+     * @param string $type
+     * @param string $title
+     * @param string $message
+     * @return array<string, mixed>
+     */
+    public function bulkNotify(
+        array $userIds,
+        string $type,
+        string $title,
+        string $message
+    ): array {
+        if (!$this->notificationService) {
+            throw new \Core\Exceptions\BusinessException('سرویس نوتیفیکیشن در دسترس نیست.');
+        }
+
+        if (empty($userIds)) {
+            throw new \Core\Exceptions\BusinessException('هیچ کاربری انتخاب نشده است.');
+        }
+
+        $results = [
+            'total' => count($userIds),
+            'success' => 0,
+            'failed' => 0,
+        ];
+
+        $batches = array_chunk($userIds, self::BATCH_SIZE);
+
+        foreach ($batches as $batch) {
+            foreach ($batch as $userId) {
+                if (!is_int($userId) && !is_string($userId)) {
+                    $results['failed']++;
+                    $this->logger->warning('bulk_notify.invalid_user_id', ['user_id' => $userId]);
+                    continue;
+                }
+
+                try {
+                    $this->outbox?->record('notification', $userId, 'notification.requested', [
+                        'user_id' => $userId,
+                        'type' => $type,
+                        'title' => $title,
+                        'message' => $message,
+                        'data' => []
+                    ]);
+                    $results['success']++;
+                } catch (\Exception $e) {
+                    $results['failed']++;
+                    $this->logger->error('bulk_notify.send_failed', [
+                        'user_id' => $userId,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+        }
+
+        $this->logOperation('bulk_notify', 'notifications', $results);
+
+        return [
+            'success' => true,
+            'message' => "نوتیفیکیشن به {$results['success']} کاربر ارسال شد.",
+            'data' => $results
+        ];
+    }
+
+    /**
+     * اجرای کوئری سفارشی گروهی
+     * 
+     * @param string $sql
+     * @param list<array<int|string, scalar|null>> $batchParams آرایه‌ای از مجموعه پارامترها
+     * @return array<string, mixed>
+     */
+    public function executeCustomBulk(string $sql, array $batchParams): array
+    {
+        try {
+            $cleanedSql = \strtolower(\trim((string)$sql));
+            if (\stripos($cleanedSql, 'update') !== 0) {
+                throw new \Core\Exceptions\BusinessException('Only UPDATE statements are allowed.');
+            }
+
+            $allowedTables = [
+                'users', 'transactions', 'submissions', 'content_submissions',
+                'custom_tasks', 'bug_reports', 'bulk_operations', 'content_revenues', 'banners'
+            ];
+            // L-30 Fix: استخراج دقیق جدول هدف از UPDATE به‌جای strpos شکننده (که نام جدول را در WHERE/مقادیر هم match می‌کرد).
+            if (!\preg_match('/^update\\s+`?([a-z0-9_]+)`?\\s+set\\b/i', $cleanedSql, $m)) {
+                throw new \Core\Exceptions\BusinessException('Malformed UPDATE statement.');
+            }
+            $targetTable = $m[1];
+            if (!\in_array($targetTable, $allowedTables, true)) {
+                throw new \Core\Exceptions\BusinessException('Batch execution is only allowed on whitelisted tables.');
+            }
+
+            $this->db->beginTransaction();
+            $stmt = $this->db->prepare($sql);
+            $affected = 0;
+
+            foreach ($batchParams as $params) {
+                $stmt->execute($params);
+                $affected += $stmt->rowCount();
+            }
+            $this->db->commit();
+
+            return [
+                'success' => true,
+                'message' => "{$affected} رکورد تحت تأثیر قرار گرفت.",
+                'data' => ['affected' => $affected]
+            ];
+
+        } catch (\Exception $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollback();
+            }
+            $this->logger->error('custom_bulk', ['error' => $e->getMessage(), 'exception' => get_class($e)]);
+            
+            throw new \Core\Exceptions\BusinessException('خطا در اجرای عملیات گروهی.');
+        }
+    }
+
+    // ==================== Private Helper Methods ====================
+
+    /**
+     * به‌روزرسانی یک batch
+     */
+    /**
+     * @param list<mixed> $ids
+     * @param array<string, mixed> $data
+     */
+    /**
+     * پاک‌سازی نام فایل
+     */
+    private function sanitizeFilename(string $filename): string
+    {
+        return (string)preg_replace('/[^a-zA-Z0-9_\-]/', '', $filename);
+    }
+
+    /**
+     * دریافت مسیر ذخیره‌سازی
+     */
+    private function getStoragePath(string $path): string
+    {
+        return $this->paths->storage($path);
+    }
+
+    /**
+     * لاگ عملیات
+     */
+    /** @param array<string, mixed> $details */
+    private function logOperation(
+    string $operation,
+    string $target,
+    array $details = [],
+    string $level = 'info'
+): void {
+    $method = in_array($level, ['debug','info','notice','warning','error','critical','alert','emergency'], true)
+        ? $level
+        : 'info';
+
+    $this->logger->{$method}(sprintf(
+        'Operation: %s | Target: %s | Details: %s',
+        $operation,
+        $target,
+        json_encode($details, JSON_UNESCAPED_UNICODE)
+    ), [
+        'channel' => 'bulk_operations',
+        'operation' => $operation,
+        'target' => $target,
+        'details' => $details,
+    ]);
+}
+
+    /**
+     * @return list<string>
+     */
+    private function scanRedisKeys(\Redis $redis, string $pattern, int $count = 100): array
+    {
+        // Prefer the application's non-blocking scanKeys adapter contract when
+        // available; otherwise fall back to native phpredis SCAN.
+        if (method_exists($redis, 'scanKeys') || is_callable([$redis, 'scanKeys'])) {
+            $keys = call_user_func([$redis, 'scanKeys'], $pattern);
+            return is_array($keys) ? array_values(array_filter($keys, 'is_string')) : [];
+        }
+
+        $keys = [];
+        $iterator = null;
+        do {
+            $batch = $redis->scan($iterator, $pattern, $count);
+            if (is_array($batch)) {
+                foreach ($batch as $key) {
+                    if (is_string($key)) {
+                        $keys[] = $key;
+                    }
+                }
+            }
+        } while ($iterator !== 0 && $iterator !== '0' && $iterator !== null && $batch !== false);
+
+        return $keys;
+    }
+
+    /**
+     * پاک‌سازی Cache
+     */
+    public function clearCache(string $pattern = '*'): void
+    {
+        if ($this->cache->driver() === 'redis') {
+            $redis = $this->cache->redis();
+            if ($redis) {
+                // ✅ Using scanKeys() instead of keys() for performance
+                $keys = $this->scanRedisKeys($redis, $pattern);
+                if (!empty($keys)) {
+                    $redis->del($keys);
+                }
+            }
+        }
+    }
+}
+

@@ -1,0 +1,1200 @@
+<?php
+
+namespace App\Models;
+
+use Core\Model;
+
+class Notification extends Model
+
+{
+    protected array $fillable = [
+        'user_id', 'type', 'title', 'message', 'data',
+        'action_url', 'action_text', 'priority',
+        'is_read', 'is_archived', 'expires_at',
+        'scheduled_at', 'channel', 'group_key',
+    ];
+
+    protected static string $table = 'notifications';
+
+    public function __construct(\Core\Database $db) {
+        parent::__construct($db);
+    }
+
+    // ─── انواع نوتیفیکیشن ────────────────────────────────────────────────────
+    public const TYPE_SYSTEM     = 'system';
+    public const TYPE_DEPOSIT    = 'deposit';
+    public const TYPE_WITHDRAWAL = 'withdrawal';
+    public const TYPE_TASK       = 'task';
+    public const TYPE_KYC        = 'kyc';
+    public const TYPE_LOTTERY    = 'lottery';
+    public const TYPE_REFERRAL   = 'referral';
+    public const TYPE_SECURITY   = 'security';
+    public const TYPE_INVESTMENT = 'investment';
+    public const TYPE_INFO       = 'info';
+    public const TYPE_MARKETING  = 'marketing';
+
+    // ─── کانال‌های ارسال ──────────────────────────────────────────────────────
+    public const CHANNEL_IN_APP = 'in_app';
+    public const CHANNEL_PUSH   = 'push';
+    public const CHANNEL_EMAIL  = 'email';
+    public const CHANNEL_SMS    = 'sms';
+
+    // ─── اولویت‌ها ────────────────────────────────────────────────────────────
+    public const PRIORITY_LOW    = 'low';
+    public const PRIORITY_NORMAL = 'normal';
+    public const PRIORITY_HIGH   = 'high';
+    public const PRIORITY_URGENT = 'urgent';
+
+    /**
+     * ایجاد نوتیفیکیشن
+     */
+    /** @param array<string, mixed> $data */
+    public function create(array $data): int|false
+    {
+        $now = date('Y-m-d H:i:s');
+
+        $stmt = $this->db->query(
+            "INSERT INTO notifications
+                (user_id, type, title, message, data, action_url, action_text,
+                 priority, is_read, is_archived, expires_at, channel, ad_id, campaign_id, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?)",
+            [
+                $data['user_id']      ?? null,
+                $data['type']         ?? self::TYPE_SYSTEM,
+                $data['title']        ?? '',
+                $data['message']      ?? '',
+                isset($data['data'])
+                    ? (is_array($data['data']) ? json_encode($data['data'], JSON_UNESCAPED_UNICODE) : $data['data'])
+                    : null,
+                $data['action_url']   ?? null,
+                $data['action_text']  ?? null,
+                $data['priority']     ?? self::PRIORITY_NORMAL,
+                $data['expires_at']   ?? null,
+                $data['channel']      ?? self::CHANNEL_IN_APP,
+                $data['ad_id']        ?? null,
+                $data['campaign_id']  ?? null,
+                $now,
+            ]
+        );
+
+        $id = (int)$this->db->lastInsertId();
+        return $id > 0 ? $id : false;
+    }
+
+    /**
+     * آخرین نوتیفیکیشن‌های کاربر
+     */
+    /** @return list<\stdClass> */
+    public function getLatestForUser(int $userId, int $limit = 10): array
+    {
+        $limit = max(1, min(200, $limit));
+
+        $stmt = $this->db->prepare(
+            "SELECT *
+             FROM notifications
+             WHERE user_id     = ?
+               AND is_archived = 0
+               AND (expires_at  IS NULL OR expires_at  >  NOW())
+             ORDER BY id DESC
+             LIMIT ?"
+        );
+        $stmt->bindValue(1, $userId, \PDO::PARAM_INT);
+        $stmt->bindValue(2, $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_OBJ);
+    }
+
+    /**
+     * نوتیفیکیشن‌های کاربر با فیلتر، مرتب‌سازی اولویت و pagination
+     */
+    /** @return list<\stdClass> */
+    public function getUserNotifications(
+        int  $userId,
+        bool $onlyUnread = false,
+        int  $limit      = 20,
+        int  $offset     = 0
+    ): array {
+        $limit  = max(1, min(200, $limit));
+        $offset = max(0, $offset);
+
+        $sql    = "SELECT *
+                   FROM notifications
+                   WHERE user_id     = ?
+                     AND is_archived = 0
+                     AND (expires_at  IS NULL OR expires_at  >  NOW())";
+        $params = [$userId];
+
+        if ($onlyUnread) {
+            $sql .= " AND is_read = 0";
+        }
+
+        $sql .= " ORDER BY
+                    CASE priority
+                      WHEN 'urgent' THEN 4
+                      WHEN 'high'   THEN 3
+                      WHEN 'normal' THEN 2
+                      WHEN 'low'    THEN 1
+                      ELSE 0
+                    END DESC,
+                    created_at DESC
+                  LIMIT ? OFFSET ?";
+
+        $stmt = $this->db->prepare($sql);
+        $index = 1;
+        foreach ($params as $val) {
+            $stmt->bindValue($index++, $val);
+        }
+        $stmt->bindValue($index++, $limit, \PDO::PARAM_INT);
+        $stmt->bindValue($index++, $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_OBJ);
+    }
+
+    /** @return list<\stdClass> */
+    public function getNewNotificationsAfterId(int $userId, int $lastId, int $limit = 20): array
+    {
+        $limit = max(1, min(200, $limit));
+
+        $stmt = $this->db->prepare(
+            "SELECT *
+             FROM notifications
+             WHERE user_id     = ?
+               AND id          > ?
+               AND (expires_at  IS NULL OR expires_at  >  NOW())
+             ORDER BY id ASC
+             LIMIT ?"
+        );
+        $stmt->bindValue(1, $userId, \PDO::PARAM_INT);
+        $stmt->bindValue(2, $lastId, \PDO::PARAM_INT);
+        $stmt->bindValue(3, $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_OBJ);
+    }
+
+    /**
+     * تعداد کل (برای pagination)
+     */
+    public function countUserNotifications(int $userId, bool $onlyUnread = false): int
+    {
+        $sql    = "SELECT COUNT(*) AS total
+                   FROM notifications
+                   WHERE user_id     = ?
+                     AND is_archived = 0
+                     AND (expires_at  IS NULL OR expires_at  >  NOW())";
+        $params = [$userId];
+
+        if ($onlyUnread) {
+            $sql .= " AND is_read = 0";
+        }
+
+        /** @var object{total: int} $row */
+        $row = $this->db->query($sql, $params)->fetch(\PDO::FETCH_OBJ);
+        return (int)($row->total ?? 0);
+    }
+
+    /**
+     * تعداد خوانده‌نشده
+     */
+    public function countUnread(int $userId): int
+    {
+        /** @var object{total: int} $row */
+        $row = $this->db->query(
+            "SELECT COUNT(*) AS total
+             FROM notifications
+             WHERE user_id     = ?
+               AND is_read     = 0
+               AND is_archived = 0
+               AND (expires_at  IS NULL OR expires_at  >  NOW())",
+            [$userId]
+        )->fetch(\PDO::FETCH_OBJ);
+
+        return (int)($row->total ?? 0);
+    }
+
+    /** alias */
+    public function getUnreadCount(int $userId): int
+    {
+        return $this->countUnread($userId);
+    }
+
+    /**
+     * علامت خواندن یک نوتیفیکیشن
+     */
+    public function markAsRead(int $id, int $userId): bool
+    {
+        $now  = date('Y-m-d H:i:s');
+        $stmt = $this->db->query(
+            "UPDATE notifications
+             SET is_read = 1, read_at = ?
+             WHERE id = ? AND user_id = ?",
+            [$now, $id, $userId]
+        );
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * علامت خواندن همه → bool
+     */
+    public function markAllAsRead(int $userId): bool
+    {
+        $now  = date('Y-m-d H:i:s');
+        $stmt = $this->db->query(
+            "UPDATE notifications
+             SET is_read = 1, read_at = ?
+             WHERE user_id = ? AND is_read = 0",
+            [$now, $userId]
+        );
+        return true;
+    }
+
+    /**
+     * تعداد رکوردهای markAllAsRead
+     */
+    public function markAllAsReadCount(int $userId): int
+    {
+        $now  = date('Y-m-d H:i:s');
+        $stmt = $this->db->query(
+            "UPDATE notifications
+             SET is_read = 1, read_at = ?
+             WHERE user_id = ? AND is_read = 0",
+            [$now, $userId]
+        );
+        return $stmt->rowCount();
+    }
+
+    /**
+     * ثبت کلیک (analytics) — ستون‌کردن clicked_at برای محاسبه CTR
+     */
+    public function recordClick(int $id, int $userId): bool
+    {
+        $stmt = $this->db->query(
+            "UPDATE notifications
+             SET clicked_at = NOW()
+             WHERE id = ? AND user_id = ? AND clicked_at IS NULL",
+            [$id, $userId]
+        );
+        return (bool)$stmt->rowCount();
+    }
+
+    /**
+     * ثبت رویداد نمایش نوتیف روی گوشی (از سمت اپ)
+     */
+    public function recordShown(int $id, int $userId, ?string $source = null): bool
+    {
+        $stmt = $this->db->query(
+            "UPDATE notifications
+             SET shown_at = COALESCE(shown_at, NOW()),
+                 engagement_source = COALESCE(engagement_source, ?)
+             WHERE id = ? AND user_id = ? AND is_deleted = 0",
+            [$source, $id, $userId]
+        );
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * ثبت رویداد باز شدن/شروع خواندن نوتیف
+     */
+    public function recordOpened(int $id, int $userId, ?string $source = null): bool
+    {
+        $stmt = $this->db->query(
+            "UPDATE notifications
+             SET opened_at = COALESCE(opened_at, NOW()),
+                 is_read = 1,
+                 read_at = COALESCE(read_at, NOW()),
+                 engagement_source = COALESCE(engagement_source, ?)
+             WHERE id = ? AND user_id = ? AND is_deleted = 0",
+            [$source, $id, $userId]
+        );
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * ثبت رویداد بسته شدن نوتیف (خروج) + محاسبه‌ی مدت خواندن
+     * @param int|null $durationSec اگر اپ بفرستد، از آن استفاده می‌شود؛ وگرنه از opened_at محاسبه می‌شود
+     */
+    public function recordClosed(int $id, int $userId, ?int $durationSec = null): bool
+    {
+        if ($durationSec !== null) {
+            $durationSec = max(0, $durationSec);
+            $stmt = $this->db->query(
+                "UPDATE notifications
+                 SET closed_at = COALESCE(closed_at, NOW()),
+                     read_duration_sec = COALESCE(read_duration_sec, ?)
+                 WHERE id = ? AND user_id = ? AND is_deleted = 0",
+                [$durationSec, $id, $userId]
+            );
+            return $stmt->rowCount() > 0;
+        }
+
+        $stmt = $this->db->query(
+            "UPDATE notifications
+             SET closed_at = COALESCE(closed_at, NOW()),
+                 read_duration_sec = COALESCE(read_duration_sec,
+                     TIMESTAMPDIFF(SECOND, COALESCE(opened_at, shown_at, NOW()), NOW()))
+             WHERE id = ? AND user_id = ? AND is_deleted = 0",
+            [$id, $userId]
+        );
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * ثبت رویداد بسته شدن بدون تعامل (dismiss)
+     */
+    public function recordDismissed(int $id, int $userId): bool
+    {
+        $stmt = $this->db->query(
+            "UPDATE notifications
+             SET dismissed_at = COALESCE(dismissed_at, NOW()),
+                 closed_at = COALESCE(closed_at, NOW())
+             WHERE id = ? AND user_id = ? AND is_deleted = 0",
+            [$id, $userId]
+        );
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * آمار engagement یک کمپین تبلیغاتی (ads.id) — برای تبلیغ‌دهنده
+     * «زود/دیر بستن» با percentiles از مدتِ خواندن و میانگین مدت محاسبه می‌شود.
+     * @return array<string, mixed>|null
+     */
+    public function getAdAnalytics(int $adId, int $days = 30): ?array
+    {
+        $days = max(1, min(365, $days));
+
+        $sql = "SELECT
+                    COUNT(*)                                                            AS sent,
+                    SUM(is_read = 1)                                                    AS read_count,
+                    SUM(is_read = 0 AND shown_at IS NOT NULL)                           AS seen_not_read,
+                    SUM(clicked_at IS NOT NULL)                                         AS clicked,
+                    SUM(dismissed_at IS NOT NULL)                                       AS dismissed,
+                    SUM(shown_at IS NOT NULL)                                           AS shown,
+                    SUM(read_duration_sec IS NOT NULL)                                  AS with_duration,
+                    ROUND(SUM(is_read = 1) / NULLIF(COUNT(*), 0) * 100, 1)              AS read_rate,
+                    ROUND(SUM(clicked_at IS NOT NULL) / NULLIF(COUNT(*), 0) * 100, 1)   AS ctr,
+                    ROUND(AVG(read_duration_sec), 1)                                    AS avg_duration_sec,
+                    ROUND(AVG(CASE WHEN read_duration_sec IS NOT NULL
+                        THEN read_duration_sec END), 1)                                  AS avg_read_sec,
+                    MAX(read_duration_sec)                                              AS max_duration_sec,
+                    MIN(read_duration_sec)                                              AS min_duration_sec,
+                    ROUND(AVG(CASE WHEN read_at IS NOT NULL
+                        THEN TIMESTAMPDIFF(SECOND, created_at, read_at) END), 1)        AS avg_time_to_read_sec,
+                    COUNT(DISTINCT user_id)                                             AS unique_users,
+                    SUM(read_duration_sec IS NOT NULL AND read_duration_sec < 5)        AS fast_close,
+                    SUM(read_duration_sec IS NOT NULL AND read_duration_sec BETWEEN 5 AND 30) AS medium_close,
+                    SUM(read_duration_sec IS NOT NULL AND read_duration_sec > 30)       AS deep_read
+                 FROM notifications
+                 WHERE ad_id = ?
+                   AND is_deleted = 0
+                   AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)";
+        $row = $this->db->fetch($sql, [$adId, $days]);
+        if (!$row) {
+            return null;
+        }
+        $stats = (array)$row;
+
+        // برچسب‌های تفسیری برای سادگی مصرفِ فرانت
+        $total = (int)($stats['sent'] ?? 0);
+        $stats['fast_close_rate'] = $total > 0 ? round(((int)($stats['fast_close'] ?? 0) / $total) * 100, 1) : 0;
+        $stats['deep_read_rate']  = $total > 0 ? round(((int)($stats['deep_read'] ?? 0) / $total) * 100, 1) : 0;
+        $stats['dismissed_rate']  = $total > 0 ? round(((int)($stats['dismissed'] ?? 0) / $total) * 100, 1) : 0;
+
+        return $stats;
+    }
+
+    /**
+     * لیست نوتیف‌های یک کمپین تبلیغاتی (برای جدول جزئیات تبلیغ‌دهنده)
+     * @return list<\stdClass>
+     */
+    public function getAdNotifications(int $adId, int $limit = 100, int $offset = 0): array
+    {
+        $limit  = max(1, min(500, $limit));
+        $offset = max(0, $offset);
+
+        $stmt = $this->db->prepare(
+            "SELECT id, user_id, title, is_read, read_at, clicked_at,
+                    shown_at, opened_at, closed_at, dismissed_at, read_duration_sec, created_at
+             FROM notifications
+             WHERE ad_id = ? AND is_deleted = 0
+             ORDER BY created_at DESC
+             LIMIT ? OFFSET ?"
+        );
+        $stmt->bindValue(1, $adId, \PDO::PARAM_INT);
+        $stmt->bindValue(2, $limit, \PDO::PARAM_INT);
+        $stmt->bindValue(3, $offset, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_OBJ) ?: [];
+    }
+
+    /**
+     * آیا نوتیف به یک تبلیغ تعلق دارد؟
+     */
+    public function belongsToAd(int $notificationId, int $adId, int $userId): bool
+    {
+        $stmt = $this->db->prepare(
+            "SELECT 1 FROM notifications
+             WHERE id = ? AND ad_id = ? AND user_id = ? AND is_deleted = 0
+             LIMIT 1"
+        );
+        $stmt->execute([$notificationId, $adId, $userId]);
+        return $stmt->fetch() !== false;
+    }
+
+    /**
+     * آرشیو کردن
+     */
+    public function archive(int $notificationId, int $userId): bool
+    {
+        $stmt = $this->db->query(
+            "UPDATE notifications
+             SET is_archived = 1
+             WHERE id = ? AND user_id = ?",
+            [$notificationId, $userId]
+        );
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * حذف منطقی (soft delete)
+     */
+    public function softDelete(int $notificationId, int $userId): bool
+    {
+        $now = date('Y-m-d H:i:s');
+        $stmt = $this->db->query(
+            "UPDATE notifications
+             SET is_deleted = 1,
+                 deleted_at = ?,
+                 is_archived = 1,
+                 archived_at = COALESCE(archived_at, ?),
+                 updated_at = ?
+             WHERE id = ? AND user_id = ?",
+            [$now, $now, $now, $notificationId, $userId]
+        );
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * بازیابی نوتیفیکیشن حذف‌شده
+     */
+    public function restore(int $notificationId, int $userId): bool
+    {
+        $now  = date('Y-m-d H:i:s');
+        $stmt = $this->db->query(
+            "UPDATE notifications
+             SET is_deleted = 0, deleted_at = NULL, updated_at = ?
+             WHERE id = ? AND user_id = ?",
+            [$now, $notificationId, $userId]
+        );
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * آرشیو کردن منقضی‌شده‌ها (cron)
+     */
+    public function archiveExpired(): int
+    {
+        $now  = date('Y-m-d H:i:s');
+        $stmt = $this->db->query(
+            "UPDATE notifications
+             SET is_archived = 1, archived_at = ?, updated_at = ?
+             WHERE is_archived = 0
+               AND is_deleted  = 0
+               AND expires_at  IS NOT NULL
+               AND expires_at  < ?",
+            [$now, $now, $now]
+        );
+        return $stmt->rowCount();
+    }
+
+    /** alias backward-compat */
+    public function deleteExpired(): int
+    {
+        return $this->archiveExpired();
+    }
+
+    /**
+     * حذف فیزیکی نوتیفیکیشن‌های آرشیو‌شده‌ی قدیمی (cron, Section 8.7).
+     * فقط رکوردهایی که هم archived و هم بیشتر از $days روز قدیمی‌اند پاک می‌شوند.
+     * در batchهای کوچک برای جلوگیری از قفل طولانی.
+     */
+    public function purgeArchivedOlderThan(int $days = 90, int $batch = 1000): int
+    {
+        $days  = max(7, min(3650, $days));
+        $batch = max(100, min(10000, $batch));
+
+        $totalDeleted = 0;
+        $safety = 0;
+        while ($safety++ < 1000) {
+            $stmt = $this->db->query(
+                "DELETE FROM notifications
+                 WHERE is_archived = 1
+                   AND archived_at IS NOT NULL
+                   AND archived_at < DATE_SUB(NOW(), INTERVAL ? DAY)
+                 LIMIT " . (int)$batch,
+                [$days]
+            );
+            $deleted = $stmt->rowCount();
+            if ($deleted <= 0) {
+                break;
+            }
+            $totalDeleted += $deleted;
+            if ($deleted < $batch) {
+                break;
+            }
+        }
+        return $totalDeleted;
+    }
+
+    /**
+     * علامت‌گذاری sent برای زمانبندی‌شده‌هایی که خیلی قدیمی مانده‌اند ولی sent نشده‌اند
+     * (poison-message detection برای scheduled notifications).
+     */
+    public function markStaleScheduledAsFailed(int $olderThanHours = 48): int
+    {
+        $olderThanHours = max(1, min(24 * 30, $olderThanHours));
+        $stmt = $this->db->query(
+            "UPDATE notifications
+             SET sent_at = NOW(), updated_at = NOW(), is_archived = 1, archived_at = NOW()
+             WHERE scheduled_at IS NOT NULL
+               AND sent_at IS NULL
+               AND is_deleted = 0
+               AND is_archived = 0
+               AND scheduled_at < DATE_SUB(NOW(), INTERVAL ? HOUR)",
+            [$olderThanHours]
+        );
+        return $stmt->rowCount();
+    }
+
+    /**
+     * نوتیفیکیشن‌های زمان‌بندی‌شده آماده ارسال (cron)
+     */
+    /** @return list<\stdClass> */
+    public function getPendingScheduled(int $limit = 100): array
+    {
+        $limit = max(1, min(500, $limit));
+        $stmt = $this->db->prepare(
+            "SELECT *
+             FROM notifications
+             WHERE scheduled_at IS NOT NULL
+               AND scheduled_at <= NOW()
+               AND sent_at      IS NULL
+               AND is_deleted   = 0
+             ORDER BY
+               CASE priority WHEN 'urgent' THEN 4 WHEN 'high' THEN 3 WHEN 'normal' THEN 2 ELSE 1 END DESC,
+               scheduled_at ASC
+             LIMIT ?"
+        );
+        $stmt->bindValue(1, $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_OBJ);
+    }
+
+    /**
+     * علامت‌گذاری به‌عنوان ارسال‌شده
+     */
+    public function markAsSent(int $id): bool
+    {
+        $now  = date('Y-m-d H:i:s');
+        $stmt = $this->db->query(
+            "UPDATE notifications SET sent_at = ?, updated_at = ? WHERE id = ?",
+            [$now, $now, $id]
+        );
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * دریافت بر اساس نوع
+     */
+    /** @return list<\stdClass> */
+    public function getByType(int $userId, string $type, int $limit = 10): array
+    {
+        $limit = max(1, min(100, $limit));
+        $stmt = $this->db->prepare(
+            "SELECT *
+             FROM notifications
+             WHERE user_id     = ?
+               AND type        = ?
+               AND is_archived = 0
+               AND is_deleted  = 0
+               AND (expires_at IS NULL OR expires_at > NOW())
+             ORDER BY created_at DESC
+             LIMIT ?"
+        );
+        $stmt->bindValue(1, $userId, \PDO::PARAM_INT);
+        $stmt->bindValue(2, $type);
+        $stmt->bindValue(3, $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_OBJ);
+    }
+
+    /**
+     * آمار تجمیعی per-type برای analytics ادمین
+     */
+    /** @return list<\stdClass> */
+    public function getAdminStatsByType(int $days = 30): array
+    {
+        return $this->db->query(
+            "SELECT
+                type,
+                COUNT(*)                                                            AS total_sent,
+                SUM(is_read = 1)                                                    AS total_read,
+                SUM(clicked_at IS NOT NULL)                                         AS total_clicked,
+                ROUND(AVG(is_read) * 100, 1)                                        AS read_rate,
+                ROUND(SUM(clicked_at IS NOT NULL) / NULLIF(COUNT(*), 0) * 100, 1)   AS ctr,
+                AVG(CASE WHEN read_at IS NOT NULL
+                    THEN TIMESTAMPDIFF(SECOND, created_at, read_at) END)            AS avg_time_to_read_sec
+             FROM notifications
+             WHERE is_deleted  = 0
+               AND channel     = 'in_app'
+               AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+             GROUP BY type
+             ORDER BY total_sent DESC",
+            [$days]
+        )->fetchAll(\PDO::FETCH_OBJ);
+    }
+
+    /**
+     * آمار روزانه (sent/read/click per day)
+     */
+    /** @return list<\stdClass> */
+    public function getDailyStats(int $days = 30): array
+    {
+        return $this->db->query(
+            "SELECT
+                DATE(created_at)                                                    AS date,
+                COUNT(*)                                                            AS sent,
+                SUM(is_read = 1)                                                    AS read_count,
+                SUM(clicked_at IS NOT NULL)                                         AS click_count,
+                ROUND(AVG(is_read) * 100, 1)                                        AS read_rate
+             FROM notifications
+             WHERE is_deleted  = 0
+               AND channel     = 'in_app'
+               AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+             GROUP BY DATE(created_at)
+             ORDER BY date DESC",
+            [$days]
+        )->fetchAll(\PDO::FETCH_OBJ);
+    }
+
+    /**
+     * آمار per-segment (KYC / level / status)
+     */
+    /** @return list<\stdClass> */
+    public function getStatsBySegment(int $days = 30): array
+    {
+        return $this->db->query(
+            "SELECT
+                u.kyc_status,
+                u.level,
+                u.status                                                            AS user_status,
+                COUNT(n.id)                                                         AS total_sent,
+                SUM(n.is_read = 1)                                                  AS total_read,
+                ROUND(AVG(n.is_read) * 100, 1)                                      AS read_rate,
+                ROUND(SUM(n.clicked_at IS NOT NULL) / NULLIF(COUNT(n.id), 0) * 100, 1) AS ctr
+             FROM notifications n
+             JOIN users u ON u.id = n.user_id
+             WHERE n.is_deleted  = 0
+               AND n.channel     = 'in_app'
+               AND n.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+               AND u.deleted_at  IS NULL
+             GROUP BY u.kyc_status, u.level, u.status
+             ORDER BY total_sent DESC",
+            [$days]
+        )->fetchAll(\PDO::FETCH_OBJ);
+    }
+
+    /**
+     * notification fatigue — کاربران با انباشت بالای نوتیف نخوانده
+     */
+    /** @return list<\stdClass> */
+    public function getHighUnreadUsers(int $threshold = 20, int $limit = 50): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT user_id, COUNT(*) AS unread_count
+             FROM notifications
+             WHERE is_read    = 0
+               AND is_deleted = 0
+               AND is_archived = 0
+               AND channel    = 'in_app'
+             GROUP BY user_id
+             HAVING unread_count >= ?
+             ORDER BY unread_count DESC
+             LIMIT ?"
+        );
+        $stmt->bindValue(1, $threshold, \PDO::PARAM_INT);
+        $stmt->bindValue(2, $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_OBJ);
+    }
+
+    /**
+     * گروه‌بندی نوتیفیکیشن‌ها — فقط در لایه نمایش
+     * هر رکورد مستقل باقی می‌ماند
+     */
+    /** @return array<int, array{latest: object, count: int, unread: int, ids: list<int>}> */
+    public function getGroupedForUser(int $userId, int $limit = 20): array
+    {
+        $notifications = $this->getUserNotifications($userId, false, $limit);
+        $groups        = [];
+
+        foreach ($notifications as $notif) {
+            $key = $notif->group_key ?? ('single_' . $notif->id);
+
+            if (!isset($groups[$key])) {
+                $groups[$key] = [
+                    'latest' => $notif,
+                    'count'  => 1,
+                    'unread' => (int)!$notif->is_read,
+                    'ids'    => [$notif->id],
+                ];
+            } else {
+                $groups[$key]['count']++;
+                if (!$notif->is_read) {
+                    $groups[$key]['unread']++;
+                }
+                $groups[$key]['ids'][] = $notif->id;
+            }
+        }
+
+        return array_values($groups);
+    }
+
+    // ─── ادغام شده از NotificationModel ──────────────────────────────────────
+
+    /** @return list<\stdClass> */
+    public function getActiveChannelsBySeverity(string $severity): array
+    {
+        return $this->db->table('notification_channels')
+            ->where('is_active', '=', 1)
+            ->whereJsonContains('alert_levels', $severity)
+            ->get();
+    }
+
+    public function logHistory(int $channelId, string $type, string $title, string $message, string $status): bool
+    {
+        return (bool)$this->db->table('notification_history')->insert([
+            'channel_id' => $channelId,
+            'notification_type' => $type,
+            'title' => $title,
+            'message' => $message,
+            'status' => $status,
+            'sent_at' => $status === 'sent' ? date('Y-m-d H:i:s') : null
+        ]);
+    }
+
+    public function getChannel(int $channelId): ?\stdClass
+    {
+        return $this->db->table('notification_channels')
+            ->where('id', '=', $channelId)
+            ->first();
+    }
+
+    /** @return array<string, mixed>|null */
+    public function getOverviewStats(int $days): ?array
+    {
+        $sql = "SELECT
+                    COUNT(*)                                                             AS total_sent,
+                    SUM(is_read = 1)                                                     AS total_read,
+                    SUM(clicked_at IS NOT NULL)                                          AS total_clicked,
+                    COUNT(DISTINCT user_id)                                              AS unique_users,
+                    ROUND(AVG(is_read) * 100, 1)                                         AS read_rate,
+                    ROUND(SUM(clicked_at IS NOT NULL) / NULLIF(COUNT(*), 0) * 100, 1)    AS ctr,
+                    AVG(CASE WHEN read_at IS NOT NULL
+                        THEN TIMESTAMPDIFF(SECOND, created_at, read_at) END)             AS avg_time_to_read_sec,
+                    SUM(is_read = 0 AND is_archived = 0 AND is_deleted = 0)              AS unread_backlog
+                 FROM notifications
+                 WHERE is_deleted  = 0
+                   AND channel     = 'in_app'
+                   AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)";
+        
+        $row = $this->db->fetch($sql, [$days]);
+        return $row ? (array)$row : null;
+    }
+
+    /** @return array<string, mixed>|null */
+    public function getFunnelStats(int $days): ?array
+    {
+        $sql = "SELECT
+                    COUNT(*)                                            AS sent,
+                    SUM(is_read = 1)                                    AS opened,
+                    SUM(clicked_at IS NOT NULL)                         AS clicked,
+                    ROUND(AVG(is_read) * 100, 1)                        AS open_rate,
+                    ROUND(SUM(clicked_at IS NOT NULL) / NULLIF(SUM(is_read), 0) * 100, 1) AS click_after_read_rate,
+                    ROUND(SUM(clicked_at IS NOT NULL) / NULLIF(COUNT(*), 0) * 100, 1)     AS overall_ctr
+                 FROM notifications
+                 WHERE is_deleted  = 0
+                   AND channel     = 'in_app'
+                   AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)";
+        
+        $row = $this->db->fetch($sql, [$days]);
+        return $row ? (array)$row : null;
+    }
+
+    /** @return array<string, mixed>|null */
+    public function getFatigueSummary(int $threshold): ?array
+    {
+        $sql = "SELECT
+                    COUNT(DISTINCT user_id)                                     AS affected_users,
+                    AVG(unread_cnt)                                             AS avg_unread_per_user,
+                    MAX(unread_cnt)                                             AS max_unread
+                 FROM (
+                     SELECT user_id, COUNT(*) AS unread_cnt
+                     FROM notifications
+                     WHERE is_read    = 0
+                       AND is_deleted = 0
+                       AND is_archived = 0
+                       AND channel    = 'in_app'
+                     GROUP BY user_id
+                     HAVING unread_cnt >= ?
+                 ) t";
+        
+        $row = $this->db->fetch($sql, [$threshold]);
+        return $row ? (array)$row : null;
+    }
+
+    /** @return list<\stdClass> */
+    public function getChannelStats(int $days): array
+    {
+        $sql = "SELECT
+                    channel,
+                    COUNT(*)                                                            AS total_sent,
+                    SUM(CASE WHEN channel = 'in_app' THEN is_read ELSE 0 END)          AS total_read,
+                    ROUND(AVG(CASE WHEN channel = 'in_app' THEN is_read END) * 100, 1) AS read_rate
+                 FROM notifications
+                 WHERE is_deleted  = 0
+                   AND created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                 GROUP BY channel
+                 ORDER BY total_sent DESC";
+        
+        return $this->db->fetchAll($sql, [$days]);
+    }
+
+    /** @return list<\stdClass> */
+    public function getTopEngagedUsers(int $days, int $limit): array
+    {
+        $sql = "SELECT
+                    n.user_id,
+                    u.email,
+                    u.full_name,
+                    COUNT(n.id)                                                     AS total_received,
+                    SUM(n.is_read = 1)                                              AS total_read,
+                    SUM(n.clicked_at IS NOT NULL)                                   AS total_clicked,
+                    ROUND(AVG(n.is_read) * 100, 1)                                  AS read_rate
+                 FROM notifications n
+                 JOIN users u ON u.id = n.user_id
+                 WHERE n.is_deleted  = 0
+                   AND n.channel     = 'in_app'
+                   AND n.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                   AND u.deleted_at  IS NULL
+                 GROUP BY n.user_id
+                 HAVING total_received >= 5
+                 ORDER BY read_rate DESC, total_clicked DESC
+                 LIMIT ?";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(1, $days, \PDO::PARAM_INT);
+        $stmt->bindValue(2, $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_OBJ) ?: [];
+    }
+
+    /** @return list<\stdClass> */
+    public function getLeastEngagedUsers(int $days, int $limit): array
+    {
+        $sql = "SELECT
+                    n.user_id,
+                    u.email,
+                    COUNT(n.id)                             AS total_received,
+                    SUM(n.is_read = 1)                      AS total_read,
+                    ROUND(AVG(n.is_read) * 100, 1)          AS read_rate
+                 FROM notifications n
+                 JOIN users u ON u.id = n.user_id
+                 WHERE n.is_deleted  = 0
+                   AND n.channel     = 'in_app'
+                   AND n.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                   AND u.deleted_at  IS NULL
+                 GROUP BY n.user_id
+                 HAVING total_received >= 5
+                 ORDER BY read_rate ASC, total_received DESC
+                 LIMIT ?";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(1, $days, \PDO::PARAM_INT);
+        $stmt->bindValue(2, $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(\PDO::FETCH_OBJ) ?: [];
+    }
+
+    /** @return list<\stdClass> */
+    public function getDailyAggregationData(string $date): array
+    {
+        $sql = "SELECT
+                    type,
+                    channel,
+                    COUNT(*)                                AS sent,
+                    SUM(is_read = 1)                        AS read_count,
+                    SUM(clicked_at IS NOT NULL)             AS click_count,
+                    COUNT(DISTINCT user_id)                 AS unique_users,
+                    SUM(ad_id IS NOT NULL)                  AS ad_sent,
+                    SUM(ad_id IS NOT NULL AND is_read = 1)  AS ad_read,
+                    SUM(ad_id IS NOT NULL AND clicked_at IS NOT NULL) AS ad_click
+                 FROM notifications
+                 WHERE DATE(created_at) = ?
+                   AND is_deleted       = 0
+                 GROUP BY type, channel";
+        
+        return $this->db->fetchAll($sql, [$date]);
+    }
+
+    public function updateBatchAnalytics(string $date, \stdClass $row): bool
+    {
+        $sql = "INSERT INTO notification_analytics
+                    (date, type, channel, sent, read_count, click_count, unique_users,
+                     ad_sent, ad_read, ad_click, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                 ON DUPLICATE KEY UPDATE
+                    sent         = VALUES(sent),
+                    read_count   = VALUES(read_count),
+                    click_count  = VALUES(click_count),
+                    unique_users = VALUES(unique_users),
+                    ad_sent      = VALUES(ad_sent),
+                    ad_read      = VALUES(ad_read),
+                    ad_click     = VALUES(ad_click),
+                    updated_at   = NOW()";
+        
+        return (bool)$this->db->query($sql, [
+            $date,
+            $row->type,
+            $row->channel,
+            $row->sent,
+            $row->read_count,
+            $row->click_count,
+            $row->unique_users,
+            $row->ad_sent ?? 0,
+            $row->ad_read ?? 0,
+            $row->ad_click ?? 0,
+        ]);
+    }
+
+    /**
+     * متد اجراکننده‌ی کرون ساعتیِ aggregation ادمین (NotificationService::runBatchAggregation).
+     * برای «دیروز» (تاریخِ کامل) تجمیع می‌کند تا داده‌ی روزِ جاری که هنوز ناتمام است،
+     * aggregation نشود و آمار دقیق باشد.
+     * @return array{sent: int, updated: int}
+     */
+    public function aggregateDailyAnalytics(): array
+    {
+        $date = date('Y-m-d', strtotime('-1 day'));
+        $rows = $this->getDailyAggregationData($date);
+
+        $updated = 0;
+        $sent = 0;
+        foreach ($rows as $row) {
+            $sent += (int)$row->sent;
+            if ($this->updateBatchAnalytics($date, $row)) {
+                $updated++;
+            }
+        }
+
+        return ['sent' => $sent, 'updated' => $updated];
+    }
+
+    /** @param array<string, mixed> $params
+     *  @return list<\stdClass>
+     */
+    public function getUsersByFilter(string $sql, array $params): array
+    {
+        return $this->db->fetchAll($sql, $params);
+    }
+
+    public function getTemplateFromDb(string $key): ?\stdClass
+    {
+        try {
+            $row = $this->db->table('notification_templates')
+                ->where('slug', '=', $key)
+                ->first();
+            if ($row) {
+                return (object)[
+                    'title' => $row->title,
+                    'message' => $row->body,
+                    'variables' => null,
+                ];
+            }
+            return null;
+        } catch (\Throwable $e) {
+            if (\function_exists('logger')) {
+                logger()->warning('notification.templates_table_missing_or_failed', [
+                    'key' => $key,
+                    'error' => $e->getMessage()
+                ]);
+            }
+            return null;
+        }
+    }
+
+    public function saveTemplateOverride(string $key, string $title, string $message): bool
+    {
+        try {
+            $existing = $this->getTemplateFromDb($key);
+            if ($existing) {
+                return (bool)$this->db->table('notification_templates')
+                    ->where('slug', '=', $key)
+                    ->update([
+                        'title' => $title,
+                        'body' => $message,
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ]);
+            }
+
+            return (bool)$this->db->table('notification_templates')->insert([
+                'slug' => $key,
+                'title' => $title,
+                'body' => $message,
+                'is_active' => 1
+            ]);
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    public function deleteTemplateOverride(string $key): bool
+    {
+        try {
+            return (bool)$this->db->table('notification_templates')
+                ->where('slug', '=', $key)
+                ->delete();
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /** @return list<\stdClass> */
+    public function getActiveUsersIds(): array
+    {
+        $rows = $this->db->table('users')
+            ->select('id')
+            ->whereNull('deleted_at')
+            ->where('status', '=', 'active')
+            ->get();
+
+        return array_column($rows, 'id');
+    }
+
+    /** @return iterable<list<int>> */
+    public function getActiveUsersIdsInBatches(int $batchSize = 200): iterable
+    {
+        if ($batchSize <= 0) {
+            throw new \InvalidArgumentException('Batch size must be positive');
+        }
+
+        $offset = 0;
+        while (true) {
+            $rows = $this->db->table('users')
+                ->select('id')
+                ->whereNull('deleted_at')
+                ->where('status', '=', 'active')
+                ->limit($batchSize)
+                ->offset($offset)
+                ->get();
+
+            if (empty($rows)) {
+                break;
+            }
+
+            yield array_column($rows, 'id');
+            $offset += $batchSize;
+        }
+    }
+
+    /** @return list<int> */
+    public function getAdminUsersIds(): array
+    {
+        $rows = $this->db->table('users')
+            ->select('id')
+            ->whereNull('deleted_at')
+            ->where('role', '=', 'admin')
+            ->get();
+
+        return array_column($rows, 'id');
+    }
+
+    /**
+     * پردازش سگمنت کاربران به صورت تکه‌تکه (🚀 BUG-04 Fix)
+     * برای جلوگیری از Memory OOM در تعداد کاربران بالا (مثلاً ۱۰۰ هزار نفر)
+     */
+    /** @param array<string, mixed> $filters */
+    public function chunkUsersBySegment(string $segment, int $chunkSize, callable $callback, array $filters = []): void
+    {
+        $sql = "SELECT id FROM users WHERE deleted_at IS NULL";
+        $params = [];
+
+        switch ($segment) {
+            case 'all':
+                $sql .= " AND status = 'active'";
+                break;
+            case 'kyc_verified':
+                $sql .= " AND status = 'active' AND kyc_status = 'approved'";
+                break;
+            case 'kyc_pending':
+                $sql .= " AND status = 'active' AND kyc_status = 'pending'";
+                break;
+            case 'kyc_none':
+                $sql .= " AND status = 'active' AND (kyc_status IS NULL OR kyc_status = 'none')";
+                break;
+            case 'level_silver':
+                $sql .= " AND status = 'active' AND (level = 'silver' OR level IS NULL)";
+                break;
+            case 'level_gold':
+                $sql .= " AND status = 'active' AND level = 'gold'";
+                break;
+            case 'level_vip':
+                $sql .= " AND status = 'active' AND level = 'vip'";
+                break;
+            case 'new_users':
+                $sql .= " AND status = 'active' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
+                break;
+            case 'inactive':
+                $sql .= " AND status = 'active' AND (last_login IS NULL OR last_login < DATE_SUB(NOW(), INTERVAL 60 DAY))";
+                break;
+            case 'custom':
+                if (!empty($filters['status'])) {
+                    $sql .= " AND status = ?";
+                    $params[] = $filters['status'];
+                }
+                if (!empty($filters['kyc_status'])) {
+                    $sql .= " AND kyc_status = ?";
+                    $params[] = $filters['kyc_status'];
+                }
+                if (!empty($filters['level'])) {
+                    $sql .= " AND level = ?";
+                    $params[] = $filters['level'];
+                }
+                if (!empty($filters['registered_after'])) {
+                    $sql .= " AND created_at >= ?";
+                    $params[] = $filters['registered_after'];
+                }
+                break;
+            default:
+                $sql .= " AND status = 'active'";
+        }
+
+        $offset = 0;
+        while (true) {
+            $chunkSql = $sql . " ORDER BY id ASC LIMIT ? OFFSET ?";
+            $chunkParams = array_merge($params, [$chunkSize, $offset]);
+            
+            $rows = $this->db->fetchAll($chunkSql, $chunkParams);
+            
+            if (empty($rows)) {
+                break;
+            }
+
+            $callback(array_column($rows, 'id'));
+            
+            if (count($rows) < $chunkSize) {
+                break;
+            }
+            
+            $offset += $chunkSize;
+        }
+    }
+}

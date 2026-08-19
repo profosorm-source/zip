@@ -1,0 +1,40 @@
+# Environment & Credentials
+.env
+.env.*
+!.env.example
+
+# Composer & Dependencies
+/vendor/
+
+# Node & Frontend
+/node_modules/
+/npm-debug.log
+
+# Storage & Runtime Files
+/storage/cache/*
+!/storage/cache/.gitkeep
+/storage/sessions/*
+!/storage/sessions/.gitkeep
+/storage/logs/*.log
+/storage/cron/*.lock
+/storage/backups/*
+!/storage/backups/.gitkeep
+/storage/exports/*
+!/storage/exports/.gitkeep
+/storage/email_fallback/*
+!/storage/email_fallback/.gitkeep
+/storage/audit/*
+!/storage/audit/.gitkeep
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Testing & Cache
+.phpunit.result.cache
+.phpunit.cache/
+.phpstan.cache/
+/coverage/

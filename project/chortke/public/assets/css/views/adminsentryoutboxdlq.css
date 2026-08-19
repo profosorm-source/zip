@@ -1,0 +1,24 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; padding: 20px; color: #2d3748; }
+        .page-header { margin-bottom: 25px; }
+        .page-header h1 { font-size: 1.9rem; margin-bottom: 8px; }
+        .page-header p { color: #4a5568; }
+        .top-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+        .top-bar a, .top-bar button { background: white; border: 1px solid #e2e8f0; color: #2d3748; border-radius: 10px; padding: 10px 16px; text-decoration: none; cursor: pointer; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 20px; }
+        .card { background: white; border-radius: 16px; padding: 22px; box-shadow: 0 2px 14px rgba(0,0,0,0.08); }
+        .card h3 { font-size: 0.95rem; color: #4a5568; margin-bottom: 10px; }
+        .card .value { font-size: 2.4rem; font-weight: 700; margin-bottom: 8px; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; background: #e2e8f0; color: #2d3748; }
+        .table-card { background: white; border-radius: 16px; padding: 0; overflow: hidden; box-shadow: 0 2px 14px rgba(0,0,0,0.08); }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f7fafc; }
+        th, td { padding: 14px 16px; text-align: right; border-bottom: 1px solid #edf2f7; }
+        th { color: #4a5568; font-weight: 600; font-size: 0.9rem; }
+        tbody tr:hover { background: #f7fafc; cursor: default; }
+        .filter-form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .pagination { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .pagination a { padding: 10px 14px; border-radius: 10px; border: 1px solid #e2e8f0; text-decoration: none; color: #2d3748; }
+        .pagination a.active { background: #667eea; color: white; border-color: #667eea; }
+        .small-text { color: #718096; font-size: 0.9rem; }
+        .code-snippet { display: block; background: #f7fafc; padding: 10px 12px; border-radius: 10px; font-family: monospace; color: #2d3748; max-width: 100%; overflow-x: auto; font-size: 0.87rem; }

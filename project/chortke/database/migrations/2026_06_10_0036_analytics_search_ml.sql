@@ -1,0 +1,71 @@
+-- CHORTKE MIGRATION PART 30: ANALYTICS & MACHINE LEARNING
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `ml_models`;
+CREATE TABLE `ml_models` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `model_name` VARCHAR(100) NOT NULL,
+  `version` VARCHAR(50) NOT NULL,
+  `status` VARCHAR(20) NOT NULL DEFAULT 'active',
+  `auc` DECIMAL(8,6) DEFAULT NULL,
+  `precision_score` DECIMAL(8,6) DEFAULT NULL,
+  `recall_score` DECIMAL(8,6) DEFAULT NULL,
+  `f1_score` DECIMAL(8,6) DEFAULT NULL,
+  `trained_at` TIMESTAMP NULL,
+  `deployed_at` TIMESTAMP NULL,
+  `metadata` JSON DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `ml_feature_store`;
+CREATE TABLE `ml_feature_store` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `entity_type` VARCHAR(30) NOT NULL,
+  `entity_id` VARCHAR(191) NOT NULL,
+  `feature_name` VARCHAR(100) NOT NULL,
+  `feature_value` DECIMAL(20,8) NOT NULL DEFAULT 0.00000000,
+  `feature_text` VARCHAR(255) DEFAULT NULL,
+  `feature_time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `ml_fraud_predictions`;
+CREATE TABLE `ml_fraud_predictions` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT(10) UNSIGNED DEFAULT NULL,
+  `session_id` VARCHAR(128) DEFAULT NULL,
+  `model_name` VARCHAR(100) NOT NULL,
+  `model_version` VARCHAR(50) NOT NULL,
+  `probability` DECIMAL(8,6) NOT NULL,
+  `predicted_label` VARCHAR(20) NOT NULL,
+  `threshold_used` DECIMAL(8,6) NOT NULL DEFAULT 0.500000,
+  `top_features` JSON DEFAULT NULL,
+  `raw_output` JSON DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;-- [REMOVED DUPLICATE interactions]
+DROP TABLE IF EXISTS `search_projections`;
+CREATE TABLE `search_projections` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `entity_type` VARCHAR(50) NOT NULL,
+  `entity_id` INT(10) UNSIGNED NOT NULL,
+  `title` VARCHAR(255) DEFAULT NULL,
+  `content` TEXT DEFAULT NULL,
+  `metadata` JSON DEFAULT NULL,
+  `is_active` TINYINT(1) DEFAULT 1,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `fraud_calculation_logs`;
+CREATE TABLE `fraud_calculation_logs` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT(10) UNSIGNED NOT NULL,
+  `account_age_factor` INT(10) NOT NULL DEFAULT 0,
+  `reputation_factor` INT(10) NOT NULL DEFAULT 0,
+  `velocity_factor` INT(10) NOT NULL DEFAULT 0,
+  `geographic_factor` INT(10) NOT NULL DEFAULT 0,
+  `final_score` INT(10) NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET FOREIGN_KEY_CHECKS = 1;

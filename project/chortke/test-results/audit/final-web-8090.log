@@ -1,0 +1,13 @@
+[Fri Jul 24 21:32:16 2026] PHP 8.4.23 Development Server (http://127.0.0.1:8090) started
+[Fri Jul 24 21:32:17 2026] 127.0.0.1:46958 Accepted
+[Fri Jul 24 21:32:17 2026] [INFO] 2026-07-25 01:02:17 Session handler: Redis connected via Cache {"request_id":"445b35be01764e387530c86c45948385","trace_id":"445b35be01764e387530c86c45948385","span_id":"14a29c3cc531510a","parent_span_id":null,"type":"system","correlation_id":null}
+
+[Fri Jul 24 21:32:17 2026] 127.0.0.1:46958 Closing
+[Fri Jul 24 21:32:27 2026] 127.0.0.1:36502 Accepted
+[Fri Jul 24 21:32:27 2026] [INFO] 2026-07-25 01:02:27 Session handler: Redis connected via Cache {"request_id":"b1fcc2acb5023f07f41e42442b22be47","trace_id":"b1fcc2acb5023f07f41e42442b22be47","span_id":"d782eea044647971","parent_span_id":null,"type":"system","correlation_id":null}
+
+[Fri Jul 24 21:32:27 2026] 127.0.0.1:36502 Closing
+[Fri Jul 24 21:32:27 2026] 127.0.0.1:36504 Accepted
+[Fri Jul 24 21:32:27 2026] [INFO] 2026-07-25 01:02:27 Session handler: Redis connected via Cache {"request_id":"58a169a7d492dd78f15276a14d11a11b","trace_id":"58a169a7d492dd78f15276a14d11a11b","span_id":"361534f6ea8a488d","parent_span_id":null,"type":"system","correlation_id":null}
+
+[Fri Jul 24 21:32:27 2026] 127.0.0.1:36504 Closing

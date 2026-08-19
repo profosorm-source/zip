@@ -1,0 +1,13 @@
+Note: Using configuration file /home/user/project/app/phpstan.neon.
+ ------ ---------------------------------------------------------------------- 
+  Line   app/Middleware/SecurityHeadersMiddleware.php                          
+ ------ ---------------------------------------------------------------------- 
+  138    Parameter #1 $callback of function array_map expects                  
+         (callable(mixed): mixed)|null, 'trim' given.                          
+         💡 Type string of parameter #1 $string of passed callable needs to    
+            be same or wider than parameter type mixed of accepting callable.  
+ ------ ---------------------------------------------------------------------- 
+
+
+ [ERROR] Found 1 error                                                          
+

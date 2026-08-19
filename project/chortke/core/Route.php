@@ -1,0 +1,74 @@
+<?php
+
+namespace Core;
+
+class Route
+{
+    private string $uri;
+    private mixed $action; // ✅ بدون Type Declaration
+    /** @var list<string> */
+    private array $middleware = [];
+    private ?string $name = null;
+
+    public function __construct(string $uri, mixed $action) {
+        $this->uri = $uri;
+        $this->action = $action;
+    }
+
+    /**
+     * اختصاص نام به Route
+     */
+    public function name(string $name): self
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    /**
+     * دریافت نام Route
+     */
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
+     * افزودن Middleware به Route
+     */
+    /** @param string|list<string> $middleware */
+    public function middleware(string|array $middleware): self
+    {
+        if (is_string($middleware)) {
+            $this->middleware[] = $middleware;
+        } elseif (is_array($middleware)) {
+            $this->middleware = array_merge($this->middleware, $middleware);
+        }
+
+        return $this;
+    }
+
+    /**
+     * دریافت Middleware‌ها
+     */
+    /** @return list<string> */
+    public function getMiddleware(): array
+    {
+        return $this->middleware;
+    }
+
+    /**
+     * دریافت URI
+     */
+    public function getUri(): string
+    {
+        return $this->uri;
+    }
+
+    /**
+     * دریافت Action
+     */
+    public function getAction(): mixed
+    {
+        return $this->action;
+    }
+}

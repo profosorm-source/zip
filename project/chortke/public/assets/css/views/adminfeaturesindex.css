@@ -1,0 +1,269 @@
+.feature-card {
+    transition: all 0.3s ease;
+    border-right: 4px solid transparent;
+}
+
+.feature-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-right-color: #007bff;
+}
+
+.feature-card.enabled {
+    border-right-color: #28a745;
+}
+
+.feature-card.disabled {
+    border-right-color: #dc3545;
+}
+
+.badge-pill {
+    padding: 0.4em 0.8em;
+}
+
+.percentage-slider {
+    width: 100%;
+}
+
+.percentage-display {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.tag-input {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    min-height: 45px;
+}
+
+.tag {
+    background: #007bff;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tag .remove {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.stat-label {
+    opacity: 0.9;
+    font-size: 0.9em;
+}
+
+.targeting-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.targeting-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.targeting-header i {
+    color: #007bff;
+}
+
+.advanced-features {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.metric-chart {
+    height: 200px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+.history-timeline {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.timeline-item {
+    border-left: 3px solid #007bff;
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #007bff;
+}
+
+.timeline {
+    position: relative;
+}
+
+.timeline-item {
+    border-left: 3px solid #007bff;
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.timeline-item .timeline-marker {
+    position: absolute;
+    left: -7px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #007bff;
+}
+
+.timeline-item .timeline-content {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.chart-placeholder {
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.tag-input input {
+    border: none;
+    outline: none;
+    flex: 1;
+    min-width: 120px;
+}
+
+.tag-input .tag {
+    background: #007bff;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0.125rem;
+}
+
+.tag-input .tag .tag-remove {
+    cursor: pointer;
+    font-weight: bold;
+    color: rgba(255,255,255,0.8);
+}
+
+.tag-input .tag .tag-remove:hover {
+    color: white;
+}
+
+.percentage-slider {
+    width: 100%;
+}
+
+.percentage-display {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #007bff;
+    text-align: center;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin: 0.5rem 0;
+}
+
+.tag-input input {
+    border: none;
+    outline: none;
+    flex: 1;
+    min-width: 120px;
+}
+
+.tag-input .tag {
+    background: #007bff;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0.125rem;
+}
+
+.tag-input .tag .tag-remove {
+    cursor: pointer;
+    font-weight: bold;
+    color: rgba(255,255,255,0.8);
+}
+
+.tag-input .tag .tag-remove:hover {
+    color: white;
+}
+
+.diff-view {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-family: monospace;
+    font-size: 0.875em;
+}
+
+.diff-line {
+    margin-bottom: 0.25rem;
+}
+
+.diff-line code {
+    background: #e9ecef;
+    padding: 0.125rem 0.25rem;
+    border-radius: 3px;
+    font-weight: bold;
+}

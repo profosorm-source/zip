@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Preview | Investment Hub</title>
+  <link rel="stylesheet" href="../../public/assets/vendor/vazirmatn/vazirmatn.css">
+  <link rel="stylesheet" href="../../public/assets/vendor/materialicons/materialicons.css">
+  <link rel="stylesheet" href="../../public/assets/css/panel-binance.css">
+  <link rel="stylesheet" href="../../public/assets/css/views/userinvestment.css">
+  <style>
+    html,body{min-height:100%;margin:0;background:#0A0D13;font-family:Vazirmatn,system-ui,sans-serif;}
+    body{background:radial-gradient(70% 60% at 10% 0%,rgba(240,185,11,.08),transparent),radial-gradient(60% 50% at 100% 100%,rgba(30,217,168,.06),transparent),#0A0D13;}
+    .preview-shell{padding:22px 0 40px;}
+
+    .theme-fab{position:fixed;left:20px;bottom:20px;z-index:9999;width:44px;height:44px;border-radius:50%;border:2px solid #F0B90B;background:#F0B90B;color:#1A1304;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px rgba(240,185,11,.55);transition:transform .2s,filter .2s;}
+    .theme-fab:hover{transform:scale(1.08);filter:brightness(1.05);}
+    .theme-fab .material-icons{font-size:20px;}
+  </style>
+</head>
+<body class="layout-no-sidebar">
+<div class="bn-navbar preview-navbar">
+  <div class="bn-nav-left">
+    <h5 class="mb-0" style="color:var(--bn-text-main);font-size:14px;font-weight:800;margin:0;opacity:.88;">مرکز سرمایه‌گذاری</h5>
+  </div>
+  <div class="bn-nav-right">
+    <div class="bn-nav-actions">
+      <div class="bn-search-container"><button class="bn-search-toggle" type="button" title="جستجو"><span class="material-icons">search</span></button></div>
+      <a href="#" class="bn-nav-icon" title="تیکت‌ها"><span class="material-icons">support_agent</span></a>
+      <a href="#" class="bn-nav-icon" title="اعلان‌ها"><span class="material-icons">notifications</span></a>
+      <a href="#" class="bn-nav-icon" title="تنظیمات"><span class="material-icons">settings</span></a>
+    </div>
+    <div class="bn-user-profile"><div class="bn-user-info"><p class="bn-user-name">کاربر تست</p><div class="bn-user-status"><span class="bn-kyc-badge">Verified</span><span class="bn-xp-label">GOLD</span></div></div><div class="bn-user-avatar" style="display:flex;align-items:center;justify-content:center;background:var(--bn-accent);color:#111;font-weight:900;">ک</div></div>
+  </div>
+</div>
+<div class="preview-shell">
+  <div id="investmentRoot" class="inv-wrap" data-withdraw-url="#" data-csrf="preview">
+    <section class="inv-hub-hero">
+      <div class="inv-hub-hero__main">
+        <div class="inv-hub-hero__icon"><i class="material-icons">trending_up</i></div>
+        <div>
+          <div class="inv-hub-hero__eyebrow">Hub &amp; Spoke Investment Console</div>
+          <h1 class="inv-hub-hero__title">مرکز سرمایه‌گذاری</h1>
+          <p class="inv-hub-hero__sub">مدیریت پلن فعال، برداشت سود، تاریخچه عملکرد و آخرین معاملات از یک مرکز واحد.</p>
+        </div>
+      </div>
+      <div class="inv-hub-hero__side">
+        <a href="#" class="inv-btn inv-btn-panel"><i class="material-icons">dashboard</i> بازگشت به پنل کاربری</a>
+        <div class="inv-status-pill is-live"><span class="inv-status-pill__dot"></span> پلن فعال</div>
+        <a href="#" class="inv-btn inv-btn-ghost"><i class="material-icons">receipt_long</i> مشاهده تاریخچه</a>
+      </div>
+    </section>
+
+    <div class="inv-hub-layout">
+      <aside class="inv-hub-sidebar" aria-label="منوی داخلی ماژول سرمایه‌گذاری">
+        <div class="inv-hub-card inv-module-card">
+          <div class="inv-module-card__top">
+            <div class="inv-module-card__icon"><i class="material-icons">hub</i></div>
+            <div>
+              <div class="inv-module-card__eyebrow">Module Hub</div>
+              <h2 class="inv-module-card__title">سرمایه‌گذاری</h2>
+              <p class="inv-module-card__desc">همه بخش‌ها از همین مرکز مدیریت می‌شوند.</p>
+            </div>
+          </div>
+          <nav class="inv-module-nav">
+            <a class="inv-module-nav__item active" href="#"><span class="inv-module-nav__icon"><i class="material-icons">space_dashboard</i></span><span class="inv-module-nav__body"><strong>مرکز سرمایه‌گذاری</strong><small>نمای کلی، وضعیت پلن و عملکرد</small></span><i class="material-icons inv-module-nav__chev">chevron_left</i></a>
+            <a class="inv-module-nav__item is-muted" href="#"><span class="inv-module-nav__icon"><i class="material-icons">add_chart</i></span><span class="inv-module-nav__body"><strong>سرمایه‌گذاری جدید</strong><small>در حال حاضر غیرفعال است</small></span><i class="material-icons inv-module-nav__chev">chevron_left</i></a>
+            <a class="inv-module-nav__item" href="#"><span class="inv-module-nav__icon"><i class="material-icons">receipt_long</i></span><span class="inv-module-nav__body"><strong>تاریخچه سود و زیان</strong><small>گزارش کامل عملکرد سرمایه</small></span><i class="material-icons inv-module-nav__chev">chevron_left</i></a>
+            <a class="inv-module-nav__item" href="#withdrawals"><span class="inv-module-nav__icon"><i class="material-icons">payments</i></span><span class="inv-module-nav__body"><strong>درخواست‌های برداشت</strong><small>پیگیری برداشت سود یا تسویه کامل</small></span><i class="material-icons inv-module-nav__chev">chevron_left</i></a>
+            <a class="inv-module-nav__item" href="#market"><span class="inv-module-nav__icon"><i class="material-icons">candlestick_chart</i></span><span class="inv-module-nav__body"><strong>معاملات بازار</strong><small>آخرین معاملات بسته‌شده</small></span><i class="material-icons inv-module-nav__chev">chevron_left</i></a>
+          </nav>
+        </div>
+        <div class="inv-hub-card inv-risk-mini">
+          <div class="inv-risk-mini__head"><i class="material-icons">shield</i><span>کنترل ریسک</span></div>
+          <p>سرمایه‌گذاری تضمین سود ندارد. قبل از شروع، مبلغ، ریسک و دوره قفل برداشت را بررسی کنید.</p>
+          <div class="inv-risk-mini__meta"><span>Cooldown برداشت</span><strong>۷ روز</strong></div>
+        </div>
+      </aside>
+
+      <main class="inv-hub-main">
+        <div class="inv-risk-banner"><i class="material-icons">warning_amber</i><span><strong>هشدار ریسک:</strong> سرمایه‌گذاری در بازارهای مالی دارای ریسک بالاست و احتمال ضرر تا ۱۰۰٪ وجود دارد.</span></div>
+        <section class="inv-spoke-grid">
+          <a href="#" class="inv-spoke-card is-muted"><span class="inv-spoke-card__icon"><i class="material-icons">add_chart</i></span><span class="inv-spoke-card__body"><strong>شروع سرمایه‌گذاری</strong><small>به‌دلیل پلن فعال یا قفل برداشت غیرفعال است</small></span><i class="material-icons">chevron_left</i></a>
+          <a href="#withdrawals" class="inv-spoke-card"><span class="inv-spoke-card__icon"><i class="material-icons">payments</i></span><span class="inv-spoke-card__body"><strong>برداشت‌ها</strong><small>۱ درخواست در انتظار</small></span><i class="material-icons">chevron_left</i></a>
+          <a href="#" class="inv-spoke-card"><span class="inv-spoke-card__icon"><i class="material-icons">receipt_long</i></span><span class="inv-spoke-card__body"><strong>تاریخچه سود</strong><small>گزارش کامل سود و زیان</small></span><i class="material-icons">chevron_left</i></a>
+        </section>
+        <section class="inv-stats">
+          <div class="inv-stat inv-stat--gold"><div class="inv-stat__icon"><i class="material-icons">account_balance</i></div><div class="inv-stat__body"><span class="inv-stat__lbl">سرمایه اولیه</span><span class="inv-stat__val inv-num">1,250.00</span><span class="inv-stat__unit">USDT</span></div></div>
+          <div class="inv-stat inv-stat--green"><div class="inv-stat__icon"><i class="material-icons">account_balance_wallet</i></div><div class="inv-stat__body"><span class="inv-stat__lbl">موجودی فعلی</span><span class="inv-stat__val inv-num">1,384.75</span><span class="inv-stat__unit">USDT</span></div></div>
+          <div class="inv-stat inv-stat--green"><div class="inv-stat__icon"><i class="material-icons">trending_up</i></div><div class="inv-stat__body"><span class="inv-stat__lbl">سود / زیان</span><span class="inv-stat__val inv-num">+134.75</span><span class="inv-stat__pct inv-stat__pct--up">+10.78%</span></div></div>
+          <div class="inv-stat inv-stat--blue"><div class="inv-stat__icon"><i class="material-icons">pending_actions</i></div><div class="inv-stat__body"><span class="inv-stat__lbl">برداشت‌های اخیر</span><span class="inv-stat__val inv-num">3</span><span class="inv-stat__unit">۱ در انتظار بررسی</span></div></div>
+        </section>
+        <section class="inv-plan-card">
+          <div class="inv-plan-card__header"><div class="inv-plan-card__title"><i class="material-icons">verified</i> پلن فعال شما</div><span class="inv-badge inv-badge--active"><span class="inv-badge__dot"></span> فعال</span></div>
+          <div class="inv-plan-card__body">
+            <div class="inv-plan-grid"><div class="inv-plan-metric"><span>شناسه پلن</span><strong class="inv-num">#24819</strong></div><div class="inv-plan-metric"><span>تاریخ شروع</span><strong>۱۴۰۵/۰۳/۲۲</strong></div><div class="inv-plan-metric"><span>آخرین محاسبه</span><strong>۱۴۰۵/۰۳/۲۸</strong></div></div>
+            <div class="inv-progress-wrap"><div class="inv-progress-label"><span>نسبت موجودی فعلی به سرمایه اولیه</span><span class="inv-num">110.8%</span></div><div class="inv-progress"><div class="inv-progress__bar inv-progress__bar--up" data-width="100%"></div></div></div>
+            <div class="inv-actions"><button class="inv-action-btn inv-action-btn--profit" type="button"><i class="material-icons">savings</i><span><strong>برداشت سود</strong><small class="inv-num">134.75 USDT</small></span></button><button class="inv-action-btn inv-action-btn--close" type="button"><i class="material-icons">exit_to_app</i><span><strong>بستن و برداشت کامل</strong><small class="inv-num">1,384.75 USDT</small></span></button></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</div>
+<script src="../../public/assets/js/views/userinvestmentindex.js"></script>
+<button class="theme-fab" id="themeToggleBtn" title="تغییر تم"><span class="material-icons" id="themeIcon">light_mode</span></button>
+<script>
+  document.getElementById('themeToggleBtn')?.addEventListener('click', function(){
+    const html = document.documentElement;
+    const dark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', dark ? 'light' : 'dark');
+    document.getElementById('themeIcon').textContent = dark ? 'dark_mode' : 'light_mode';
+    document.body.style.background = dark ? '#F6F8FA' : '#0A0D13';
+  });
+</script>
+</body>
+</html>

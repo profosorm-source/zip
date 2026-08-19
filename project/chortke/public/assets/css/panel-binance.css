@@ -1,0 +1,346 @@
+/* Binance-style Panel Theme */
+:root {
+    --bn-bg-main: #0b0e11;
+    --bn-bg-card: #1e2329;
+    --bn-text-main: #eaecef;
+    --bn-text-muted: #848e9c;
+    --bn-border-color: #2b3139;
+    --bn-accent: #fcd535;
+    --bn-accent-hover: #f0ca1a;
+    --bn-success: #02c076;
+    --bn-error: #cf304a;
+}
+
+/* Light Theme Variables */
+[data-theme='light'] {
+    --bn-bg-main: #f8fafc;
+    --bn-bg-card: #ffffff;
+    --bn-text-main: #1e293b;
+    --bn-text-muted: #64748b;
+    --bn-border-color: #e2e8f0;
+    --bn-accent: #fcd535;
+    --bn-accent-hover: #f0ca1a;
+    --bn-success: #02c076;
+    --bn-error: #cf304a;
+}
+
+.bn-navbar {
+    background-color: var(--bn-bg-card);
+    border-bottom: 1px solid var(--bn-border-color);
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    color: var(--bn-text-main);
+    z-index: 1100; /* Higher than sidebar */
+    position: relative;
+}
+
+.bn-nav-left, .bn-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.bn-search-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 1200;
+}
+
+.bn-search-toggle {
+    background-color: var(--bn-border-color);
+    border: 1px solid var(--bn-border-color);
+    color: var(--bn-text-main);
+    cursor: pointer;
+    padding: 0;
+    border-radius: 50%;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+}
+
+.bn-search-toggle:hover {
+    background-color: var(--bn-accent);
+    color: #000;
+    border-color: var(--bn-accent);
+}
+
+.bn-search-toggle .material-icons {
+    font-size: 20px;
+}
+
+.bn-search-bar {
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+}
+
+.bn-search-bar.open {
+    width: 220px;
+    opacity: 1;
+    margin-right: 8px;
+}
+
+.bn-search-input {
+    background-color: var(--bn-border-color);
+    border: 1px solid var(--bn-border-color);
+    color: var(--bn-text-main);
+    font-size: 12px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.bn-search-input:focus {
+    border-color: var(--bn-accent);
+}
+
+.bn-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.bn-nav-icon {
+    background: transparent;
+    border: none;
+    color: var(--bn-text-muted);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bn-nav-icon:hover {
+    color: var(--bn-accent);
+    background-color: rgba(125, 125, 125, 0.05);
+}
+
+.bn-nav-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    background-color: var(--bn-error);
+    border-radius: 50%;
+}
+
+.bn-user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-right: 12px;
+    border-right: 1px solid var(--bn-border-color);
+    margin-right: 12px;
+    cursor: pointer;
+}
+
+.bn-user-info {
+    text-align: right;
+}
+
+.bn-user-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--bn-text-main);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.bn-user-status {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.bn-kyc-badge {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background-color: rgba(2, 192, 118, 0.2);
+    color: var(--bn-success);
+    border: 1px solid rgba(2, 192, 118, 0.3);
+}
+
+.bn-xp-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.bn-xp-label {
+    font-size: 10px;
+    color: var(--bn-text-muted);
+}
+
+.bn-xp-bar-bg {
+    width: 80px;
+    height: 4px;
+    background-color: var(--bn-border-color);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.bn-xp-bar-fill {
+    height: 100%;
+    background-color: var(--bn-accent);
+    transition: width 0.3s ease;
+}
+
+.bn-xp-percent {
+    font-size: 9px;
+    color: var(--bn-text-muted);
+}
+
+.bn-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--bn-border-color);
+    object-fit: cover;
+}
+
+/* Dropdowns */
+.bn-dropdown {
+    position: absolute;
+    top: 56px;
+    background-color: var(--bn-bg-card);
+    border: 1px solid var(--bn-border-color);
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    min-width: 200px;
+    display: none;
+    z-index: 1001;
+}
+
+.bn-dropdown.show {
+    display: block;
+}
+
+.bn-dropdown-header {
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 13px;
+    border-bottom: 1px solid var(--bn-border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--bn-text-main);
+}
+
+.bn-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    color: var(--bn-text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.bn-dropdown-item:hover {
+    background-color: rgba(125, 125, 125, 0.05);
+    color: var(--bn-text-main);
+}
+
+.bn-dropdown-item .material-icons {
+    font-size: 18px;
+}
+
+/* THEME-FIX-USER-NAVBAR-2026-06:
+   Make Binance navbar colors explicit for the user panel theme system.
+   The user layout toggles html[data-theme="light|dark"]. These rules avoid
+   navbar staying visually dark when another stylesheet/cache keeps old vars. */
+html[data-theme="dark"] .bn-navbar {
+    background-color: #1e2329;
+    border-bottom-color: #2b3139;
+    color: #eaecef;
+}
+html[data-theme="dark"] .bn-dropdown {
+    background-color: #1e2329;
+    border-color: #2b3139;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45);
+}
+html[data-theme="dark"] .bn-search-toggle,
+html[data-theme="dark"] .bn-search-input {
+    background-color: #2b3139;
+    border-color: #2b3139;
+    color: #eaecef;
+}
+html[data-theme="dark"] .bn-user-profile {
+    border-right-color: #2b3139;
+}
+html[data-theme="dark"] .bn-user-name,
+html[data-theme="dark"] .bn-dropdown-header {
+    color: #eaecef;
+}
+html[data-theme="dark"] .bn-nav-icon,
+html[data-theme="dark"] .bn-dropdown-item,
+html[data-theme="dark"] .bn-text-muted,
+html[data-theme="dark"] .bn-xp-label,
+html[data-theme="dark"] .bn-xp-percent {
+    color: #848e9c;
+}
+html[data-theme="dark"] .bn-dropdown-item:hover,
+html[data-theme="dark"] .bn-nav-icon:hover {
+    color: #fcd535;
+    background-color: rgba(252,213,53,.08);
+}
+
+html[data-theme="light"] .bn-navbar {
+    background-color: #ffffff;
+    border-bottom-color: #e2e8f0;
+    color: #1e293b;
+    box-shadow: 0 1px 14px rgba(15,23,42,.06);
+}
+html[data-theme="light"] .bn-dropdown {
+    background-color: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 14px 35px rgba(15,23,42,.12);
+}
+html[data-theme="light"] .bn-search-toggle,
+html[data-theme="light"] .bn-search-input {
+    background-color: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #1e293b;
+}
+html[data-theme="light"] .bn-user-profile {
+    border-right-color: #e2e8f0;
+}
+html[data-theme="light"] .bn-user-name,
+html[data-theme="light"] .bn-dropdown-header {
+    color: #1e293b;
+}
+html[data-theme="light"] .bn-nav-icon,
+html[data-theme="light"] .bn-dropdown-item,
+html[data-theme="light"] .bn-xp-label,
+html[data-theme="light"] .bn-xp-percent {
+    color: #64748b;
+}
+html[data-theme="light"] .bn-dropdown-item:hover,
+html[data-theme="light"] .bn-nav-icon:hover {
+    color: #111827;
+    background-color: rgba(15,23,42,.04);
+}

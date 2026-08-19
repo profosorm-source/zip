@@ -1,0 +1,31 @@
+PHPUnit 8.5.52 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.23
+Configuration: /home/user/project/app/phpunit.xml
+
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+F[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+F                                                                  2 / 2 (100%)
+
+Time: 495805.25 hours, Memory: 10.00 MB
+
+There were 2 failures:
+
+1) Tests\Integration\Financial\FinancialSocialTaskEscrowInvariantTest::release_consumes_advertiser_lock_and_credits_executor_exactly_once
+Failed asserting that false is true.
+
+/home/user/project/app/tests/Integration/Financial/FinancialSocialTaskEscrowInvariantTest.php:69
+
+2) Tests\Integration\Financial\FinancialSocialTaskEscrowInvariantTest::refund_unlocks_advertiser_funds_without_an_extra_deposit
+Failed asserting that false is true.
+
+/home/user/project/app/tests/Integration/Financial/FinancialSocialTaskEscrowInvariantTest.php:87
+
+FAILURES!
+Tests: 2, Assertions: 4, Failures: 2.

@@ -1,0 +1,16 @@
+parameters:
+    level: 9
+    paths:
+        - app/
+        - core/
+    excludePaths:
+        - app/Views/*
+        - app/Cache/*
+        - core/Cache/*
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+    treatPhpDocTypesAsCertain: false
+    universalObjectCratesClasses:
+        - stdClass
+    parallel:
+        maximumNumberOfProcesses: 4

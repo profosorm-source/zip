@@ -1,0 +1,27 @@
+PHPUnit 8.5.52 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.23
+Configuration: /home/user/project/app/phpunit.xml
+
+EE.                                                                 3 / 3 (100%)
+
+Time: 495804.97 hours, Memory: 8.00 MB
+
+There were 2 errors:
+
+1) Tests\Unit\Middleware\SecurityHeadersMiddlewareTest::config_whitelist_ignores_non_string_and_blank_entries
+TypeError: trim(): Argument #1 ($string) must be of type string, array given
+
+/home/user/project/app/app/Middleware/SecurityHeadersMiddleware.php:138
+/home/user/project/app/tests/Unit/Middleware/SecurityHeadersMiddlewareTest.php:128
+/home/user/project/app/tests/Unit/Middleware/SecurityHeadersMiddlewareTest.php:67
+
+2) Tests\Unit\Middleware\SecurityHeadersMiddlewareTest::defaults_are_used_when_config_contains_no_valid_string_source
+TypeError: trim(): Argument #1 ($string) must be of type string, array given
+
+/home/user/project/app/app/Middleware/SecurityHeadersMiddleware.php:138
+/home/user/project/app/tests/Unit/Middleware/SecurityHeadersMiddlewareTest.php:128
+/home/user/project/app/tests/Unit/Middleware/SecurityHeadersMiddlewareTest.php:88
+
+ERRORS!
+Tests: 3, Assertions: 1, Errors: 2.

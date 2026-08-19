@@ -1,0 +1,93 @@
+.ads-index .stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.ads-index .stat-value {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.ads-index .filter-input {
+    width: 180px;
+}
+
+.ads-index .filter-input-xs {
+    width: 100px;
+}
+
+.ads-index .filter-input-date {
+    width: 130px;
+}
+
+.ads-index .filter-select,
+.ads-index .bulk-select {
+    width: auto;
+}
+
+.ads-index .bulk-select {
+    width: 160px;
+}
+
+.ads-index .results-count {
+    font-size: 12px;
+}
+
+.ads-index .ads-table {
+    font-size: 12px;
+}
+
+.ads-index .ad-title-cell {
+    max-width: 200px;
+}
+
+.ads-index .ad-title-cell strong {
+    font-size: 12px;
+}
+
+.ads-index .ad-type-badge {
+    background: #e8f5e9;
+    color: #2e7d32;
+    font-size: 10px;
+}
+
+.ads-index .ad-user-cell {
+    font-size: 11px;
+}
+
+.ads-index .ad-amount-cell {
+    font-size: 11px;
+}
+
+.ads-index .ad-date-cell {
+    font-size: 10px;
+}
+
+.ads-index .ad-action-btn .material-icons {
+    font-size: 14px;
+}
+
+.ads-index .ad-action-btn {
+    min-width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.ads-index .ad-action-btn .material-icons {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.ads-index .badge-warning,
+.ads-index .badge-success,
+.ads-index .badge-danger,
+.ads-index .badge-info,
+.ads-index .badge-secondary,
+.ads-index .badge-primary,
+.ads-index .badge-dark {
+    border-radius: 999px;
+    padding: 0.35rem 0.65rem;
+}

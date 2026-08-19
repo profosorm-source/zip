@@ -1,0 +1,59 @@
+-- CHORTKE MIGRATION: MARKETING, CONTENT & MESSAGING
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `banners`;
+CREATE TABLE `banners` (
+    `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `title` VARCHAR(255) NOT NULL,
+    `image_path` VARCHAR(255),
+    `link` VARCHAR(500),
+    `placement` VARCHAR(100),
+    `is_active` TINYINT(1) DEFAULT 1,
+    `clicks` INT(10) UNSIGNED DEFAULT 0,
+    `impressions` INT(10) UNSIGNED DEFAULT 0,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `banner_placements`;
+CREATE TABLE `banner_placements` (
+    `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(100) NOT NULL,
+    `slug` VARCHAR(100) UNIQUE NOT NULL,
+    `description` TEXT,
+    `is_active` TINYINT(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `pages`;
+CREATE TABLE `pages` (
+    `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `title` VARCHAR(255) NOT NULL,
+    `slug` VARCHAR(191) UNIQUE NOT NULL,
+    `content` LONGTEXT,
+    `is_published` TINYINT(1) DEFAULT 1,
+    `is_active` TINYINT(1) DEFAULT 1,
+    `show_in_footer` TINYINT(1) DEFAULT 1,
+    `display_order` INT DEFAULT 0,
+    `meta_description` TEXT NULL DEFAULT NULL,
+    `meta_keywords` TEXT NULL DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `coupons`;
+CREATE TABLE `coupons` (
+    `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `code` VARCHAR(50) UNIQUE NOT NULL,
+    `type` ENUM('fixed', 'percent') DEFAULT 'fixed',
+    `value` DECIMAL(24,4) NOT NULL,
+    `min_amount` DECIMAL(24,4) DEFAULT 0,
+    `expires_at` TIMESTAMP NULL,
+    `is_active` TINYINT(1) DEFAULT 1,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;-- [REMOVED DUPLICATE content_submissions]
+-- [REMOVED DUPLICATE ticket_categories]
+-- [REMOVED DUPLICATE ticket_messages]
+-- [REMOVED DUPLICATE direct_messages]
+
+
+SET FOREIGN_KEY_CHECKS = 1;

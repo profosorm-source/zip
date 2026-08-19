@@ -1,0 +1,35 @@
+/* Shared view utilities (used by multiple sections to avoid duplication) */
+
+.icon-xs { font-size: 12px; vertical-align: middle; }
+.icon-sm { font-size: 15px; vertical-align: middle; }
+.icon-md { font-size: 16px; vertical-align: middle; }
+.icon-lg { font-size: 18px; vertical-align: middle; }
+.icon-xl { font-size: 64px; }
+
+.badge-xs { font-size: 10px; }
+
+.text-11 { font-size: 11px; }
+.text-12 { font-size: 12px; }
+.text-13 { font-size: 13px; }
+
+.progress-thin { height: 6px; border-radius: 3px; }
+
+/* Additional icon sizes for security/2fa and other views */
+.icon-80 { font-size: 80px; }
+.icon-64 { font-size: 64px; }
+.icon-18 { font-size: 18px; }
+
+/* Shared max-width / height utilities for layout constraints (reused across views) */
+.max-w-360 { max-width: 360px; }
+.max-w-500 { max-width: 500px; }
+.max-h-300 { max-height: 300px; }
+
+/* Dynamic progress support (used by data-width on .progress-bar in multiple views) */
+.progress-bar[data-width] { width: attr(data-width); }
+
+/* Visibility and display utilities (for conditional without inline style) */
+.d-none { display: none !important; }
+.vis-hidden { visibility: hidden !important; }
+
+/* Extra icon size */
+.icon-16 { font-size: 16px; vertical-align: middle; }

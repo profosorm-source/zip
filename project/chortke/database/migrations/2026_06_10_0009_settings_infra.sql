@@ -1,0 +1,46 @@
+-- CHORTKE MIGRATION PART 6: SETTINGS & INFRASTRUCTURE
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `settings`;
+CREATE TABLE `settings` (
+    `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `key` VARCHAR(191) UNIQUE NOT NULL,
+    `value` LONGTEXT,
+    `group` VARCHAR(50) DEFAULT 'general',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `feature_flags`;
+CREATE TABLE `feature_flags` (
+    `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(100) UNIQUE NOT NULL,
+    `enabled` TINYINT(1) DEFAULT 0,
+    `config_values` JSON,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `email_queue`;
+CREATE TABLE `email_queue` (
+    `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `to_email` VARCHAR(255) NOT NULL,
+    `subject` VARCHAR(255),
+    `body` LONGTEXT,
+    `status` ENUM('pending', 'sent', 'failed') DEFAULT 'pending',
+    `attempts` TINYINT UNSIGNED DEFAULT 0,
+    `last_error` TEXT,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `api_tokens`;
+CREATE TABLE `api_tokens` (
+    `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT(10) UNSIGNED NOT NULL,
+    `token` VARCHAR(100) UNIQUE NOT NULL,
+    `name` VARCHAR(100),
+    `last_used_at` TIMESTAMP NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    KEY `idx_api_user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET FOREIGN_KEY_CHECKS = 1;

@@ -1,0 +1,120 @@
+PHPUnit 8.5.52 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.23
+Configuration: /home/user/project/app/phpunit.xml
+
+...........................F.................................   61 / 2212 (  2%)
+.............................................................  122 / 2212 (  5%)
+.............[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+.........................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+....................  183 / 2212 (  8%)
+...........................................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+RESULT: {"success":true,"message":"پرداخت با موفقیت تکمیل شد","ref_id":"ref123"}
+........[Sentry] Handler not initialized — skipping capture.
+.........  244 / 2212 ( 11%)
+.............................................................  305 / 2212 ( 13%)
+.............................................................  366 / 2212 ( 16%)
+.............................................................  427 / 2212 ( 19%)
+.............................................................  488 / 2212 ( 22%)
+.............................................................  549 / 2212 ( 24%)
+.............................................................  610 / 2212 ( 27%)
+..[Sentry] Handler not initialized — skipping capture.
+..........................[Sentry] Handler not initialized — skipping capture.
+.................................  671 / 2212 ( 30%)
+...............................[Sentry] Handler not initialized — skipping capture.
+........................SSS...  732 / 2212 ( 33%)
+.................................[queue:work] error: Connection failed
+............................  793 / 2212 ( 35%)
+.............................................................  854 / 2212 ( 38%)
+.............................................................  915 / 2212 ( 41%)
+.............................................................  976 / 2212 ( 44%)
+............................................................. 1037 / 2212 ( 46%)
+............................................................. 1098 / 2212 ( 49%)
+............................................................. 1159 / 2212 ( 52%)
+............................................................. 1220 / 2212 ( 55%)
+............................................................. 1281 / 2212 ( 57%)
+....................Failed to log event dispatched info: Logger is broken
+..[EventDispatcher] reconstruction failed for NonExistentEventClassThatWillFail in event 'test.queued.event', falling back to GenericEvent
+.[EventDispatcher] reconstruction failed for  in event 'test.no_class.event', falling back to GenericEvent
+..................................[fallback-logger][info] Session handler: Redis connected via Cache
+.[fallback-logger][info] Session handler: Redis connected via Cache
+.[fallback-logger][info] Session handler: Redis connected via Cache
+.[fallback-logger][info] Session handler: Redis connected via Cache
+. 1342 / 2212 ( 60%)
+............................................................. 1403 / 2212 ( 63%)
+............................................................. 1464 / 2212 ( 66%)
+.........................................[fallback-logger][info] Session handler: Redis connected via Cache
+.................... 1525 / 2212 ( 68%)
+......................................[fallback-logger][error] queue.redis.push_failed_falling_back {"job":"App\\\\Jobs\\\\LogPerformanceJob","queue":"analytics","error":"Redis connection failure"}
+....................... 1586 / 2212 ( 71%)
+............................................................. 1647 / 2212 ( 74%)
+............................................................. 1708 / 2212 ( 77%)
+............................................................. 1769 / 2212 ( 79%)
+...................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+..[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.........................[Sentry] Handler not initialized — skipping capture.
+.............. 1830 / 2212 ( 82%)
+..................................[Sentry] Handler not initialized — skipping capture.
+........................... 1891 / 2212 ( 85%)
+............................................................. 1952 / 2212 ( 88%)
+............................................................. 2013 / 2212 ( 91%)
+............................................................. 2074 / 2212 ( 93%)
+............................................................. 2135 / 2212 ( 96%)
+............................................................[Sentry] Handler not initialized — skipping capture.
+. 2196 / 2212 ( 99%)
+........SS......                                              2212 / 2212 (100%)
+
+Time: 495803.98 hours, Memory: 90.50 MB
+
+There was 1 failure:
+
+1) Tests\Unit\ComprehensiveSecurityTest::http_only_cookie_flag_is_configured
+Real .env must not be committed to the repository
+Failed asserting that true is false.
+
+/home/user/project/app/tests/Unit/ComprehensiveSecurityTest.php:254
+/home/user/project/app/vendor/bin/phpunit:122
+
+--
+
+There were 5 skipped tests:
+
+1) Tests\Unit\Core\RedisGracefulTest::testCallDoesNotThrowWhenUnavailable
+Redis is available — cannot test unavailable path
+
+/home/user/project/app/tests/Unit/Core/RedisGracefulTest.php:17
+/home/user/project/app/vendor/bin/phpunit:122
+
+2) Tests\Unit\Core\RedisGracefulTest::testScanKeysReturnsEmptyWhenUnavailable
+Redis is available
+
+/home/user/project/app/tests/Unit/Core/RedisGracefulTest.php:34
+/home/user/project/app/vendor/bin/phpunit:122
+
+3) Tests\Unit\Core\RedisGracefulTest::testNoExceptionOnAnyMethod
+Redis is available
+
+/home/user/project/app/tests/Unit/Core/RedisGracefulTest.php:44
+/home/user/project/app/vendor/bin/phpunit:122
+
+4) Tests\Integration\Distributed\HealthEndpointsTest::test_health_distributed_endpoint_exists_or_skips
+Web server not running on 8090 or endpoint not reachable. Start with php -S 127.0.0.1:8090 -t public
+
+/home/user/project/app/tests/Integration/Distributed/HealthEndpointsTest.php:22
+/home/user/project/app/vendor/bin/phpunit:122
+
+5) Tests\Integration\Distributed\HealthEndpointsTest::test_metrics_distributed_returns_prometheus_or_json
+Web server not reachable for metrics test.
+
+/home/user/project/app/tests/Integration/Distributed/HealthEndpointsTest.php:38
+/home/user/project/app/vendor/bin/phpunit:122
+
+FAILURES!
+Tests: 2212, Assertions: 4254, Failures: 1, Skipped: 5.

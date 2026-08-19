@@ -1,0 +1,279 @@
+/* User Dashboard Additional Styles
+   These complement panel.css and remove the need for inline styles.
+*/
+
+.alert-bar {
+    margin-bottom: 14px;
+}
+
+.chart-container {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 12px 0 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-strip {
+    margin-top: auto;
+}
+
+.card-body-clean {
+    padding: 0;
+}
+
+.activity-container {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.load-more-wrap {
+    padding: 16px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    display: none;
+}
+
+.kpi-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.kpi-action-blue {
+    background: rgba(96, 165, 250, .15);
+    border: 1px solid rgba(96, 165, 250, .25);
+    color: #60a5fa;
+}
+
+.kpi-action-gold {
+    background: rgba(245, 197, 24, .12);
+    border: 1px solid rgba(245, 197, 24, .2);
+    color: #F5C518;
+}
+
+.vote-title {
+    font-size: .73rem;
+    color: var(--sub);
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+.vote-message {
+    font-size: .68rem;
+    color: var(--muted);
+    margin-top: 6px;
+    text-align: center;
+}
+
+.vote-result {
+    margin-top: 8px;
+}
+
+.vote-sample-note {
+    margin-top: 4px;
+}
+
+.vote-num-gap {
+    gap: 5px;
+}
+
+.lottery-empty {
+    font-size: 10px;
+    color: rgba(255, 255, 255, .4);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.lottery-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.lottery-action-gold {
+    background: rgba(245, 197, 24, .12);
+    border: 1px solid rgba(245, 197, 24, .2);
+    color: #F5C518;
+}
+
+.lottery-action-icon,
+.kpi-action-icon {
+    font-size: 12px;
+}
+
+.camp-icon,
+.page-icon,
+.th-icon,
+.task-icon {
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.camp-icon .material-icons,
+.page-icon .material-icons,
+.th-icon .material-icons,
+.task-icon .material-icons {
+    font-size: 17px;
+}
+
+.page-add-item {
+    border-style: dashed;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    min-height: 56px;
+    opacity: .6;
+}
+
+.page-add-icon {
+    font-size: 20px;
+    color: var(--muted);
+}
+
+.page-add-text {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.tx-cell {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tx-cell-icon {
+    font-size: 13px;
+}
+
+.tx-id-cell {
+    font-size: .67rem;
+    color: var(--muted);
+    direction: ltr;
+}
+
+.badge-xs {
+    font-size: 9px;
+}
+
+.badge-sm {
+    font-size: 10px;
+}
+
+.th-amount-col,
+.camp-amount-col {
+    text-align: left;
+}
+
+.th-status-icon {
+    font-size: 12px;
+}
+
+.page-status-icon {
+    font-size: 9px;
+}
+
+.table-icon-xs {
+    font-size: 12px;
+}
+
+.investment-value {
+    font-weight: 700;
+}
+
+/* Progress bars using CSS variable --progress */
+.progress-bar-fill {
+    width: var(--progress, 0%);
+}
+
+.w-prog-fill-var {
+    width: var(--progress, 0%);
+}
+
+.vr-bar-fill-var {
+    width: var(--progress, 0%);
+}
+
+/* Platform gradient utilities */
+.gradient-instagram { background: linear-gradient(135deg, #E1306C, #C13584); }
+.gradient-youtube { background: linear-gradient(135deg, #FF0000, #CC0000); }
+.gradient-telegram { background: linear-gradient(135deg, #0088cc, #006699); }
+.gradient-tiktok { background: linear-gradient(135deg, #333, #111); }
+.gradient-twitter { background: linear-gradient(135deg, #1DA1F2, #0d8bd9); }
+.gradient-aparat { background: linear-gradient(135deg, #CC0000, #990000); }
+.gradient-other { background: linear-gradient(135deg, #9A9AB0, #6B7280); }
+
+.text-instagram { color: #E1306C; }
+.text-youtube { color: #FF0000; }
+.text-telegram { color: #0088cc; }
+.text-tiktok { color: #333; }
+.text-twitter { color: #1DA1F2; }
+.text-aparat { color: #CC0000; }
+.text-other { color: #9A9AB0; }
+
+/* Color utilities */
+.text-green { color: #4ade80; }
+.text-red { color: #f87171; }
+.text-blue { color: #60a5fa; }
+.text-gold { color: #F5C518; }
+
+.text-up { color: var(--success); }
+.text-down { color: var(--danger); }
+.text-warn { color: var(--warning); }
+.text-info { color: var(--info); }
+
+/* Empty investment state */
+.inv-empty,
+.lot-empty {
+    padding: 10px 12px;
+}
+
+.inv-empty-label {
+    font-size: 9.5px;
+    color: rgba(255, 255, 255, .42);
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.inv-empty-value {
+    font-size: 17px;
+    font-weight: 900;
+    color: rgba(255, 255, 255, .18);
+    margin-bottom: 8px;
+}
+
+.vote-done-num {
+    font-size: 1rem;
+    margin-right: 4px;
+}
+
+.db-col-gap-none {
+    gap: 0;
+}
+
+.camp-info,
+.th-info {
+    flex: 1;
+}
+
+.th-amount-col,
+.camp-amount-col {
+    text-align: left;
+}
+.text-purple { color: #a855f7; }

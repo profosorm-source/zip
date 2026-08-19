@@ -1,0 +1,113 @@
+-- CHORTKE MIGRATION PART 29: INTELLIGENCE & GRAPH ANALYSIS
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `fraud_rules`;
+CREATE TABLE `fraud_rules` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(100) NOT NULL,
+  `rule_type` VARCHAR(50) NOT NULL COMMENT 'ip_velocity, session_count, geo_change, etc.',
+  `condition_json` JSON NOT NULL COMMENT 'شرایط قانون',
+  `risk_score` INT(10) NOT NULL COMMENT 'امتیاز ریسک اگر match شد',
+  `action` VARCHAR(50) NOT NULL COMMENT 'notify, challenge, block',
+  `is_active` TINYINT(1) DEFAULT 1,
+  `priority` INT(10) DEFAULT 0 COMMENT 'اولویت اجرا',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `fraud_graph_analysis`;
+CREATE TABLE `fraud_graph_analysis` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT(10) UNSIGNED DEFAULT NULL,
+  `session_id` VARCHAR(128) DEFAULT NULL,
+  `component_id` VARCHAR(64) DEFAULT NULL,
+  `connected_nodes` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+  `suspicious_edges` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+  `centrality_score` DECIMAL(10,6) NOT NULL DEFAULT 0.000000,
+  `anomaly_score` DECIMAL(10,6) NOT NULL DEFAULT 0.000000,
+  `risk_score` INT(10) NOT NULL DEFAULT 0,
+  `details` JSON DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `fraud_graph_nodes`;
+CREATE TABLE `fraud_graph_nodes` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `node_type` VARCHAR(30) NOT NULL,
+  `node_key` VARCHAR(191) NOT NULL,
+  `risk_score` INT(10) NOT NULL DEFAULT 0,
+  `attributes` JSON DEFAULT NULL,
+  `first_seen` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `last_seen` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `fraud_graph_edges`;
+CREATE TABLE `fraud_graph_edges` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `from_node_id` INT(10) UNSIGNED NOT NULL,
+  `to_node_id` INT(10) UNSIGNED NOT NULL,
+  `relation_type` VARCHAR(50) NOT NULL,
+  `weight` DECIMAL(10,4) NOT NULL DEFAULT 1.0000,
+  `evidence` JSON DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `email_intelligence`;
+CREATE TABLE `email_intelligence` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `email` VARCHAR(255) NOT NULL,
+  `domain` VARCHAR(191) NOT NULL,
+  `is_disposable` TINYINT(1) NOT NULL DEFAULT 0,
+  `is_free_provider` TINYINT(1) NOT NULL DEFAULT 0,
+  `mx_records_valid` TINYINT(1) NOT NULL DEFAULT 0,
+  `domain_reputation_score` INT(10) NOT NULL DEFAULT 0,
+  `last_checked_at` TIMESTAMP NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `mobile_intelligence`;
+CREATE TABLE `mobile_intelligence` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `mobile` VARCHAR(32) NOT NULL,
+  `country_code` VARCHAR(10) DEFAULT NULL,
+  `carrier` VARCHAR(100) DEFAULT NULL,
+  `line_type` VARCHAR(30) DEFAULT NULL,
+  `is_voip` TINYINT(1) NOT NULL DEFAULT 0,
+  `is_valid` TINYINT(1) NOT NULL DEFAULT 1,
+  `last_checked_at` TIMESTAMP NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `ip_locations`;
+CREATE TABLE `ip_locations` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `ip_start` VARBINARY(16) NOT NULL,
+  `ip_end` VARBINARY(16) NOT NULL,
+  `country_code` VARCHAR(2) DEFAULT NULL,
+  `country_name` VARCHAR(100) DEFAULT NULL,
+  `city` VARCHAR(100) DEFAULT NULL,
+  `latitude` DECIMAL(10,6) DEFAULT NULL,
+  `longitude` DECIMAL(10,6) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `vpn_ranges`;
+CREATE TABLE `vpn_ranges` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `ip_range` VARCHAR(50) NOT NULL COMMENT 'CIDR format: 52.0.0.0/8',
+  `provider` VARCHAR(100) DEFAULT NULL COMMENT 'AWS, Google Cloud, DigitalOcean, etc.',
+  `range_type` VARCHAR(50) NOT NULL COMMENT 'vpn, datacenter, proxy, hosting',
+  `risk_level` INT(10) DEFAULT 50 COMMENT 'سطح ریسک (0-100)',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `tor_exit_nodes`;
+CREATE TABLE `tor_exit_nodes` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `ip_address` VARCHAR(45) NOT NULL,
+  `last_verified` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET FOREIGN_KEY_CHECKS = 1;

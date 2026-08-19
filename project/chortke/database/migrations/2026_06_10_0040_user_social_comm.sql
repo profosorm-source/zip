@@ -1,0 +1,77 @@
+-- CHORTKE MIGRATION PART 33: USER EXTENSIONS & MESSAGING
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `user_social_accounts`;
+CREATE TABLE `user_social_accounts` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT(10) UNSIGNED NOT NULL,
+  `platform` ENUM('instagram','telegram','youtube','twitter','tiktok','aparat','linkedin','other') NOT NULL,
+  `username` VARCHAR(100) NOT NULL,
+  `profile_url` VARCHAR(500) DEFAULT NULL,
+  `follower_count` INT(10) UNSIGNED NOT NULL DEFAULT 0,
+  `status` ENUM('pending','verified','rejected','inactive') NOT NULL DEFAULT 'pending',
+  `deleted_at` TIMESTAMP NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `user_conversations`;
+CREATE TABLE `user_conversations` (
+  `user1_id` INT(10) UNSIGNED NOT NULL,
+  `user2_id` INT(10) UNSIGNED NOT NULL,
+  `last_message_id` INT(10) UNSIGNED NOT NULL,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user1_id`, `user2_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `user_devices`;
+CREATE TABLE `user_devices` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT(10) UNSIGNED NOT NULL,
+  `fcm_token` TEXT NOT NULL,
+  `platform` VARCHAR(20) DEFAULT 'web',
+  `last_activity` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `user_fingerprints`;
+CREATE TABLE `user_fingerprints` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT(10) UNSIGNED NOT NULL,
+  `fingerprint` VARCHAR(64) NOT NULL,
+  `metadata` JSON DEFAULT NULL,
+  `seen_count` INT(10) DEFAULT 1,
+  `last_seen` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `user_blocks`;
+CREATE TABLE `user_blocks` (
+  `blocker_id` INT(10) UNSIGNED NOT NULL,
+  `blocked_id` INT(10) UNSIGNED NOT NULL,
+  PRIMARY KEY (`blocker_id`, `blocked_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `message_attachments`;
+CREATE TABLE `message_attachments` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `message_id` INT(10) UNSIGNED NOT NULL,
+  `filename` VARCHAR(255) NOT NULL,
+  `file_path` VARCHAR(255) NOT NULL,
+  `file_size` INT(10) UNSIGNED NOT NULL,
+  `mime_type` VARCHAR(100) NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `block_appeals`;
+CREATE TABLE `block_appeals` (
+  `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT(10) UNSIGNED NOT NULL,
+  `appeal_text` TEXT NOT NULL,
+  `status` VARCHAR(50) NOT NULL DEFAULT 'pending',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET FOREIGN_KEY_CHECKS = 1;

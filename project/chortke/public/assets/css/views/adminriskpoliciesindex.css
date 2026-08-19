@@ -1,0 +1,7 @@
+body { font-family: tahoma, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+        th { background: #f7f7f7; }
+        .msg { margin: 8px 0; color: #333; }
+        input, select { width: 100%; padding: 6px; }
+        button { padding: 6px 12px; }

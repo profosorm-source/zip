@@ -1,0 +1,28 @@
+PHPUnit 8.5.52 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.23
+Configuration: /home/user/project/app/phpunit.xml
+
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+F                                                                   1 / 1 (100%)
+
+Time: 495805.52 hours, Memory: 10.00 MB
+
+There was 1 failure:
+
+1) Tests\Integration\Financial\VitrineEscrowCommissionInvariantTest::release_splits_usdt_locked_funds_between_seller_and_platform
+Failed asserting that two strings are identical.
+--- Expected
++++ Actual
+@@ @@
+-'1.00000000'
++'0.00000000'
+
+/home/user/project/app/tests/Integration/Financial/VitrineEscrowCommissionInvariantTest.php:11
+
+FAILURES!
+Tests: 1, Assertions: 11, Failures: 1.

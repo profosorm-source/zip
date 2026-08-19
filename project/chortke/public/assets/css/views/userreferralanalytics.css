@@ -1,0 +1,190 @@
+.analytics-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+section {
+    margin: 40px 0;
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+h2 {
+    margin-top: 0;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #007bff;
+}
+
+.conversion-funnel {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin: 30px 0;
+}
+
+.funnel-step {
+    flex: 1;
+    text-align: center;
+}
+
+.funnel-number {
+    font-size: 2em;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.funnel-label {
+    margin: 10px 0;
+    color: #666;
+}
+
+.funnel-bar {
+    height: 30px;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    border-radius: 15px;
+    margin: 10px auto;
+    max-width: 300px;
+}
+
+.funnel-rate {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.funnel-arrow {
+    font-size: 2em;
+    color: #999;
+    margin: 0 10px;
+}
+
+.ltv-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.ltv-amount {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 0;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.retention-chart {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+.retention-gauge {
+    flex-shrink: 0;
+}
+
+.retention-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.retention-badge.excellent { background: #d4edda; color: #155724; }
+.retention-badge.good { background: #d1ecf1; color: #0c5460; }
+.retention-badge.average { background: #fff3cd; color: #856404; }
+.retention-badge.poor { background: #f8d7da; color: #721c24; }
+
+.performance-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.performance-table th,
+.performance-table td {
+    padding: 12px;
+    text-align: right;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.performance-table th {
+    background: #f8f9fa;
+    font-weight: bold;
+}
+
+.prediction-box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.predicted-value {
+    display: block;
+    font-size: 2.5em;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+.comparison-cards {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: space-around;
+    margin: 30px 0;
+}
+
+.comparison-card {
+    flex: 1;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.comparison-vs {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #999;
+}
+
+.comparison-result {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.comparison-result p {
+    font-size: 1.2em;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.comparison-result .better {
+    background: #d4edda;
+    color: #155724;
+}
+
+.comparison-result .worse {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.top-referrals-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.top-referrals-table th,
+.top-referrals-table td {
+    padding: 12px;
+    text-align: right;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.top-referrals-table tbody tr:hover {
+    background: #f8f9fa;
+}

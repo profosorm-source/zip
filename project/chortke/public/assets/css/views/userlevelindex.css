@@ -1,0 +1,29 @@
+/* Level index - minimal view styles (dynamic colors via CSS vars) */
+.level-icon-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--level-color, #ccc) 15%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.level-icon {
+  font-size: 30px;
+  color: var(--level-color, #333);
+}
+
+.level-name {
+  font-weight: 700;
+  color: var(--level-color, #333);
+}
+
+.level-card {
+  transition: border-color .2s;
+}
+
+.level-warning {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border-right: 4px solid #ffa726;
+}

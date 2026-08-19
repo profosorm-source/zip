@@ -1,0 +1,138 @@
+PHPUnit 8.5.52 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.23
+Configuration: /home/user/project/app/phpunit.xml
+
+.............................................................   61 / 2229 (  2%)
+.............................................................  122 / 2229 (  5%)
+...........................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+............................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+...  183 / 2229 (  8%)
+............................................................[Sentry] Handler not initialized — skipping capture.
+.  244 / 2229 ( 10%)
+[Sentry] Handler not initialized — skipping capture.
+RESULT: {"success":true,"message":"پرداخت با موفقیت تکمیل شد","ref_id":"ref123"}
+........[Sentry] Handler not initialized — skipping capture.
+.....................................................  305 / 2229 ( 13%)
+.............................................................  366 / 2229 ( 16%)
+.............................................................  427 / 2229 ( 19%)
+.............................................................  488 / 2229 ( 21%)
+.............................................................  549 / 2229 ( 24%)
+.............................................................  610 / 2229 ( 27%)
+.......................[Sentry] Handler not initialized — skipping capture.
+..........................[Sentry] Handler not initialized — skipping capture.
+............  671 / 2229 ( 30%)
+.............................................................  732 / 2229 ( 32%)
+...[Sentry] Handler not initialized — skipping capture.
+.......................SSS.........................[queue:work] error: Connection failed
+.......  793 / 2229 ( 35%)
+.............................................................  854 / 2229 ( 38%)
+.............................................................  915 / 2229 ( 41%)
+.............................................................  976 / 2229 ( 43%)
+............................................................. 1037 / 2229 ( 46%)
+............................................................. 1098 / 2229 ( 49%)
+............................................................. 1159 / 2229 ( 51%)
+............................................................. 1220 / 2229 ( 54%)
+............................................................. 1281 / 2229 ( 57%)
+.........................................Failed to log event dispatched info: Logger is broken
+..[EventDispatcher] reconstruction failed for NonExistentEventClassThatWillFail in event 'test.queued.event', falling back to GenericEvent
+.[EventDispatcher] reconstruction failed for  in event 'test.no_class.event', falling back to GenericEvent
+................. 1342 / 2229 ( 60%)
+.................[fallback-logger][info] Session handler: Redis connected via Cache
+.[fallback-logger][info] Session handler: Redis connected via Cache
+.[fallback-logger][info] Session handler: Redis connected via Cache
+.[fallback-logger][info] Session handler: Redis connected via Cache
+......................................... 1403 / 2229 ( 62%)
+............................................................. 1464 / 2229 ( 65%)
+................................................[fallback-logger][info] Session handler: Redis connected via Cache
+............. 1525 / 2229 ( 68%)
+.............................................[fallback-logger][error] queue.redis.push_failed_falling_back {"job":"App\\\\Jobs\\\\LogPerformanceJob","queue":"analytics","error":"Redis connection failure"}
+................ 1586 / 2229 ( 71%)
+............................................................. 1647 / 2229 ( 73%)
+............................................................. 1708 / 2229 ( 76%)
+............................................................. 1769 / 2229 ( 79%)
+..........................[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+..[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.........................[Sentry] Handler not initialized — skipping capture.
+....... 1830 / 2229 ( 82%)
+.........................................[Sentry] Handler not initialized — skipping capture.
+.................... 1891 / 2229 ( 84%)
+............................................................. 1952 / 2229 ( 87%)
+............................................................. 2013 / 2229 ( 90%)
+............................................................. 2074 / 2229 ( 93%)
+............................................................. 2135 / 2229 ( 95%)
+............................................................. 2196 / 2229 ( 98%)
+......[Sentry] Handler not initialized — skipping capture.
+...............[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+.[Sentry] Handler not initialized — skipping capture.
+[Sentry] Handler not initialized — skipping capture.
+...                             2229 / 2229 (100%)
+
+Time: 495813.54 hours, Memory: 90.50 MB
+
+There were 3 skipped tests:
+
+1) Tests\Unit\Core\RedisGracefulTest::testCallDoesNotThrowWhenUnavailable
+Redis is available — cannot test unavailable path
+
+/home/user/project/app/tests/Unit/Core/RedisGracefulTest.php:17
+/home/user/project/app/vendor/bin/phpunit:122
+
+2) Tests\Unit\Core\RedisGracefulTest::testScanKeysReturnsEmptyWhenUnavailable
+Redis is available
+
+/home/user/project/app/tests/Unit/Core/RedisGracefulTest.php:34
+/home/user/project/app/vendor/bin/phpunit:122
+
+3) Tests\Unit\Core\RedisGracefulTest::testNoExceptionOnAnyMethod
+Redis is available
+
+/home/user/project/app/tests/Unit/Core/RedisGracefulTest.php:44
+/home/user/project/app/vendor/bin/phpunit:122
+
+OK, but incomplete, skipped, or risky tests!
+Tests: 2229, Assertions: 4419, Skipped: 3.

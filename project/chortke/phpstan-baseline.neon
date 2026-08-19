@@ -1,0 +1,451 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Part \\$value \\(mixed\\) of encapsed string cannot be cast to string\\.$#"
+			count: 1
+			path: core/Blueprint.php
+
+		-
+			message: "#^Cannot call method del\\(\\) on Redis\\|null\\.$#"
+			count: 4
+			path: core/Cache.php
+
+		-
+			message: "#^Cannot call method eval\\(\\) on Redis\\|null\\.$#"
+			count: 3
+			path: core/Cache.php
+
+		-
+			message: "#^Cannot call method exists\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/Cache.php
+
+		-
+			message: "#^Cannot call method get\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/Cache.php
+
+		-
+			message: "#^Cannot call method sAdd\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/Cache.php
+
+		-
+			message: "#^Cannot call method sMembers\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/Cache.php
+
+		-
+			message: "#^Cannot call method sRem\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/Cache.php
+
+		-
+			message: "#^Cannot call method scan\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/Cache.php
+
+		-
+			message: "#^Cannot call method set\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/Cache.php
+
+		-
+			message: "#^Cannot call method setEx\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/Cache.php
+
+		-
+			message: "#^Cannot call method setex\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/Cache.php
+
+		-
+			message: "#^Cannot call method ttl\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/Cache.php
+
+		-
+			message: "#^Unsafe usage of new static\\(\\)\\.$#"
+			count: 1
+			path: core/Cache.php
+
+		-
+			message: "#^Cannot access offset 'threshold' on mixed\\.$#"
+			count: 1
+			path: core/CircuitBreaker.php
+
+		-
+			message: "#^Cannot access offset 'timeout' on mixed\\.$#"
+			count: 1
+			path: core/CircuitBreaker.php
+
+		-
+			message: "#^Cannot access offset 'description' on mixed\\.$#"
+			count: 1
+			path: core/Console/CliDispatcher.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 1
+			path: core/Console/CliDispatcher.php
+
+		-
+			message: "#^Instanceof between object and Closure will always evaluate to false\\.$#"
+			count: 1
+			path: core/Container.php
+
+		-
+			message: "#^Property Core\\\\Container\\:\\:\\$isLoggingMissing is never read, only written\\.$#"
+			count: 1
+			path: core/Container.php
+
+		-
+			message: "#^Cannot access offset 'listener' on callable\\(\\)\\: mixed\\.$#"
+			count: 3
+			path: core/EventDispatcher.php
+
+		-
+			message: "#^Cannot access offset 'priority' on array\\{listener\\: mixed, priority\\: int\\}\\|\\(callable\\(\\)\\: mixed\\)\\.$#"
+			count: 4
+			path: core/EventDispatcher.php
+
+		-
+			message: "#^Method Core\\\\EventDispatcher\\:\\:getListeners\\(\\) should return array\\<int, callable\\(\\)\\: mixed\\> but returns array\\<string, array\\<int, callable\\(\\)\\: mixed\\>\\>\\.$#"
+			count: 1
+			path: core/EventDispatcher.php
+
+		-
+			message: "#^Property Core\\\\EventDispatcher\\:\\:\\$listeners \\(array\\<string, array\\<int, callable\\(\\)\\: mixed\\>\\>\\) does not accept non\\-empty\\-array\\<array\\<int, array\\{listener\\: mixed, priority\\: int\\}\\|\\(callable\\(\\)\\: mixed\\)\\>\\>\\.$#"
+			count: 1
+			path: core/EventDispatcher.php
+
+		-
+			message: "#^Property Core\\\\EventDispatcher\\:\\:\\$patternListeners \\(array\\<string, array\\<int, callable\\(\\)\\: mixed\\>\\>\\) does not accept non\\-empty\\-array\\<string, array\\<int, array\\{listener\\: mixed, priority\\: int\\}\\|\\(callable\\(\\)\\: mixed\\)\\>\\>\\.$#"
+			count: 1
+			path: core/EventDispatcher.php
+
+		-
+			message: "#^Cannot access offset 'trace_id' on mixed\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Instanceof between Exception and ParseError will always evaluate to false\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Instanceof between Throwable and Core\\\\Exceptions\\\\InsufficientBalanceException will always evaluate to false\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Method Core\\\\ExceptionHandler\\:\\:extractAppOriginFromTrace\\(\\) should return array\\<string, mixed\\> but returns array\\<int, array\\<int\\<0, max\\>, string\\>\\|int\\|string\\|null\\>\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Offset 'file' on array\\{type\\: int, message\\: string, file\\: string, line\\: int\\} on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Offset 'line' on array\\{type\\: int, message\\: string, file\\: string, line\\: int\\} on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Offset 'message' on array\\{type\\: int, message\\: string, file\\: string, line\\: int\\} on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Offset 'type' on array\\{type\\: int, message\\: string, file\\: string, line\\: int\\} on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Offset 0 does not exist on array\\<string, mixed\\>\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Offset 1 does not exist on array\\<string, mixed\\>\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Offset 2 does not exist on array\\<string, mixed\\>\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Parameter \\#1 \\$response_code of function http_response_code expects int, mixed given\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Parameter \\#1 \\$value of function strval expects bool\\|float\\|int\\|resource\\|string\\|null, mixed given\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Parameter \\#2 \\$errorCode of static method Core\\\\ExceptionHandler\\:\\:logToAdvancedSystem\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: core/ExceptionHandler.php
+
+		-
+			message: "#^Parameter \\#1 \\$json of function json_decode expects string, mixed given\\.$#"
+			count: 1
+			path: core/IdempotencyKey.php
+
+		-
+			message: "#^Variable \\$userId on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: core/IdempotencyKey.php
+
+		-
+			message: "#^Parameter \\#1 \\$type of method App\\\\Services\\\\LogService\\:\\:logSecurity\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: core/Logger.php
+
+		-
+			message: "#^Comparison operation \"\\<\\=\" between 1\\|2 and 2 is always true\\.$#"
+			count: 1
+			path: core/Model.php
+
+		-
+			message: "#^Instanceof between null and stdClass will always evaluate to false\\.$#"
+			count: 1
+			path: core/Model.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: core/Model.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function rtrim expects string, mixed given\\.$#"
+			count: 1
+			path: core/PathResolver.php
+
+		-
+			message: "#^Property Core\\\\PathResolver\\:\\:\\$basePath is never read, only written\\.$#"
+			count: 1
+			path: core/PathResolver.php
+
+		-
+			message: "#^Cannot call method handle\\(\\) on class\\-string\\|object\\.$#"
+			count: 1
+			path: core/Pipeline.php
+
+		-
+			message: "#^Cannot access property \\$avg on mixed\\.$#"
+			count: 1
+			path: core/QueryBuilder.php
+
+		-
+			message: "#^Cannot access property \\$count on mixed\\.$#"
+			count: 1
+			path: core/QueryBuilder.php
+
+		-
+			message: "#^Method Core\\\\QueryBuilder\\:\\:buildSelectQuerySimple\\(\\) is unused\\.$#"
+			count: 1
+			path: core/QueryBuilder.php
+
+		-
+			message: "#^Method Core\\\\QueryBuilder\\:\\:validateRawSql_LEGACY_HEURISTIC\\(\\) is unused\\.$#"
+			count: 1
+			path: core/QueryBuilder.php
+
+		-
+			message: "#^Property Core\\\\QueryBuilder\\:\\:\\$select \\(array\\<int, string\\>\\) does not accept array\\<int\\|string, string\\>\\.$#"
+			count: 1
+			path: core/QueryBuilder.php
+
+		-
+			message: "#^Variable \\$data on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: core/QueryBuilder.php
+
+		-
+			message: "#^Variable \\$sql on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 5
+			path: core/QueryBuilder.php
+
+		-
+			message: "#^Call to an undefined method Mockery\\\\MockInterface\\|Redis\\:\\:incr\\(\\)\\.$#"
+			count: 1
+			path: core/Queue.php
+
+		-
+			message: "#^Call to an undefined method Mockery\\\\MockInterface\\|Redis\\:\\:setEx\\(\\)\\.$#"
+			count: 1
+			path: core/Queue.php
+
+		-
+			message: "#^Call to an undefined method Mockery\\\\MockInterface\\|Redis\\:\\:zAdd\\(\\)\\.$#"
+			count: 1
+			path: core/Queue.php
+
+		-
+			message: "#^Cannot call method del\\(\\) on Mockery\\\\MockInterface\\|Redis\\|null\\.$#"
+			count: 1
+			path: core/Queue.php
+
+		-
+			message: "#^Cannot call method get\\(\\) on Mockery\\\\MockInterface\\|Redis\\|null\\.$#"
+			count: 5
+			path: core/Queue.php
+
+		-
+			message: "#^Cannot call method setEx\\(\\) on Mockery\\\\MockInterface\\|Redis\\|null\\.$#"
+			count: 2
+			path: core/Queue.php
+
+		-
+			message: "#^Cannot call method zAdd\\(\\) on Mockery\\\\MockInterface\\|Redis\\|null\\.$#"
+			count: 2
+			path: core/Queue.php
+
+		-
+			message: "#^Cannot call method zCard\\(\\) on Mockery\\\\MockInterface\\|Redis\\|null\\.$#"
+			count: 3
+			path: core/Queue.php
+
+		-
+			message: "#^Cannot call method zCount\\(\\) on Mockery\\\\MockInterface\\|Redis\\|null\\.$#"
+			count: 2
+			path: core/Queue.php
+
+		-
+			message: "#^Cannot call method zRem\\(\\) on Mockery\\\\MockInterface\\|Redis\\|null\\.$#"
+			count: 4
+			path: core/Queue.php
+
+		-
+			message: "#^Cannot call method zScore\\(\\) on Mockery\\\\MockInterface\\|Redis\\|null\\.$#"
+			count: 1
+			path: core/Queue.php
+
+		-
+			message: "#^Parameter \\#1 \\$callback of function call_user_func expects callable\\(\\)\\: mixed, array\\{Mockery\\\\MockInterface, 'eval'\\} given\\.$#"
+			count: 1
+			path: core/Queue.php
+
+		-
+			message: "#^Part \\$prefix \\(mixed\\) of encapsed string cannot be cast to string\\.$#"
+			count: 1
+			path: core/Queue.php
+
+		-
+			message: "#^Part \\$queue \\(mixed\\) of encapsed string cannot be cast to string\\.$#"
+			count: 6
+			path: core/Queue.php
+
+		-
+			message: "#^Cannot call method scan\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/Redis.php
+
+		-
+			message: "#^Cannot call method del\\(\\) on Redis\\|null\\.$#"
+			count: 2
+			path: core/RedisSessionHandler.php
+
+		-
+			message: "#^Cannot call method exists\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/RedisSessionHandler.php
+
+		-
+			message: "#^Cannot call method expire\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/RedisSessionHandler.php
+
+		-
+			message: "#^Cannot call method get\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/RedisSessionHandler.php
+
+		-
+			message: "#^Cannot call method set\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/RedisSessionHandler.php
+
+		-
+			message: "#^Cannot call method setEx\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/RedisSessionHandler.php
+
+		-
+			message: "#^Variable \\$_POST on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: core/Request.php
+
+		-
+			message: "#^Parameter \\#1 \\$url of function parse_url expects string, mixed given\\.$#"
+			count: 1
+			path: core/Response.php
+
+		-
+			message: "#^Instanceof between Exception and ParseError will always evaluate to false\\.$#"
+			count: 1
+			path: core/RetryPolicy.php
+
+		-
+			message: "#^Instanceof between Exception and TypeError will always evaluate to false\\.$#"
+			count: 1
+			path: core/RetryPolicy.php
+
+		-
+			message: "#^Property Core\\\\Router\\:\\:\\$response is never read, only written\\.$#"
+			count: 1
+			path: core/Router.php
+
+		-
+			message: "#^Ternary operator condition is always true\\.$#"
+			count: 1
+			path: core/Router.php
+
+		-
+			message: "#^Unable to resolve the template type T in call to method Core\\\\Container\\:\\:make\\(\\)$#"
+			count: 1
+			path: core/Router.php
+
+		-
+			message: "#^Argument of an invalid type array\\<int, string\\>\\|Redis supplied for foreach, only iterables are supported\\.$#"
+			count: 1
+			path: core/Session.php
+
+		-
+			message: "#^Parameter \\#1 \\$url of function parse_url expects string, mixed given\\.$#"
+			count: 1
+			path: core/Session.php
+
+		-
+			message: "#^Property Core\\\\Sql\\\\SafeExpression\\:\\:\\$bindings is never read, only written\\.$#"
+			count: 1
+			path: core/Sql/SafeExpression.php
+
+		-
+			message: "#^Cannot call method eval\\(\\) on Redis\\|null\\.$#"
+			count: 1
+			path: core/Strategies/FixedWindowStrategy.php
+
+		-
+			message: "#^Cannot access property \\$count on mixed\\.$#"
+			count: 2
+			path: core/Validator.php
+
+		-
+			message: "#^Call to function is_double\\(\\) with int\\|string will always evaluate to false\\.$#"
+			count: 3
+			path: core/ValueObjects/Money.php
+
+		-
+			message: "#^Call to function is_float\\(\\) with int\\|string will always evaluate to false\\.$#"
+			count: 3
+			path: core/ValueObjects/Money.php

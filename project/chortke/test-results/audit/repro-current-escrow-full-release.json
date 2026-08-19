@@ -1,0 +1,55 @@
+[INFO] 2026-07-24 16:34:27 idempotency.wrap.started {"request_id":"REQ_20260724163427_2b3f9c4d02c9e47b","trace_id":"REQ_20260724163427_2b3f9c4d02c9e47b","span_id":"603f3b7173e590a6","parent_span_id":null,"log_id":"WRAP_6a6362db804fe4.95326809","key":"a17e17b4e2c10e0ff00adcd2f0e45e55886f8e6abd93439075bcb86e67395f78","user_id":1,"action":"wallet_withdraw","type":"system","correlation_id":null}
+[INFO] 2026-07-24 16:34:27 idempotency.key.created {"request_id":"REQ_20260724163427_2b3f9c4d02c9e47b","trace_id":"REQ_20260724163427_2b3f9c4d02c9e47b","span_id":"0aa7f2cca8f41b25","parent_span_id":null,"log_id":"IDEM_6a6362db805664.47244497","key":"a17e17b4e2c10e0ff00adcd2f0e45e55886f8e6abd93439075bcb86e67395f78","action":"wallet_withdraw","type":"system","correlation_id":null}
+[INFO] 2026-07-24 16:34:27 idempotency.wrap.callback.executing {"request_id":"REQ_20260724163427_2b3f9c4d02c9e47b","trace_id":"REQ_20260724163427_2b3f9c4d02c9e47b","span_id":"f4c7f5507cb38245","parent_span_id":null,"log_id":"WRAP_6a6362db804fe4.95326809","key":"a17e17b4e2c10e0ff00adcd2f0e45e55886f8e6abd93439075bcb86e67395f78","type":"system","correlation_id":null}
+[INFO] 2026-07-24 16:34:27 wallet.withdraw.success {"request_id":"REQ_20260724163427_2b3f9c4d02c9e47b","trace_id":"REQ_20260724163427_2b3f9c4d02c9e47b","span_id":"aff7b2651e22a20c","parent_span_id":null,"channel":"wallet","log_id":"WITHDRAW_REQ_20260724163427_2b3f9c4d02c9e47b","user_id":1,"amount":"20000.0000","currency":"irt","type":"system","correlation_id":null}
+[INFO] 2026-07-24 16:34:27 idempotency.key.completed {"request_id":"REQ_20260724163427_2b3f9c4d02c9e47b","trace_id":"REQ_20260724163427_2b3f9c4d02c9e47b","span_id":"157e155a6ee77f03","parent_span_id":null,"key":"a17e17b4e2c10e0ff00adcd2f0e45e55886f8e6abd93439075bcb86e67395f78","type":"system","correlation_id":null}
+[INFO] 2026-07-24 16:34:27 idempotency.wrap.callback.success {"request_id":"REQ_20260724163427_2b3f9c4d02c9e47b","trace_id":"REQ_20260724163427_2b3f9c4d02c9e47b","span_id":"75b177c779c6f3e9","parent_span_id":null,"log_id":"WRAP_6a6362db804fe4.95326809","key":"a17e17b4e2c10e0ff00adcd2f0e45e55886f8e6abd93439075bcb86e67395f78","type":"system","correlation_id":null}
+[INFO] 2026-07-24 16:34:27 idempotency.wrap.started {"request_id":"REQ_20260724163427_2b3f9c4d02c9e47b","trace_id":"REQ_20260724163427_2b3f9c4d02c9e47b","span_id":"adaefcae2f0cb577","parent_span_id":null,"log_id":"WRAP_6a6362db845e65.80838272","key":"32262afa49264ad71fc9785d9c94ade87864e08ca1ae0dd4a27ec710d9c88f8a","user_id":2,"action":"escrow.releaseFunds","type":"system","correlation_id":null}
+[INFO] 2026-07-24 16:34:27 idempotency.key.created {"request_id":"REQ_20260724163427_2b3f9c4d02c9e47b","trace_id":"REQ_20260724163427_2b3f9c4d02c9e47b","span_id":"a8a12731a0cec92a","parent_span_id":null,"log_id":"IDEM_6a6362db846006.81554134","key":"32262afa49264ad71fc9785d9c94ade87864e08ca1ae0dd4a27ec710d9c88f8a","action":"escrow.releaseFunds","type":"system","correlation_id":null}
+[INFO] 2026-07-24 16:34:27 idempotency.wrap.callback.executing {"request_id":"REQ_20260724163427_2b3f9c4d02c9e47b","trace_id":"REQ_20260724163427_2b3f9c4d02c9e47b","span_id":"38ddd520b2473fe8","parent_span_id":null,"log_id":"WRAP_6a6362db845e65.80838272","key":"32262afa49264ad71fc9785d9c94ade87864e08ca1ae0dd4a27ec710d9c88f8a","type":"system","correlation_id":null}
+[INFO] 2026-07-24 16:34:27 escrow.released {"request_id":"REQ_20260724163427_2b3f9c4d02c9e47b","trace_id":"REQ_20260724163427_2b3f9c4d02c9e47b","span_id":"7f19489d6370fc47","parent_span_id":null,"escrow_id":1,"order_id":"audit-full-release-9ebaf1da79ea","amount":"20000.00000000","seller_id":2,"type":"system","correlation_id":null}
+[INFO] 2026-07-24 16:34:27 idempotency.key.completed {"request_id":"REQ_20260724163427_2b3f9c4d02c9e47b","trace_id":"REQ_20260724163427_2b3f9c4d02c9e47b","span_id":"aefc8d9742d21496","parent_span_id":null,"key":"32262afa49264ad71fc9785d9c94ade87864e08ca1ae0dd4a27ec710d9c88f8a","type":"system","correlation_id":null}
+[INFO] 2026-07-24 16:34:27 idempotency.wrap.callback.success {"request_id":"REQ_20260724163427_2b3f9c4d02c9e47b","trace_id":"REQ_20260724163427_2b3f9c4d02c9e47b","span_id":"607a22b27a70603f","parent_span_id":null,"log_id":"WRAP_6a6362db845e65.80838272","key":"32262afa49264ad71fc9785d9c94ade87864e08ca1ae0dd4a27ec710d9c88f8a","type":"system","correlation_id":null}
+{
+    "hold": {
+        "success": true,
+        "transaction_id": "2b5400b7-fc8c-4bd1-b8f3-4e7ffe1a2b81",
+        "message": "\u062f\u0631\u062e\u0648\u0627\u0633\u062a \u0628\u0631\u062f\u0627\u0634\u062a \u062b\u0628\u062a \u0634\u062f",
+        "new_balance": "49980000.00000000",
+        "amount": "20000.0000",
+        "currency": "irt",
+        "status": "pending",
+        "error": null,
+        "balance_before": "50000000.00000000",
+        "balance_after": "49980000.00000000"
+    },
+    "release": {
+        "ok": true,
+        "amount": "20000.00000000"
+    },
+    "before": [
+        {
+            "user_id": 1,
+            "balance_irt": "49980000.00000000",
+            "locked_irt": "20000.00000000"
+        },
+        {
+            "user_id": 2,
+            "balance_irt": "0.00000000",
+            "locked_irt": "0.00000000"
+        }
+    ],
+    "after": [
+        {
+            "user_id": 1,
+            "balance_irt": "49980000.00000000",
+            "locked_irt": "20000.00000000"
+        },
+        {
+            "user_id": 2,
+            "balance_irt": "0.00000000",
+            "locked_irt": "0.00000000"
+        }
+    ]
+}
+[INFO] 2026-07-24 16:34:27 Session handler: Redis connected via Cache {"request_id":"REQ_20260724163427_2b3f9c4d02c9e47b","trace_id":"REQ_20260724163427_2b3f9c4d02c9e47b","span_id":"97b7814363d4fdbc","parent_span_id":null,"type":"system","correlation_id":null}
