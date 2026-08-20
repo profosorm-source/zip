@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@php-wasm/node": "^3.1.50",
+    "@php-wasm/node-8-4": "^3.1.50"
+  }
+}
