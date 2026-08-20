@@ -1,6 +1,0 @@
-/runtime/
-/tooling/node_modules/
-*.log
-
-__pycache__/
-*.py[cod]
