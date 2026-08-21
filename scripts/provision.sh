@@ -269,6 +269,12 @@ stage_deps() {
   ln -sfn "$DEPS/include/freetype2/freetype" "$DEPS/include/freetype"  2>/dev/null
   ln -sfn "$DEPS/include/freetype2/ft2build.h" "$DEPS/include/ft2build.h" 2>/dev/null
   ln -sfn "$DEPS/include/libpng16/png.h"    "$DEPS/include/png.h"      2>/dev/null
+  # کلاینت CLI مربوط به MariaDB مستقیماً <curses.h> و <term.h> را include
+  # می‌کند، ولی نسخه‌ی wide آنها در زیرپوشه‌ی ncursesw نصب می‌شود
+  for h in curses.h ncurses.h term.h termcap.h unctrl.h ncurses_dll.h \
+           eti.h form.h menu.h panel.h nc_tparm.h; do
+    [ -f "$DEPS/include/ncursesw/$h" ] && ln -sfn "$DEPS/include/ncursesw/$h" "$DEPS/include/$h"
+  done
   ok "symlink هدرها"
 }
 
@@ -294,6 +300,10 @@ stage_php() {
       --with-curl --with-zip --enable-gd --with-jpeg --with-freetype --enable-exif \
       --without-sqlite3 --without-pdo-sqlite --without-pear || die "configure PHP"
   fi
+  # تله‌ی مهم: تنظیم دستی LIBS در بالا، تشخیص خودکار configure را بازنویسی
+  # می‌کند و libxml2/curl/zip/png/jpeg/freetype/onig از خط لینک حذف می‌شوند
+  # (هزاران خطای «undefined reference to xmlFree»). لیست را کامل می‌کنیم.
+  sed -i 's|^EXTRA_LIBS = .*|EXTRA_LIBS = -lrt -lm -lxml2 -lcurl -lzip -lpng16 -ljpeg -lfreetype -lonig -lssl -lcrypto -lz -lpthread -ldl|' Makefile
   run php-make make -j"$JOBS" || die "کامپایل PHP"
   run php-make make install || die "نصب PHP"
   mkdir -p "$TOOLS/phpsrc/lib"
@@ -372,6 +382,8 @@ stage_mariadb() {
       -DWITH_LIBFMT=system -DLIBFMT_INCLUDE_DIR="$DEPS/include" -DWITH_PCRE=system \
       -DCURSES_LIBRARY="$DEPS/lib/libncursesw_full.a" \
       -DCURSES_INCLUDE_PATH="$DEPS/include/ncursesw" -DCURSES_NEED_WIDE=TRUE \
+      -DCURSES_HAVE_CURSES_H="$DEPS/include/curses.h" \
+      -DCURSES_CURSES_H_PATH="$DEPS/include" \
       -DWITH_SSL=system -DOPENSSL_ROOT_DIR="$DEPS" -DOPENSSL_USE_STATIC_LIBS=TRUE \
       -DWITH_ZLIB=bundled -DAUTH_GSSAPI=OFF -DPLUGIN_AUTH_GSSAPI=NO \
       -DPLUGIN_HASHICORP_KEY_MANAGEMENT=NO \
@@ -473,6 +485,8 @@ start_mariadb() {
 
 start_redis() {
   "$TOOLS/redis/bin/redis-cli" -h 127.0.0.1 ping >/dev/null 2>&1 && return 0
+  mkdir -p "$RUNTIME/redis/data"
+  [ -f "$RUNTIME/redis/redis.conf" ] || printf 'bind 127.0.0.1\nport 6379\ndaemonize no\ndir %s\nsave 900 1\nappendonly no\n' "$RUNTIME/redis/data" > "$RUNTIME/redis/redis.conf"
   nohup "$TOOLS/redis/bin/redis-server" "$RUNTIME/redis/redis.conf" \
     >>"$RUNTIME/redis/redis.log" 2>&1 &
   for _ in $(seq 1 30); do
