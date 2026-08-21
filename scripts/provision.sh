@@ -62,7 +62,7 @@ run()  { local log="$LOGDIR/$1.log"; shift; if "$@" >>"$log" 2>&1; then return 0
          echo "${RED}  ✗ شکست — ۳۰ خط آخر $log:${RST}" >&2; tail -30 "$log" >&2; return 1; fi; }
 
 FORCE=0
-STAGES_ALL=(tools deps php redis phpredis mariadb project dbinit migrate)
+STAGES_ALL=(tools deps php openssl_conf redis phpredis mariadb project dbinit migrate)
 
 # -----------------------------------------------------------------------------
 # محیط ساخت
@@ -398,6 +398,46 @@ stage_mariadb() {
   run mariadb-build cmake --build build -j"$JOBS" || die "کامپایل MariaDB"
   run mariadb-build cmake --install build || die "نصب MariaDB"
   ok "$("$TOOLS/mariadb/bin/mariadbd" --version | head -1)"
+}
+
+# -----------------------------------------------------------------------------
+# فایل پیکربندی OpenSSL
+#
+# PHP ساخته‌شده در این سندباکس به «$TOOLS/deps/ssl/openssl.cnf» اشاره می‌کند
+# (خروجی «Openssl default config» در php -i). اگر این فایل وجود نداشته باشد،
+# openssl_pkey_new() با خطای «configuration file routines::no such file»
+# مقدار false برمی‌گرداند و هر تستی که کلید RSA تولید می‌کند شکست می‌خورد:
+#   • قرارداد JWT/JWKS گوگل
+#   • OAuth سرویس‌اکانت FCM
+# این نقصِ محیط است، نه نقصِ کدِ پروژه؛ بنابراین اینجا ساخته می‌شود نه در سورس.
+# -----------------------------------------------------------------------------
+stage_openssl_conf() {
+  local cnf="$TOOLS/deps/ssl/openssl.cnf"
+  [ -f "$cnf" ] && { ok "openssl.cnf از قبل موجود است"; return 0; }
+  mkdir -p "$(dirname "$cnf")"
+  cat > "$cnf" <<'OPENSSLCNF'
+openssl_conf = default_conf
+
+[ default_conf ]
+ssl_conf = ssl_sect
+
+[ ssl_sect ]
+system_default = system_default_sect
+
+[ system_default_sect ]
+MinProtocol = TLSv1.2
+CipherString = DEFAULT:@SECLEVEL=1
+
+[ req ]
+default_bits       = 2048
+default_md         = sha256
+distinguished_name = req_distinguished_name
+prompt             = no
+
+[ req_distinguished_name ]
+CN = chortke-local
+OPENSSLCNF
+  ok "openssl.cnf ساخته شد: $cnf"
 }
 
 # =============================================================================
