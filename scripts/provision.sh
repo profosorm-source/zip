@@ -13,6 +13,7 @@
 #      bash scripts/provision.sh deps php   # اجرای مرحله‌های مشخص
 #
 #  مراحل: tools deps php redis phpredis mariadb project dbinit migrate serve
+#  گزینه‌ها: --status  --start  --serve  --test  --force
 #  هر مرحله idempotent است؛ اگر قبلاً انجام شده باشد رد می‌شود (--force برای اجبار).
 # =============================================================================
 set -uo pipefail
@@ -512,9 +513,49 @@ stage_migrate() {
 }
 
 serve() {
-  load_env; start_redis; start_mariadb
+  load_env; start_redis; start_mariadb; link_php
   say "بالا آوردن وب‌سرور روی 0.0.0.0:8080"
   cd "$APP" && exec "$TOOLS/phpsrc/bin/php" -S 0.0.0.0:8080 -t public public/index.php
+}
+
+# -----------------------------------------------------------------------------
+# php را در PATH سراسری قرار می‌دهد.
+# تست‌های Integration/Distributed با shell_exec("php cli.php ...") اجرا می‌شوند
+# و به باینری php در PATH نیاز دارند؛ بدون این symlink آن‌ها fail می‌کنند.
+# -----------------------------------------------------------------------------
+link_php() {
+  [ -x "$TOOLS/phpsrc/bin/php" ] || return 0
+  if [ ! -e /usr/local/bin/php ] || [ "$(readlink -f /usr/local/bin/php)" != "$TOOLS/phpsrc/bin/php" ]; then
+    ln -sf "$TOOLS/phpsrc/bin/php" /usr/local/bin/php 2>/dev/null \
+      && ok "php در /usr/local/bin/php لینک شد" \
+      || warn "امکان ساخت symlink در /usr/local/bin نبود — PATH را دستی تنظیم کنید"
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# وب‌سرور تست روی پورت 8090 (پیش‌نیاز tests/Integration/Distributed)
+# HealthEndpointsTest و MetricsTest صریحاً 127.0.0.1:8090 را صدا می‌زنند.
+# -----------------------------------------------------------------------------
+start_test_server() {
+  curl -s -o /dev/null -m 2 http://127.0.0.1:8090/ 2>/dev/null && return 0
+  mkdir -p "$RUNTIME/web"
+  ( cd "$APP" && nohup "$TOOLS/phpsrc/bin/php" -S 0.0.0.0:8090 -t public public/index.php \
+      >>"$RUNTIME/web/test-8090.log" 2>&1 & )
+  for _ in $(seq 1 20); do
+    curl -s -o /dev/null -m 2 http://127.0.0.1:8090/ 2>/dev/null && { ok "وب‌سرور تست روی 8090 بالا آمد"; return 0; }
+    sleep 1
+  done
+  warn "وب‌سرور تست 8090 بالا نیامد"
+}
+
+# -----------------------------------------------------------------------------
+# اجرای کامل سوئیت تست با تمام پیش‌نیازهای محیطی
+#   bash scripts/provision.sh --test
+# -----------------------------------------------------------------------------
+run_tests() {
+  load_env; start_redis; start_mariadb; link_php; start_test_server
+  say "اجرای PHPUnit"
+  cd "$APP" && PATH="$TOOLS/phpsrc/bin:$PATH" "$TOOLS/phpsrc/bin/php" vendor/bin/phpunit --no-coverage "$@"
 }
 
 status() {
@@ -527,6 +568,8 @@ status() {
   printf "  %-14s " "MariaDB"; "$TOOLS/mariadb/bin/mariadb" --socket="$RUNTIME/mariadb/run/mysql.sock" -u root -e "SELECT 1" >/dev/null 2>&1 && echo "${GRN}بالا${RST}" || echo "${DIM}پایین${RST}"
   printf "  %-14s " "Redis";   "$TOOLS/redis/bin/redis-cli" -h 127.0.0.1 ping >/dev/null 2>&1 && echo "${GRN}بالا${RST}" || echo "${DIM}پایین${RST}"
   printf "  %-14s " "وب:8080"; curl -s -o /dev/null -m 3 -w '%{http_code}\n' http://127.0.0.1:8080/ 2>/dev/null || echo "${DIM}پایین${RST}"
+  printf "  %-14s " "تست:8090"; curl -s -o /dev/null -m 3 -w '%{http_code}\n' http://127.0.0.1:8090/ 2>/dev/null || echo "${DIM}پایین${RST}"
+  printf "  %-14s " "php در PATH"; command -v php >/dev/null 2>&1 && echo "${GRN}$(command -v php)${RST}" || echo "${RED}نیست (--start را اجرا کنید)${RST}"
 }
 
 # -----------------------------------------------------------------------------
@@ -537,7 +580,8 @@ main() {
       --force)  FORCE=1 ;;
       --status) status; exit 0 ;;
       --serve)  serve; exit 0 ;;
-      --start)  load_env; start_redis; start_mariadb; status; exit 0 ;;
+      --test)   run_tests; exit $? ;;
+      --start)  load_env; start_redis; start_mariadb; link_php; start_test_server; status; exit 0 ;;
       -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
       *) stages+=("$a") ;;
     esac
@@ -550,5 +594,6 @@ main() {
   status
   echo
   echo "  برای بالا آوردن سایت:  ${GRN}bash scripts/provision.sh --serve${RST}"
+  echo "  برای اجرای تست‌ها:     ${GRN}bash scripts/provision.sh --test${RST}"
 }
 main "$@"
