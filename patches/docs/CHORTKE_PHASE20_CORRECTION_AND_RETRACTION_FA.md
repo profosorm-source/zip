@@ -408,3 +408,105 @@ reload پیاپی به سبک worker، و reload دامنه‌دار). با کد
 | Contract | ۲۹ تست / ۳۰۶ ادعا |
 | PHPStan canonical (app+core) | No errors |
 | PHPStan core-honest (بدون ignore) | No errors |
+
+---
+
+## پیوست هـ — توصیهٔ ۵: حذف کامل ۳۳ مورد `assertTrue(true)`
+
+### ۱) خلاصهٔ اجرایی
+
+| سنجه | پیش از اصلاح | پس از اصلاح |
+|---|---|---|
+| موارد `assertTrue(true)` در `tests/` | **۳۳** | **۰** |
+| ادعاهای تهیِ هم‌خانواده (`assertFalse(false)` و…) | ۶ | **۰** |
+| ادعاهای واقعیِ خاموش‌شده با کامنت `// was:` | ۴ | **۰** |
+| Unit+Integration | ۲۰۸۶ تست / ۷۰۹۸ ادعا | **۲۰۸۷ تست / ۷۲۴۳ ادعا** |
+| Runtime | ۱۲۶۷ / ۴۰۳۶ | **۱۲۶۸ / ۴۰۹۴** |
+| Architecture | ۸۱۶ / ۳۰۶۲ | **۸۱۶ / ۳۰۹۱** |
+| Chaos | ۸ / ۹۱ | **۸ / ۹۱** |
+| هشدارهای risky | چند مورد (Mockery) | **۰** |
+
+هیچ تستی حذف، نادیده یا تضعیف نشد. تعداد تست‌ها فقط افزایش یافت (۲۰۸۶→۲۰۸۷) و ادعاها **۱۴۵** واحد رشد کرد.
+
+### ۲) دسته‌بندی ۳۳ مورد و درمان هر دسته
+
+**دستهٔ الف — تست‌های Mockery (۹ فایل).** `assertTrue(true)` صرفاً برای خاموش‌کردن هشدار «تست بدون ادعا» بود، در حالی که ادعای واقعی همان `shouldReceive` بود که PHPUnit آن را نمی‌شمرد.
+*درمان:* افزودن `Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration` تا انتظارات Mockery به‌عنوان ادعای رسمی PHPUnit شمرده شوند، سپس حذف خط تهی.
+
+**دستهٔ ب — نگهبان‌های ساختاری (۴ مورد).** الگوی `if (!$parent) { assertTrue(true); return; }` یک **قبولیِ خاموش** بود: اگر قرارداد ارث‌بری می‌شکست، تست سبز می‌ماند.
+*درمان:* خودِ شرطِ نگهبان به ادعا تبدیل شد (`assertNotFalse($parent, …)`). این کار مجاز است چون تستی دیگر در همان فایل، ارث‌بری از `BaseController` را الزامی می‌کند. در `AdminControllersStructuralTest` بررسی شد که هر ۵۱ کلاسِ dataProvider والد دارند و `BaseAdminController`/`SystemController` اصلاً در فهرست نیستند — یعنی آن شاخه **کد مرده** بود.
+
+**دستهٔ ج — حلقه‌های بدون نمونه (۱ مورد).** در `UserControllersStructuralTest` حلقهٔ بررسی نوع بازگشتی ممکن بود هیچ متدی را نمونه‌برداری نکند.
+*درمان:* `assertNotEmpty($ownPublic, …)` تا حلقهٔ تهی با صدای بلند شکست بخورد.
+
+**دستهٔ د — «استثنا پرتاب نشد یعنی قبول» (۳ مورد).** درمان بسته به مورد:
+- `RedisGracefulTest`: به‌جای «خطا نداد»، **مقدار بازگشتیِ دقیق** هر متد در حالت قطعیِ Redis ادعا شد (`get`/`hGet` → `null`؛ `set`/`del`/`expire`/`incr`/`ping`/`eval`/… → `false`)، مطابق `match` ایمنِ `core/Redis.php:214-227`.
+- `TicketServiceTest`: چون `guardCanCreateTicket` نوع `void` دارد، مشاهده‌پذیرِ واقعی «چه چیزی به Validator می‌رسد» است. با `andReturnUsing` ورودی ضبط و ادغام پیش‌فرض‌ها (`category`، `priority`) و هر ۵ کلید قاعده ادعا شد.
+- `WithdrawalUserServiceTest`: `try/catch` با پیام `fail()` گویا و `assertNull` روی فراخوانی دوم.
+
+**دستهٔ هـ — ادعاهای عمداً خاموش‌شده (۴ مورد، خارج از شمارش ۳۳ اما هم‌ماهیت).** در `TracingPropagationTest` چهار ادعای واقعی با کامنت `// was: assertStringContainsString(...)` غیرفعال شده بودند، در حالی که فایل همچنان `file_get_contents` را صدا می‌زد. یعنی تست کاملاً بی‌اثر بود.
+
+### ۳) چرا آن چهار ادعا خاموش شده بودند — و اصلاح درست
+
+ریشه‌یابی نشان داد ادعای `correlation_id` **می‌گذشت** (۳ تا ۶ بار در هر Listener)، اما ادعای `REQUEST_ID` **رد می‌شد**: کد اصلاً از ثابت `REQUEST_ID` استفاده نمی‌کند، بلکه هدر `x-request-id` را می‌خواند:
+
+```php
+$correlationId = app()->request->header('x-request-id');
+$correlationId = $correlationId ?? ($data['correlation_id'] ?? 'cli-' . bin2hex(random_bytes(4)));
+```
+
+پس ادعا اشتباه بود، نه کد. راه‌حلِ به‌کاررفته در پروژه (خاموش‌کردن **هر چهار** ادعا) کل ارزش تست را نابود کرد.
+*اصلاح:* ادعای نادرست با سه ادعای درست جایگزین شد — وجود `correlation_id`، خواندن `x-request-id` در بستر HTTP، و ساخت شناسهٔ جایگزین `'cli-'` در بستر CLI. نتیجه: `TracingPropagationTest` از ۴ تست / ۶ ادعا به **۴ تست / ۱۲ ادعا**.
+
+### ۴) اعتبارسنجی فراتر از «سبز بودن»
+
+سبز بودن به‌تنهایی اثبات نمی‌کند تست معنادار است. دو راستی‌آزماییِ مستقل انجام شد:
+
+**الف) آزمون جهش روی `WithdrawalUserServiceTest`** — تنها موردی که شمار ادعایش تغییر نکرد و بنابراین مشکوک بود:
+
+```bash
+# تزریق throw new RuntimeException('MUTANT') در ابتدای guardCanCreateWithdrawal
+Tests: 2, Assertions: 2, Failures: 2
+برداشتِ معتبر نباید رد شود، اما استثنا رخ داد: RuntimeException — MUTANT
+# پس از بازگردانی: OK (2 tests, 2 assertions)
+```
+تست باگ را می‌گیرد و پیام شکست خودگویاست.
+
+**ب) اجرای واقعیِ مسیر «Redis قطع»** — زیر `phpunit.xml` این کلاس skip می‌شود چون Redis بالاست. برای اثبات، در فضای‌نام شبکهٔ خصوصی و بدون شنوندهٔ Redis اجرا شد:
+
+```bash
+unshare -rn bash -c 'ip link set lo up; cd /home/user/extract/workspace1e/chortke; \
+  php -d memory_limit=2G vendor/bin/phpunit -c phpunit.redis-unavailable.xml'
+# → OK (3 tests, 23 assertions)   [پیش‌تر: ۱۳ ادعای تهی]
+```
+
+### ۵) جدول کامل تغییرات به تفکیک کلاس
+
+| کلاس | پیش | پس |
+|---|---|---|
+| ScoreCommandServiceTest | ۱۰ / ۱۱ | ۱۱ / ۲۱ |
+| CacheInvalidationTest | ۱۰ / ۱۳ | ۱۰ / ۱۵ |
+| EventDispatcherTest | ۵ / ۱۱ | ۵ / ۱۷ |
+| VitrineServiceBehaviorTest | ۴ / ۴ | ۴ / ۶ |
+| SearchEcosystemTest | ۸ / ۱۴ | ۸ / ۲۹ |
+| StabilityTest | ۴۲ / ۶۳۱ | ۴۲ / ۶۳۲ |
+| BulkOperationsServiceTest | ۵ / ۸ | ۵ / ۱۴ |
+| AnalyticsServiceTest | ۴ / ۶ | ۴ / ۱۰ |
+| ApiControllersStructuralTest | ۵۴ / ۶۳ | ۵۴ / ۷۵ |
+| RootControllersStructuralTest | ۶۲ / ۶۷ | ۶۲ / ۸۰ |
+| AdminControllersStructuralTest | ۳۰۱ / ۳۷۵ | ۳۰۱ / ۳۷۶ |
+| TicketServiceTest | ۷ / ۱۷ | ۷ / ۳۳ |
+| TracingPropagationTest | ۴ / ۶ | ۴ / ۱۲ |
+| RedisGracefulTest (netns) | ۳ / ۱۳ (تهی) | ۳ / ۲۳ |
+| NotificationRetryPolicyTest | ۸ / ۱۳ | ۸ / ۱۳ (ادعاها اکنون معنادار) |
+| ListenersBehaviorTest | ۶ / ۸ | ۶ / ۸ (همان) |
+| UserControllersStructuralTest | ۱۸۶ / ۴۰۱ | ۱۸۶ / ۴۰۱ (همان) |
+| WithdrawalUserServiceTest | ۲ / ۲ | ۲ / ۲ (تأییدشده با آزمون جهش) |
+
+### ۶) درس معماری
+
+سه ضدالگو در این پایگاه کد تکرار شده بود و هر سه یک ریشه دارند: **رفع هشدار به‌جای رفع مسئله**.
+
+1. `assertTrue(true)` برای ساکت‌کردن هشدار risky در تست‌های Mockery — درمان درست، اتصال رسمی Mockery به PHPUnit است.
+2. نگهبانِ `if (!X) { assertTrue(true); return; }` — این «چشم‌پوشی» نیست، «قبولیِ خاموش» است. اگر شرط واقعاً نباید رخ دهد، باید ادعا شود؛ اگر مجاز است، باید `markTestSkipped` با دلیل مستند باشد.
+3. خاموش‌کردن ادعای شکست‌خورده با کامنت `// was:` — پرهزینه‌ترین مورد، چون ظاهرِ پوشش را حفظ می‌کند ولی هیچ چیز را نمی‌سنجد. در اینجا ادعا غلط بود نه کد؛ اصلاحِ ادعا کافی بود.
