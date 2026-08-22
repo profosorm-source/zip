@@ -41,8 +41,14 @@ def test_governance_L1_smoke_levels_and_scores_page(client, assertions):
     client.login("admin@chortke.ir", DEFAULT_PASSWORD, admin=True)
     code, body = client.get('/admin/levels')
     assert_true(assertions, f"صفحه مدیریت سطوح HTTP {code}", code in (200, 302))
-    code2, body2 = client.get('/admin/scores')
-    assert_true(assertions, f"صفحه مدیریت امتیازات HTTP {code2}", code2 in (200, 302, 404))
+    # مسیر «/admin/scores» در routes/admin.php وجود ندارد؛ پذیرش 404 در نسخهٔ
+    # پیشین باعث می‌شد این ادعا حتی برای یک مسیر ناموجود هم سبز بماند.
+    # مسیر واقعی مدیریت امتیازات، ScoreManagementController::showUserScores
+    # روی '/admin/users/{id}/scores' است (routes/admin.php:438).
+    uid = ensure_test_user("gov.L1.5@chortke.test", verified=True)
+    code2, body2 = client.get(f'/admin/users/{uid}/scores')
+    assert_true(assertions, f"صفحه مدیریت امتیازات کاربر HTTP {code2}", code2 in (200, 302))
+    assert_true(assertions, "بدون Fatal در صفحه امتیازات", 'Fatal' not in body2)
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۲: مسیر خوش‌اقبال (Happy Path) — L2

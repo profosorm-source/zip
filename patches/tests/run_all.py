@@ -312,11 +312,16 @@ def run_browser_test(script_path, module_name):
             print(f"{MAGENTA}│  {line.strip()}{RESET}")
             break
 
+    saw_failure_marker = False
     for line in output.split("\n"):
         if "✗" in line or "JS_ERROR" in line or "PAGE_ERROR" in line:
             print(f"{RED}│  {line.strip()}{RESET}")
+            saw_failure_marker = True
 
-    return result.returncode == 0
+    # دفاع لایه‌دوم: اسکریپت‌های قدیمی مرورگری خطا را در catch می‌بلعیدند و با
+    # کد خروج ۰ تمام می‌شدند، بنابراین اتکای صرف به returncode شکست‌ها را پنهان
+    # می‌کرد. اگر نشانهٔ شکست در خروجی باشد، حتی با returncode==0 ناموفق است.
+    return result.returncode == 0 and not saw_failure_marker
 
 
 def run_certify_mode():
