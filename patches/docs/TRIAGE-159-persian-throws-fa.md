@@ -80,11 +80,33 @@
 `Admin/ContentController:285`، `UserVacation:78`، `CaptchaService:233,245`،
 `TicketCommandService:150,162`، `UploadService:208`،
 `TwoFactorService:118`، `DisputeCommandService:117,219,613`،
-`UserService:85,93`، `AdVideoRewardManager:348`.
+`AdVideoRewardManager:348`. (مورد `UserService:85,93` در بخش تصحیح زیر رد شد.)
 
-موردی با شواهد کامل: `UserService::register()` خطوط ۸۵/۹۳
-(«کد معرف وارد شده معتبر نیست») در `ProcessRegistrationJob.php:55` گرفته می‌شود،
-اما در `Admin/UserController.php:139` **بدون try/catch** فراخوانی می‌شود → ۵۰۰.
+### تصحیح: `UserService:85,93` رد شد (اثبات با HTTP واقعی)
+
+پیش‌تر این مورد را «بهترین شاهد» نامیدم: `UserService::register()` خطوط ۸۵/۹۳
+(«کد معرف وارد شده معتبر نیست») در `ProcessRegistrationJob.php:55` گرفته می‌شود
+اما `Admin/UserController.php:139` بدون try/catch صدایش می‌زند → ادعا: ۵۰۰.
+**این ادعا نادرست بود و با آزمون واقعی روی ۸۰۹۰ رد شد.**
+
+۱. `Admin/UserController.php:139` آرایه‌ای با کلیدهای ثابت
+   (`full_name, email, password, role, status, email_verified_at`) می‌سازد و
+   **هرگز `referral_code_used` را پاس نمی‌دهد**. بدون آن، شرط خط ۸۲
+   (`$referralCodeUsed !== ''`) هرگز درست نمی‌شود، پس خطوط ۸۵/۹۳
+   از این مسیر **دست‌نیافتنی‌اند**.
+۲. تنها فراخوانی که کد معرف می‌فرستد `AuthController.php:231-237` است و آن هم
+   از مسیر `AuthService::register()` → `ProcessRegistrationJob::handle()` می‌گذرد
+   که `\InvalidArgumentException` را می‌گیرد.
+۳. اثبات عملی (ثبت‌نام واقعی با `referral_code=NOSUCHCODE9Z` روی ۸۰۹۰، با
+   `_csrf_token` و کپچای ریاضی واقعی): پاسخ **۳۰۲** به `/register` و پیام فارسی
+   «کد معرف وارد شده معتبر نیست.» در فلش — **نه ۵۰۰**. همچنین
+   `SELECT COUNT(*) FROM users WHERE email LIKE 'refprobe_%'` برابر **۰** بود،
+   یعنی رکورد ناقصی هم به‌جا نمی‌ماند.
+
+درس روش‌شناختی: تحلیل ایستا «تابع پرتاب می‌کند + فراخوان try/catch ندارد» کافی
+نیست؛ باید بررسی شود که آیا **ورودی لازم برای رسیدن به آن پرتاب** اصلاً از آن
+مسیر عبور می‌کند یا نه. ۲۲ مورد باقی‌مانده هم تا وقتی با HTTP واقعی بازتولید
+نشوند، «کاندید» می‌مانند نه «باگ».
 
 ## ۴) علت ریشه‌ای فلیکِ Chaos (مستقل از موارد بالا)
 
