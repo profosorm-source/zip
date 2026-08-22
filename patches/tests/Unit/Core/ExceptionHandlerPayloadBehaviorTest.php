@@ -182,6 +182,120 @@ final class ExceptionHandlerPayloadBehaviorTest extends TestCase
      * اجرای GlobalExceptionMiddleware از طریق Pipeline واقعی، دقیقاً همان‌گونه
      * که Router در زمان اجرا آن را می‌سازد.
      */
+    /**
+     * BUG-CATCHER (CORE-021): بدنه‌ی بیش از حد بزرگ باید 413 برگرداند نه 500.
+     * PayloadTooLargeException در core/Request.php پرتاب می‌شود، هرگز جایی
+     * catch نمی‌شود و کد 413 را با خود حمل می‌کند؛ اما هیچ شاخه‌ای در
+     * ExceptionHandler برای آن وجود نداشت و به‌صورت 500/INTERNAL_ERROR
+     * به کاربر نمایش داده می‌شد (اثبات‌شده با درخواست واقعی 13 مگابایتی).
+     */
+    public function test_payload_too_large_is_reported_as_413_not_500(): void
+    {
+        $payload = \Core\ExceptionHandler::getJsonPayloadForException(
+            new \Core\Exceptions\PayloadTooLargeException()
+        );
+
+        $this->assertSame(413, $payload['code']);
+        $this->assertSame('PAYLOAD_TOO_LARGE', $payload['error_code']);
+        $this->assertFalse($payload['success']);
+    }
+
+    /**
+     * BUG-CATCHER: مدار قطع‌شده یعنی سرویس موقتاً در دسترس نیست (503)،
+     * که کد خودِ exception نیز هست، ولی دور ریخته می‌شد و 500 برمی‌گشت.
+     */
+    public function test_circuit_breaker_open_is_reported_as_503(): void
+    {
+        $payload = \Core\ExceptionHandler::getJsonPayloadForException(
+            new \Core\Exceptions\CircuitBreakerOpenException('zarinpal')
+        );
+
+        $this->assertSame(503, $payload['code']);
+        $this->assertSame('SERVICE_UNAVAILABLE', $payload['error_code']);
+    }
+
+    /**
+     * BUG-CATCHER: RateLimitedFailure کد 429 خود را داشت اما 500 برمی‌گشت.
+     */
+    public function test_provider_rate_limited_failure_is_reported_as_429(): void
+    {
+        $payload = \Core\ExceptionHandler::getJsonPayloadForException(
+            new \Core\Exceptions\RateLimitedFailure('Provider rate limit exceeded', 30)
+        );
+
+        $this->assertSame(429, $payload['code']);
+        $this->assertSame('RATE_LIMITED', $payload['error_code']);
+    }
+
+    /**
+     * BUG-CATCHER: خرابی سرویس بیرونی یک خطای دروازه (502) است، نه خطای
+     * داخلی ما. PermanentFailure در 12 نقطه از آداپتورها پرتاب می‌شود.
+     */
+    public function test_external_service_failures_are_reported_as_502(): void
+    {
+        foreach ([
+            new \Core\Exceptions\ExternalServiceException('provider exploded'),
+            new \Core\Exceptions\PermanentFailure('invalid credentials'),
+        ] as $exception) {
+            $payload = \Core\ExceptionHandler::getJsonPayloadForException($exception);
+
+            $this->assertSame(502, $payload['code'], get_class($exception));
+            $this->assertSame('EXTERNAL_SERVICE_ERROR', $payload['error_code'], get_class($exception));
+        }
+    }
+
+    /**
+     * BUG-CATCHER: خطاهای گذرا/عدم دسترس‌بودن provider باید 503 باشند تا
+     * کلاینت بداند تلاش مجدد منطقی است.
+     */
+    public function test_transient_and_unavailable_failures_are_reported_as_503(): void
+    {
+        foreach ([
+            new \Core\Exceptions\TransientException('timeout'),
+            new \Core\Exceptions\ProviderUnavailable('provider down'),
+        ] as $exception) {
+            $payload = \Core\ExceptionHandler::getJsonPayloadForException($exception);
+
+            $this->assertSame(503, $payload['code'], get_class($exception));
+            $this->assertSame('SERVICE_UNAVAILABLE', $payload['error_code'], get_class($exception));
+        }
+    }
+
+    /**
+     * PRESERVER: InfrastructureException پایه (بدون طبقه‌بندی دقیق‌تر) باید
+     * همچنان 500 بماند — این تغییر نباید کل درخت را به 5xx نرم تبدیل کند.
+     */
+    public function test_generic_infrastructure_failure_remains_500(): void
+    {
+        $payload = \Core\ExceptionHandler::getJsonPayloadForException(
+            new \Core\Exceptions\InfrastructureException('disk on fire')
+        );
+
+        $this->assertSame(500, $payload['code']);
+        $this->assertSame('INTERNAL_ERROR', $payload['error_code']);
+    }
+
+    /**
+     * PRESERVER: پیام خطاهای زیرساختی نباید جزئیات داخلی را لو بدهد وقتی
+     * debug خاموش است (نشت اطلاعات).
+     */
+    public function test_external_failure_message_is_not_leaked_when_debug_is_off(): void
+    {
+        $previous = config('app.debug', false);
+        config_set('app.debug', false);
+
+        try {
+            $payload = \Core\ExceptionHandler::getJsonPayloadForException(
+                new \Core\Exceptions\PermanentFailure('SECRET api key sk_live_12345 rejected')
+            );
+
+            $this->assertSame(502, $payload['code']);
+            $this->assertStringNotContainsString('sk_live_12345', (string) $payload['message']);
+        } finally {
+            config_set('app.debug', $previous);
+        }
+    }
+
     private function runThroughGlobalPipeline(callable $controller): \Core\Response
     {
         $request = \Mockery::mock(\Core\Request::class);

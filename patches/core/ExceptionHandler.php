@@ -868,6 +868,47 @@ private static function extractAppOriginFromTrace(\Throwable $exception): array
                 if ($exception instanceof \App\Exceptions\PaymentVerificationException && $exception->getDetails()) {
                     $contract = $contract->withDetails($exception->getDetails());
                 }
+            } elseif ($exception instanceof \Core\Exceptions\PayloadTooLargeException) {
+                // CORE-021: در core/Request.php پرتاب می‌شود و هرگز catch نمی‌شود.
+                // این خطای کاربر است (بدنه‌ی بیش از حد بزرگ) نه خرابی سرور.
+                $contract = new \App\Contracts\ErrorContract(
+                    413,
+                    'PAYLOAD_TOO_LARGE',
+                    'حجم داده‌ی ارسالی بیش از حد مجاز است'
+                );
+            } elseif ($exception instanceof \Core\Exceptions\CircuitBreakerOpenException) {
+                // مدار باز = سرویس موقتاً در دسترس نیست؛ کلاینت می‌تواند بعداً تلاش کند.
+                $contract = new \App\Contracts\ErrorContract(
+                    503,
+                    'SERVICE_UNAVAILABLE',
+                    'سرویس موقتاً در دسترس نیست؛ لطفاً کمی بعد تلاش کنید'
+                );
+            } elseif ($exception instanceof \Core\Exceptions\RateLimitedFailure) {
+                // سقف نرخ سمت provider — همان 429 که خود exception حمل می‌کند.
+                $contract = new \App\Contracts\ErrorContract(
+                    429,
+                    'RATE_LIMITED',
+                    'محدودیت نرخ درخواست سرویس بیرونی؛ لطفاً کمی بعد تلاش کنید'
+                );
+            } elseif ($exception instanceof \Core\Exceptions\ProviderUnavailable
+                || $exception instanceof \Core\Exceptions\TransientException) {
+                // خطای گذرا یا عدم دسترس‌بودن provider → 503 (تلاش مجدد منطقی است).
+                $contract = new \App\Contracts\ErrorContract(
+                    503,
+                    'SERVICE_UNAVAILABLE',
+                    'سرویس موقتاً در دسترس نیست؛ لطفاً کمی بعد تلاش کنید'
+                );
+            } elseif ($exception instanceof \Core\Exceptions\ExternalServiceException) {
+                // شکست سرویس بیرونی (شامل PermanentFailure) خطای دروازه است نه
+                // خطای داخلی ما. پیام خام هرگز افشا نمی‌شود مگر در حالت debug،
+                // چون ممکن است شامل کلید/پاسخ خام provider باشد.
+                $contract = new \App\Contracts\ErrorContract(
+                    502,
+                    'EXTERNAL_SERVICE_ERROR',
+                    ((bool) config('app.debug', false) && $exception->getMessage() !== '')
+                        ? $exception->getMessage()
+                        : 'خطا در ارتباط با سرویس بیرونی'
+                );
             } elseif ($exception instanceof \DomainException) {
                 $contract = \App\Contracts\ErrorContract::internalError(
                     $exception->getMessage() ?: 'خطای عملیاتی نامعتبر'
@@ -953,6 +994,27 @@ private static function extractAppOriginFromTrace(\Throwable $exception): array
                 $statusCode = $exceptionCode >= 400 && $exceptionCode <= 599 ? $exceptionCode : 500;
                 $message = $exception->getMessage() ?: 'خطا در ارتباط با درگاه پرداخت';
                 $errorCode = 'PAYMENT_GATEWAY_ERROR';
+            } elseif ($exception instanceof \Core\Exceptions\PayloadTooLargeException) {
+                $statusCode = 413;
+                $message = 'حجم داده‌ی ارسالی بیش از حد مجاز است';
+                $errorCode = 'PAYLOAD_TOO_LARGE';
+            } elseif ($exception instanceof \Core\Exceptions\CircuitBreakerOpenException) {
+                $statusCode = 503;
+                $message = 'سرویس موقتاً در دسترس نیست؛ لطفاً کمی بعد تلاش کنید';
+                $errorCode = 'SERVICE_UNAVAILABLE';
+            } elseif ($exception instanceof \Core\Exceptions\RateLimitedFailure) {
+                $statusCode = 429;
+                $message = 'محدودیت نرخ درخواست سرویس بیرونی؛ لطفاً کمی بعد تلاش کنید';
+                $errorCode = 'RATE_LIMITED';
+            } elseif ($exception instanceof \Core\Exceptions\ProviderUnavailable
+                || $exception instanceof \Core\Exceptions\TransientException) {
+                $statusCode = 503;
+                $message = 'سرویس موقتاً در دسترس نیست؛ لطفاً کمی بعد تلاش کنید';
+                $errorCode = 'SERVICE_UNAVAILABLE';
+            } elseif ($exception instanceof \Core\Exceptions\ExternalServiceException) {
+                $statusCode = 502;
+                $message = 'خطا در ارتباط با سرویس بیرونی';
+                $errorCode = 'EXTERNAL_SERVICE_ERROR';
             } elseif ($exception instanceof \DomainException) {
                 $statusCode = 400;
                 $message = $exception->getMessage() ?: 'خطای پردازش درخواست';
