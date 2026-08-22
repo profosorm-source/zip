@@ -13,39 +13,48 @@ from scenario_test import *
 # ═══════════════════════════════════════════════════════════════════
 def test_installer_L1_smoke_installer_page(client, assertions):
     """L1-1: صفحه ویزارد نصب‌کننده سیستم بدون کرش لود می‌شود"""
-    code, body = client.get('/install')
-    assert_true(assertions, f"صفحه ویزارد نصب HTTP {code}", code in (200, 302, 404, 403))
+    # نصب‌کننده یک اسکریپت مستقل در public/install/index.php است و در روتر
+    # ثبت نشده؛ مسیر واقعی آن '/install/' است و مراحل با ?step=N کنترل می‌شوند.
+    # این اسکریپت فقط دو حالت دارد: رندر ویزارد (۲۰۰) یا ردِ آگاهانه با ۴۰۳
+    # (وجود storage/installed.lock یا محیط production). پذیرش ۴۰۴ یعنی حتی
+    # حذف کامل نصب‌کننده هم سبز می‌ماند.
+    code, body = client.get('/install/', expect_code=None)
+    assert_true(assertions, f"صفحه ویزارد نصب HTTP {code}", code in (200, 403))
     assert_true(assertions, "بدون Fatal", 'Fatal' not in body)
 
 def test_installer_L1_smoke_step_verification(client, assertions):
     """L1-2: بررسی در دسترس بودن اندپوینت اعتبارسنجی مراحل نصب"""
-    code, body = client.get('/install/step/1', expect_code=None)
-    assert_true(assertions, f"اندپوینت مراحل نصب HTTP {code}", code in (200, 302, 404, 403))
+    # مسیر '/install/step/1' هرگز وجود نداشته است؛ مرحله با کوئری ?step=N
+    # انتخاب می‌شود (خط ۵۹ اسکریپت نصب: min(7, (int)$_GET['step'])).
+    code, body = client.get('/install/?step=1', expect_code=None)
+    assert_true(assertions, f"اندپوینت مراحل نصب HTTP {code}", code in (200, 403))
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۲: مسیر خوش‌اقبال (Happy Path) — L2
 # ═══════════════════════════════════════════════════════════════════
 def test_installer_L2_submit_database_config(client, assertions):
     """L2-1: ارسال موفق مشخصات اتصال به دیتابیس در ویزارد نصب"""
-    code, body, _ = client.post('/install/database', {
+    # فرم دیتابیس، مرحلهٔ ۲ است و به همان '/install/?step=2' پست می‌شود.
+    code, body, _ = client.post('/install/?step=2', {
         'db_host': '127.0.0.1',
         'db_name': 'chortk',
         'db_user': 'root',
         'db_pass': ''
     })
-    assert_true(assertions, f"ارسال مشخصات دیتابیس HTTP {code}", code in (200, 302, 404, 403))
+    assert_true(assertions, f"ارسال مشخصات دیتابیس HTTP {code}", code in (200, 302, 403))
 
 def test_installer_L2_run_migration_manager(client, assertions):
     """L2-2: اجرای موفق مایگریشن‌های دیتابیس از طریق ویزارد نصب (MigrationManager)"""
-    code, body, _ = client.post('/install/migrate', {})
-    assert_true(assertions, f"اجرای مایگریشن‌ها HTTP {code}", code in (200, 302, 404, 403))
+    # اجرای مایگریشن‌ها در مرحلهٔ ۶ اسکریپت نصب انجام می‌شود.
+    code, body, _ = client.post('/install/?step=6', {})
+    assert_true(assertions, f"اجرای مایگریشن‌ها HTTP {code}", code in (200, 302, 403))
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۳: مسیرهای شکست (Failure Paths) — L3
 # ═══════════════════════════════════════════════════════════════════
 def test_installer_L3_invalid_db_credentials(client, assertions):
     """L3-1: تلاش برای پیکربندی دیتابیس با مشخصات اتصال اشتباه رد می‌شود"""
-    code, body, _ = client.post('/install/database', {
+    code, body, _ = client.post('/install/?step=2', {
         'db_host': 'invalid_host_999',
         'db_name': 'nonexistent_db',
         'db_user': 'wrong_user',
@@ -56,7 +65,7 @@ def test_installer_L3_invalid_db_credentials(client, assertions):
     assert_true(
         assertions,
         f"خطای اتصال دیتابیس بدون کرش مدیریت شد (HTTP {code})",
-        code in (200, 302, 400, 403, 404, 422),
+        code in (200, 302, 400, 403, 422),
     )
     assert_true(assertions, f"سرور نباید ۵xx بدهد (HTTP {code})", code < 500)
 
@@ -70,14 +79,14 @@ def test_installer_L4_sec_install_lock_protection(client, assertions):
     with open(lock_file, 'w') as f:
         f.write('LOCKED')
     
-    code, body = client.get('/install')
-    assert_true(assertions, f"گارد قفل نصب بررسی شد HTTP {code}", code in (302, 403, 404, 200))
+    code, body = client.get('/install/', expect_code=None)
+    assert_true(assertions, f"گارد قفل نصب بررسی شد HTTP {code}", code in (200, 302, 403))
     if os.path.exists(lock_file):
         os.remove(lock_file)
 
 def test_installer_L4_sqli_in_install_prefix(client, assertions):
     """L4-2: تزریق SQL در پارامتر پیشوند جداول (Table Prefix) مسدود و اسکیپ می‌شود"""
-    code, body, _ = client.post('/install/database', {
+    code, body, _ = client.post('/install/?step=2', {
         'table_prefix': "tbl_' OR '1'='1"
     })
     no_crash = 'SQLSTATE' not in body and 'Fatal' not in body
@@ -88,18 +97,18 @@ def test_installer_L4_sqli_in_install_prefix(client, assertions):
 # ═══════════════════════════════════════════════════════════════════
 def test_installer_L5_edge_long_site_name(client, assertions):
     """L5-1: ارسال نام سایت بسیار طولانی در ویزارد نصب (بررسی سرریز عددی Overflow)"""
-    code, body, _ = client.post('/install/site', {
+    code, body, _ = client.post('/install/?step=4', {
         'site_name': 'A' * 500,
         'admin_email': 'admin@chortke.ir'
     })
-    assert_true(assertions, f"نام سایت طولانی مدیریت شد HTTP {code}", code in (200, 302, 422, 404, 403))
+    assert_true(assertions, f"نام سایت طولانی مدیریت شد HTTP {code}", code in (200, 302, 422, 403))
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۶: همزمانی و رقابت (Concurrency & Idempotency) — L6
 # ═══════════════════════════════════════════════════════════════════
 def test_installer_L6_concurrent_install_requests(client, assertions):
     """L6-1: درخواست‌های همزمان برای اجرای ویزارد نصب (جلوگیری از تصادم جداول دیتابیس)"""
-    results = client.post_concurrent('/install/migrate', {}, count=3)
+    results = client.post_concurrent('/install/?step=6', {}, count=3)
     assert_true(assertions, f"همزمانی در اجرای نصب مدیریت شد", len(results) == 3)
 
 # ═══════════════════════════════════════════════════════════════════
@@ -107,8 +116,8 @@ def test_installer_L6_concurrent_install_requests(client, assertions):
 # ═══════════════════════════════════════════════════════════════════
 def test_installer_L7_browser_installer_wizard_nav(client, assertions):
     """L7-1: بارگذاری و بررسی فرم ویزارد نصب‌کننده در مرورگر"""
-    code, body = client.get('/install')
-    assert_true(assertions, f"ویزارد نصب در مرورگر بارگذاری شد HTTP {code}", code in (200, 302, 404, 403))
+    code, body = client.get('/install/', expect_code=None)
+    assert_true(assertions, f"ویزارد نصب در مرورگر بارگذاری شد HTTP {code}", code in (200, 403))
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۸: یکپارچگی داده (Data Integrity) — L8

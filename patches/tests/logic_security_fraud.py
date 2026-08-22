@@ -25,10 +25,18 @@ def test_security_L1_smoke_security_settings(client, assertions):
     code, body = client.get('/account/security')
     assert_true(assertions, f"صفحه تنظیمات امنیتی HTTP {code}", code in (200, 302))
 
-def test_security_L1_smoke_biometrics_endpoint(client, assertions):
-    """L1-3: بررسی در دسترس بودن اندپوینت دریافت بایومتریک رفتاری (Biometrics API)"""
-    code, body = client.get('/api/security/biometrics', expect_code=None)
-    assert_true(assertions, f"اندپوینت بایومتریک HTTP {code}", code in (200, 302, 404, 400, 405))
+def test_security_L1_smoke_security_event_endpoint(client, assertions):
+    """L1-3: بررسی در دسترس بودن اندپوینت ثبت رویداد امنیتی سمت کلاینت (Security Event API)"""
+    # نسخهٔ پیشین '/api/security/biometrics' را صدا می‌زد که در هیچ فایل
+    # مسیری تعریف نشده است؛ پذیرش 404 باعث می‌شد این ادعا برای یک اندپوینت
+    # کاملاً ناموجود هم سبز بماند. اندپوینت واقعی امنیتی که کنترلر
+    # Api\SecurityController فراهم می‌کند، در routes/public.php:52 ثبت شده است.
+    code, body, _ = client.post('/api/security/event', {
+        'event': 'suspicious_typing_pattern',
+        'score': 87,
+    })
+    assert_true(assertions, f"اندپوینت رویداد امنیتی HTTP {code}", code == 200)
+    assert_true(assertions, "پاسخ موفقیت‌آمیز JSON", '"success"' in body or 'true' in body)
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۲: مسیر خوش‌اقبال (Happy Path) — L2

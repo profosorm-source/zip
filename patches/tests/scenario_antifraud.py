@@ -21,7 +21,10 @@ def test_antifraud_L1_smoke_fraud_dashboard(client, assertions):
 def test_antifraud_L1_smoke_fingerprint_endpoint(client, assertions):
     """L1-2: بررسی در دسترس بودن اندپوینت ثبت فینگرپرینت مرورگر (Browser Fingerprint)"""
     code, body = client.get('/api/fingerprint', expect_code=None)
-    assert_true(assertions, f"اندپوینت فینگرپرینت HTTP {code}", code in (200, 302, 404, 400, 405))
+    # این اندپوینت در routes/public.php:66 فقط با متد POST تعریف شده است؛
+    # بنابراین پاسخ درست به یک درخواست GET «متد مجاز نیست» (405) است.
+    # پذیرش 404/200 در نسخهٔ پیشین، حذف شدنِ مسیر را هم سبز نگه می‌داشت.
+    assert_true(assertions, f"اندپوینت فینگرپرینت به GET پاسخ 405 می‌دهد HTTP {code}", code == 405)
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۲: مسیر خوش‌اقبال (Happy Path) — L2

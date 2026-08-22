@@ -62,7 +62,9 @@ def test_governance_L2_submit_bug_report_success(client, assertions):
         'description': 'کارت‌های ویترین در ابعاد موبایل دچار پرش می‌شوند',
         'priority': 'medium'
     })
-    assert_true(assertions, f"ثبت گزارش باگ کاربر HTTP {code}", code in (200, 302, 404, 422))
+    # '/bug-reports/store' در routes/user.php:265 پشت $authCSRF ثبت شده است؛
+    # 404 پاسخ معتبری نیست و پذیرش آن، حذف شدن مسیر را پنهان می‌کرد.
+    assert_true(assertions, f"ثبت گزارش باگ کاربر HTTP {code}", code in (200, 302, 422))
 
 def test_governance_L2_admin_update_user_level(client, assertions):
     """L2-2: ارتقای موفق سطح کاربری و تخصیص امتیاز تشویقی توسط ادمین در پنل حاکمیتی"""

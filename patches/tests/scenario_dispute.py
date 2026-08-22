@@ -21,10 +21,15 @@ def test_dispute_L1_smoke_dispute_list_page(client, assertions):
 
 def test_dispute_L1_smoke_dispute_show_page(client, assertions):
     """L1-2: صفحه جزئیات یک اختلاف بدون خطا لود می‌شود"""
-    ensure_test_user("d.L1.2@chortke.test", verified=True)
+    uid = ensure_test_user("d.L1.2@chortke.test", verified=True)
+    # نسخهٔ پیشین شناسهٔ ثابت «۱» را صدا می‌زد که ممکن است اصلاً وجود نداشته
+    # باشد و سپس با پذیرش 404 سبز می‌ماند. اینجا مانند سناریوهای L2 همین فایل
+    # یک اختلاف واقعی ساخته می‌شود تا صفحهٔ جزئیات معنادار آزموده شود.
+    db_insert(f"INSERT INTO disputes (user_id, ref_id, ref_type, status, reason, created_at, updated_at) VALUES ({uid}, 1, 'custom_task', 'open', 'Dispute L1-2', NOW(), NOW())")
+    did = db_scalar(f"SELECT id FROM disputes WHERE user_id={uid} ORDER BY id DESC LIMIT 1")
     client.login("d.L1.2@chortke.test", DEFAULT_PASSWORD)
-    code, body = client.get('/disputes/1')
-    assert_true(assertions, f"صفحه جزئیات اختلاف HTTP {code}", code in (200, 302, 404, 403))
+    code, body = client.get(f'/disputes/{did}')
+    assert_true(assertions, f"صفحه جزئیات اختلاف HTTP {code}", code in (200, 302))
 
 def test_dispute_L1_smoke_custom_tasks_disputes_page(client, assertions):
     """L1-3: صفحه اختلافات مرتبط با تسک‌های سفارشی بدون کرش لود می‌شود"""

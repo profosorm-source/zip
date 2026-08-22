@@ -27,7 +27,10 @@ def test_analytics_L1_smoke_backup_page(client, assertions):
 def test_analytics_L1_smoke_search_page(client, assertions):
     """L1-3: صفحه اصلی موتور جستجوی سازمانی بدون کرش لود می‌شود"""
     code, body = client.get('/search?q=چرتکه')
-    assert_true(assertions, f"صفحه جستجوی سازمانی HTTP {code}", code in (200, 302, 404, 0))
+    # '/search' در routes/user.php:312 پشت میان‌افزار $auth تعریف شده است، پس
+    # پاسخ درست یا 200 (کاربر واردشده) یا 302 (هدایت به ورود) است.
+    # پذیرش 404 و به‌ویژه 0 (شکست کامل اتصال) این ادعا را بی‌معنا می‌کرد.
+    assert_true(assertions, f"صفحه جستجوی سازمانی HTTP {code}", code in (200, 302))
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۲: مسیر خوش‌اقبال (Happy Path) — L2
@@ -35,7 +38,8 @@ def test_analytics_L1_smoke_search_page(client, assertions):
 def test_analytics_L2_search_query_success(client, assertions):
     """L2-1: انجام موفق جستجوی کلمه کلیدی در موتور جستجوی هوشمند و دریافت نتایج"""
     code, body = client.get('/search?q=تسک')
-    assert_true(assertions, f"جستجوی کلمه کلیدی HTTP {code}", code in (200, 302, 404, 0))
+    # همانند L1-3: مسیر قطعاً وجود دارد و پشت $auth است؛ 404/0 پاسخ معتبری نیست.
+    assert_true(assertions, f"جستجوی کلمه کلیدی HTTP {code}", code in (200, 302))
 
 def test_analytics_L2_request_database_backup(client, assertions):
     """L2-2: ثبت موفق درخواست تهیه نسخه پشتیبان (بکاپ) از پایگاه داده در پنل ادمین"""

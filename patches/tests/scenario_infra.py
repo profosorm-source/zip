@@ -21,7 +21,10 @@ def test_infra_L1_smoke_sentry_dashboard(client, assertions):
 def test_infra_L1_smoke_metrics_endpoint(client, assertions):
     """L1-2: بررسی در دسترس بودن اندپوینت صادرکننده متریک‌ها (Prometheus/Metrics)"""
     code, body = client.get('/metrics', expect_code=None)
-    assert_true(assertions, f"اندپوینت متریک‌ها HTTP {code}", code in (200, 302, 404, 401))
+    # مسیر '/metrics' در routes/missing.php:44 قطعاً تعریف شده، پس 404 هرگز
+    # پاسخ درستی نیست. MetricsController::metrics یا متریک را برمی‌گرداند (200)
+    # یا با گارد IP/توکن آن را رد می‌کند (403 — خط ۴۸ همان کنترلر).
+    assert_true(assertions, f"اندپوینت متریک‌ها HTTP {code}", code in (200, 403))
 
 def test_infra_L1_smoke_health_check_endpoint(client, assertions):
     """L1-3: بررسی در دسترس بودن اندپوینت بررسی سلامت (Health Check)"""

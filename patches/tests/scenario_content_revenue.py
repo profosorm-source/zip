@@ -44,7 +44,11 @@ def test_content_L2_create_content_success(client, assertions):
         'content': 'متن کامل مقاله آموزشی مسیر خوش‌اقبال',
         'category': 'education'
     })
-    assert_true(assertions, f"ایجاد محتوا HTTP {code}", code in (200, 302, 404, 403, 422))
+    # '/content/store' در routes/user.php:172 پشت $authCSRF تعریف شده است.
+    # پذیرش 404/403 در نسخهٔ پیشین یعنی حتی حذف مسیر یا ردِ کامل دسترسی هم
+    # سبز می‌ماند. پاسخ درست برای کاربر واردشده: 200/302 (موفق) یا 422 (خطای
+    # اعتبارسنجی) — که هر دو نشان می‌دهند درخواست واقعاً به کنترلر رسیده است.
+    assert_true(assertions, f"ایجاد محتوا HTTP {code}", code in (200, 302, 422))
 
 def test_content_L2_admin_create_placement_success(client, assertions):
     """L2-2: ایجاد موفق جایگاه تبلیغاتی جدید در سیستم توسط ادمین"""
