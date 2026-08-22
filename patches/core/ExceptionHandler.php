@@ -365,19 +365,31 @@ private static function extractAppOriginFromTrace(\Throwable $exception): array
                 $userId = $session->get('user_id');
             } catch (\Throwable $e) {}
 
+            // BUGFIX (observability): ستون‌های `level` و `context` در اسکیمای واقعی
+            // جدول error_logs وجود ندارند (مهاجرت‌های 2026_07_16_0016 و 0017 نسخه‌ی
+            // exception_class را توسعه داده‌اند). چون این درج داخل try/catch خاموش
+            // است، PDOException بلعیده می‌شد و عملاً هیچ خطایی ثبت نمی‌شد.
+            // اکنون فقط به ستون‌های موجود نگاشت می‌شود و سطح خطا در `status`
+            // و زمینه‌ی درخواست در ستون‌های اختصاصی خودشان ذخیره می‌گردد.
             $db->table('error_logs')->insert([
-                'level' => $level,
                 'message' => mb_substr($exception->getMessage(), 0, 2000),
                 'exception_class' => get_class($exception),
                 'file' => $exception->getFile(),
                 'line' => $exception->getLine(),
                 'user_id' => $userId,
-                'context' => json_encode([
-                    'url' => $_SERVER['REQUEST_URI'] ?? '',
-                    'method' => $_SERVER['REQUEST_METHOD'] ?? '',
-                    'error_code' => $errorCode,
-                    'trace_id' => $traceId
-                ], JSON_UNESCAPED_UNICODE),
+                'url' => mb_substr((string) ($_SERVER['REQUEST_URI'] ?? ''), 0, 2048),
+                'method' => mb_substr((string) ($_SERVER['REQUEST_METHOD'] ?? ''), 0, 10),
+                'ip_address' => mb_substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45) ?: null,
+                'user_agent' => (string) ($_SERVER['HTTP_USER_AGENT'] ?? '') ?: null,
+                'trace' => mb_substr(
+                    'level=' . $level
+                    . ' error_code=' . $errorCode
+                    . ' trace_id=' . $traceId . "\n"
+                    . $exception->getTraceAsString(),
+                    0,
+                    20000
+                ),
+                'status' => 'unresolved',
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
 
@@ -524,20 +536,22 @@ private static function extractAppOriginFromTrace(\Throwable $exception): array
             $tableExists = $db->query("SHOW TABLES LIKE 'error_logs'")->fetch();
             if (!$tableExists) return;
 
+            // BUGFIX (observability): مانند بالا — نگاشت به ستون‌های واقعاً موجود.
             $db->table('error_logs')->insert([
-                'level' => 'FATAL',
                 'message' => mb_substr($error['message'], 0, 2000),
-                'exception_class' => null,
+                'exception_class' => 'PHP_FATAL_ERROR',
                 'file' => $error['file'],
                 'line' => $error['line'],
                 'user_id' => null,
-                'context' => json_encode([
-                    'file' => $error['file'],
-                    'line' => $error['line'],
-                    'type' => $error['type'],
-                    'error_code' => 'PHP_FATAL_ERROR',
-                    'trace_id' => $traceId
-                ], JSON_UNESCAPED_UNICODE),
+                'url' => mb_substr((string) ($_SERVER['REQUEST_URI'] ?? ''), 0, 2048),
+                'method' => mb_substr((string) ($_SERVER['REQUEST_METHOD'] ?? ''), 0, 10),
+                'trace' => mb_substr(
+                    'level=FATAL type=' . $error['type']
+                    . ' error_code=PHP_FATAL_ERROR trace_id=' . $traceId,
+                    0,
+                    20000
+                ),
+                'status' => 'unresolved',
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
         } catch (\Throwable $e) {
