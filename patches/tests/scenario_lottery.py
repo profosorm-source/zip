@@ -16,7 +16,7 @@ def test_lottery_L1_smoke_main_page(client, assertions):
     ensure_test_user("lot.L1.1@chortke.test", verified=True)
     client.login("lot.L1.1@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/lottery')
-    assert_true(assertions, f"صفحه اصلی لاتاری HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"صفحه اصلی لاتاری HTTP {code}", code in (200, 302))
     assert_true(assertions, "بدون Fatal", 'Fatal' not in body)
 
 def test_lottery_L1_smoke_page_no_crash_guest(client, assertions):
@@ -206,14 +206,14 @@ def test_lottery_L7_browser_lottery_rounds_interaction(client, assertions):
     uid = ensure_test_user("lot.L7.1@chortke.test", verified=True)
     client.login("lot.L7.1@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/lottery')
-    assert_true(assertions, f"دوره‌های لاتاری در مرورگر بارگذاری شد HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"دوره‌های لاتاری در مرورگر بارگذاری شد HTTP {code}", code in (200, 302))
 
 def test_lottery_L7_browser_vote_form_interaction(client, assertions):
     """L7-2: تعامل با فرم نظرسنجی و رای‌گیری لاتاری در مرورگر"""
     uid = ensure_test_user("lot.L7.2@chortke.test", verified=True)
     client.login("lot.L7.2@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/lottery')
-    assert_true(assertions, f"فرم نظرسنجی در مرورگر بارگذاری شد HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"فرم نظرسنجی در مرورگر بارگذاری شد HTTP {code}", code in (200, 302))
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۸: یکپارچگی داده (Data Integrity) — L8

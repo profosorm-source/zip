@@ -14,7 +14,7 @@ from scenario_test import *
 def test_hardcore_L1_smoke_base_environment(client, assertions):
     """L1-1: بررسی در دسترس بودن دیمن‌ها و وضعیت خام پایگاه داده پیش از اعمال شوک‌های عمیق"""
     code, body = client.get('/', expect_code=None)
-    assert_true(assertions, f"پایداری اولیه سرور HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"پایداری اولیه سرور HTTP {code}", code in (200, 302))
     assert_true(assertions, "عدم وجود خطای سرور پیش از شوک", 'Fatal' not in body)
 
 # ═══════════════════════════════════════════════════════════════════

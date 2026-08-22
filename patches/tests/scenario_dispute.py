@@ -16,7 +16,7 @@ def test_dispute_L1_smoke_dispute_list_page(client, assertions):
     ensure_test_user("d.L1.1@chortke.test", verified=True)
     client.login("d.L1.1@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/disputes')
-    assert_true(assertions, f"صفحه لیست اختلافات HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"صفحه لیست اختلافات HTTP {code}", code in (200, 302))
     assert_true(assertions, "بدون Fatal", 'Fatal' not in body)
 
 def test_dispute_L1_smoke_dispute_show_page(client, assertions):
@@ -31,7 +31,7 @@ def test_dispute_L1_smoke_custom_tasks_disputes_page(client, assertions):
     ensure_test_user("d.L1.3@chortke.test", verified=True)
     client.login("d.L1.3@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/custom-tasks/disputes')
-    assert_true(assertions, f"صفحه اختلافات تسک‌های سفارشی HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"صفحه اختلافات تسک‌های سفارشی HTTP {code}", code in (200, 302))
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۲: مسیر خوش‌اقبال (Happy Path) — L2
@@ -213,7 +213,7 @@ def test_dispute_L7_browser_dispute_table_nav(client, assertions):
     uid = ensure_test_user("d.L7.1@chortke.test", verified=True)
     client.login("d.L7.1@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/disputes')
-    assert_true(assertions, f"جدول اختلافات در مرورگر بارگذاری شد HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"جدول اختلافات در مرورگر بارگذاری شد HTTP {code}", code in (200, 302))
 
 def test_dispute_L7_browser_dispute_chat_interaction(client, assertions):
     """L7-2: تعامل با رابط کاربری چت و ارسال پیام در صفحه جزئیات اختلاف در مرورگر"""
@@ -222,7 +222,7 @@ def test_dispute_L7_browser_dispute_chat_interaction(client, assertions):
     did = db_scalar(f"SELECT id FROM disputes WHERE user_id={uid} ORDER BY id DESC LIMIT 1")
     client.login("d.L7.2@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get(f'/disputes/{did}')
-    assert_true(assertions, f"صفحه گفتگوی اختلاف در مرورگر بارگذاری شد HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"صفحه گفتگوی اختلاف در مرورگر بارگذاری شد HTTP {code}", code in (200, 302))
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۸: یکپارچگی داده (Data Integrity) — L8

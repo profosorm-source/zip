@@ -27,7 +27,7 @@ def test_dispute_L1_show_page(client, assertions):
     disp_id = db_scalar(f"SELECT id FROM disputes WHERE user_id={uid} LIMIT 1")
     if disp_id:
         code, body = client.get(f'/disputes/{disp_id}')
-        assert_true(assertions, f"صفحه جزئیات HTTP {code}", code in (200, 302, 404))
+        assert_true(assertions, f"صفحه جزئیات HTTP {code}", code in (200, 302))
     else:
         code, body = client.get('/disputes/1')
         assert_true(assertions, f"صفحه جزئیات HTTP {code}", code != 500)

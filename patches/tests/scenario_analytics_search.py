@@ -15,14 +15,14 @@ def test_analytics_L1_smoke_analytics_page(client, assertions):
     """L1-1: صفحه اصلی داشبورد آمار و تحلیل ادمین بدون کرش لود می‌شود"""
     client.login("admin@chortke.ir", DEFAULT_PASSWORD, admin=True)
     code, body = client.get('/admin/analytics')
-    assert_true(assertions, f"صفحه تحلیل ادمین HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"صفحه تحلیل ادمین HTTP {code}", code in (200, 302))
     assert_true(assertions, "بدون Fatal", 'Fatal' not in body)
 
 def test_analytics_L1_smoke_backup_page(client, assertions):
     """L1-2: صفحه مدیریت بکاپ‌های سیستم بدون خطا لود می‌شود"""
     client.login("admin@chortke.ir", DEFAULT_PASSWORD, admin=True)
     code, body = client.get('/admin/backups')
-    assert_true(assertions, f"صفحه مدیریت بکاپ HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"صفحه مدیریت بکاپ HTTP {code}", code in (200, 302))
 
 def test_analytics_L1_smoke_search_page(client, assertions):
     """L1-3: صفحه اصلی موتور جستجوی سازمانی بدون کرش لود می‌شود"""
@@ -41,13 +41,15 @@ def test_analytics_L2_request_database_backup(client, assertions):
     """L2-2: ثبت موفق درخواست تهیه نسخه پشتیبان (بکاپ) از پایگاه داده در پنل ادمین"""
     client.login("admin@chortke.ir", DEFAULT_PASSWORD, admin=True)
     code, body, _ = client.post('/admin/backups/create', {})
-    assert_true(assertions, f"درخواست ساخت بکاپ HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"درخواست ساخت بکاپ HTTP {code}", code in (200, 302))
 
 def test_analytics_L2_request_data_export(client, assertions):
     """L2-3: ثبت موفق درخواست استخراج و برون‌سپاری داده‌های کاربران (Data Export)"""
     client.login("admin@chortke.ir", DEFAULT_PASSWORD, admin=True)
-    code, body, _ = client.post('/admin/export/users', {'format': 'csv'})
-    assert_true(assertions, f"درخواست خروجی داده HTTP {code}", code in (200, 302, 404))
+    # مسیر /admin/export/users در routes/admin.php فقط GET است؛ تست پیش‌تر POST
+    # می‌زد و ۴۰۴/۴۰۵ حاصل را با پذیرش ۴۰۴ پنهان می‌کرد.
+    code, body = client.get('/admin/export/users?format=csv')
+    assert_true(assertions, f"درخواست خروجی داده HTTP {code}", code in (200, 302))
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۳: مسیرهای شکست (Failure Paths) — L3
@@ -55,7 +57,7 @@ def test_analytics_L2_request_data_export(client, assertions):
 def test_analytics_L3_search_empty_query(client, assertions):
     """L3-1: تلاش برای جستجو با عبارت خالی در موتور جستجوی سازمانی"""
     code, body = client.get('/search?q=')
-    assert_true(assertions, f"جستجوی عبارت خالی بررسی شد HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"جستجوی عبارت خالی بررسی شد HTTP {code}", code in (200, 302))
 
 def test_analytics_L3_export_invalid_format(client, assertions):
     """L3-2: درخواست استخراج داده با فرمت نامعتبر (غیر از csv/json/xlsx)"""
@@ -103,7 +105,7 @@ def test_analytics_L7_browser_analytics_charts_interaction(client, assertions):
     """L7-1: بارگذاری و بررسی رندرینگ نمودارهای آماری در داشبورد تحلیل در مرورگر"""
     client.login("admin@chortke.ir", DEFAULT_PASSWORD, admin=True)
     code, body = client.get('/admin/analytics')
-    assert_true(assertions, f"داشبورد آمار در مرورگر بارگذاری شد HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"داشبورد آمار در مرورگر بارگذاری شد HTTP {code}", code in (200, 302))
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۸: یکپارچگی داده (Data Integrity) — L8

@@ -16,7 +16,7 @@ def test_prediction_L1_smoke_main_page(client, assertions):
     ensure_test_user("prd.L1.1@chortke.test", verified=True)
     client.login("prd.L1.1@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/prediction')
-    assert_true(assertions, f"صفحه اصلی پیش‌بینی HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"صفحه اصلی پیش‌بینی HTTP {code}", code in (200, 302))
     assert_true(assertions, "بدون Fatal", 'Fatal' not in body)
 
 def test_prediction_L1_smoke_my_bets_page(client, assertions):
@@ -24,14 +24,14 @@ def test_prediction_L1_smoke_my_bets_page(client, assertions):
     ensure_test_user("prd.L1.2@chortke.test", verified=True)
     client.login("prd.L1.2@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/prediction/my-bets')
-    assert_true(assertions, f"صفحه پیش‌بینی‌های من HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"صفحه پیش‌بینی‌های من HTTP {code}", code in (200, 302))
 
 def test_prediction_L1_smoke_game_detail_page(client, assertions):
     """L1-3: صفحه جزئیات یک بازی پیش‌بینی بدون کرش لود می‌شود"""
     ensure_test_user("prd.L1.3@chortke.test", verified=True)
     client.login("prd.L1.3@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/prediction/game/1')
-    assert_true(assertions, f"صفحه جزئیات بازی HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"صفحه جزئیات بازی HTTP {code}", code in (200, 302))
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۲: مسیر خوش‌اقبال (Happy Path) — L2
@@ -61,7 +61,7 @@ def test_prediction_L2_view_game_with_bets(client, assertions):
     uid = ensure_test_user("prd.L2.2@chortke.test", verified=True)
     client.login("prd.L2.2@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/prediction')
-    assert_true(assertions, f"جزئیات بازی و ضرایب بارگذاری شد HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"جزئیات بازی و ضرایب بارگذاری شد HTTP {code}", code in (200, 302))
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۳: مسیرهای شکست (Failure Paths) — L3
@@ -223,14 +223,14 @@ def test_prediction_L7_browser_prediction_feed_interaction(client, assertions):
     uid = ensure_test_user("prd.L7.1@chortke.test", verified=True)
     client.login("prd.L7.1@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/prediction')
-    assert_true(assertions, f"لیست مسابقات در مرورگر بارگذاری شد HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"لیست مسابقات در مرورگر بارگذاری شد HTTP {code}", code in (200, 302))
 
 def test_prediction_L7_browser_bet_form_interaction(client, assertions):
     """L7-2: تعامل با فرم انتخاب گزینه و ثبت مبلغ پیش‌بینی در مرورگر"""
     uid = ensure_test_user("prd.L7.2@chortke.test", verified=True)
     client.login("prd.L7.2@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/prediction/game/1')
-    assert_true(assertions, f"فرم پیش‌بینی در مرورگر بارگذاری شد HTTP {code}", code in (200, 302, 404))
+    assert_true(assertions, f"فرم پیش‌بینی در مرورگر بارگذاری شد HTTP {code}", code in (200, 302))
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۸: یکپارچگی داده (Data Integrity) — L8
