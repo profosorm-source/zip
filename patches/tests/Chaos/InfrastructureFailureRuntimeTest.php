@@ -8,6 +8,15 @@ use PHPUnit\Framework\TestCase;
 
 final class InfrastructureFailureRuntimeTest extends TestCase
 {
+    /**
+     * میزبانِ ساختگی که برای شبیه‌سازی «پارتیشن شبکه» روی lo اضافه می‌شود.
+     * عمداً 127.0.0.1 نیست، چون ValidatesExternalUrl آدرس‌های loopback را رد می‌کند.
+     */
+    private const CHAOS_BIND_HOST = '8.8.8.8';
+
+    /** سقف انتظار برای آماده‌شدن سرور آزمایشی (ثانیه). */
+    private const CHAOS_READY_TIMEOUT = 10.0;
+
     public function test_real_mariadb_deadlock_is_retried_and_both_transactions_commit(): void
     {
         $database = \Core\Application::getInstance()->container->make(\Core\Database::class);
@@ -69,7 +78,7 @@ final class InfrastructureFailureRuntimeTest extends TestCase
 
     public function test_stalled_redis_socket_times_out_and_is_marked_unavailable(): void
     {
-        $port = 8093;
+        $port = $this->reserveFreePort('127.0.0.1');
         $serverLog = tempnam(sys_get_temp_dir(), 'redis-hang-log-');
         $resultFile = tempnam(sys_get_temp_dir(), 'redis-timeout-result-');
         $workerLog = tempnam(sys_get_temp_dir(), 'redis-timeout-log-');
@@ -83,7 +92,8 @@ final class InfrastructureFailureRuntimeTest extends TestCase
             2 => ['file', $serverLog, 'a'],
         ], $pipes, base_path());
         $this->assertIsResource($server);
-        usleep(150_000);
+        // به‌جای انتظار ثابت، تا لحظه‌ی واقعیِ شنوا شدن سوکت poll می‌کنیم.
+        $this->waitForListeningPort('127.0.0.1', $port, self::CHAOS_READY_TIMEOUT, $server, $serverLog);
 
         $worker = proc_open([
             PHP_BINARY,
@@ -280,17 +290,20 @@ final class InfrastructureFailureRuntimeTest extends TestCase
 
     public function test_provider_partition_between_retry_attempts_recovers_without_false_success(): void
     {
-        $port=8094;$signal=tempnam(sys_get_temp_dir(),'provider-partition-signal-');$result=tempnam(sys_get_temp_dir(),'provider-partition-result-');$workerLog=tempnam(sys_get_temp_dir(),'provider-partition-worker-');$serverLog=tempnam(sys_get_temp_dir(),'provider-partition-server-');@unlink($signal);
+        $port=$this->reserveFreePort('127.0.0.1');$signal=tempnam(sys_get_temp_dir(),'provider-partition-signal-');$result=tempnam(sys_get_temp_dir(),'provider-partition-result-');$workerLog=tempnam(sys_get_temp_dir(),'provider-partition-worker-');$serverLog=tempnam(sys_get_temp_dir(),'provider-partition-server-');@unlink($signal);
         exec('sudo ip addr add 8.8.8.8/32 dev lo 2>/dev/null || true');
         $server=$this->startPhpServer($port,'tests/Support/provider_partition_initial_server.php',$serverLog,['CHAOS_PROVIDER_SIGNAL'=>$signal]);
         if (!is_resource($server)) $this->fail('Initial provider server did not start.');
         $worker=null;$recovered=null;
         try{
-            usleep(120000);
-            $worker=proc_open([PHP_BINARY,base_path('tests/Support/provider_partition_worker.php'),'http://8.8.8.8:'.$port,$result],[0=>['file','/dev/null','r'],1=>['file',$workerLog,'a'],2=>['file',$workerLog,'a']],$pipes,base_path());
+            // سرور اولیه در startPhpServer با poll آماده شده است؛ نیازی به انتظار ثابت نیست.
+            $worker=proc_open([PHP_BINARY,base_path('tests/Support/provider_partition_worker.php'),'http://'.self::CHAOS_BIND_HOST.':'.$port,$result],[0=>['file','/dev/null','r'],1=>['file',$workerLog,'a'],2=>['file',$workerLog,'a']],$pipes,base_path());
             $this->assertIsResource($worker);
             $this->waitForNonEmptyFile($signal,5.0);
             proc_terminate($server,SIGKILL);proc_close($server);$server=null;
+            // پیش از bind مجدد روی همان پورت، منتظر آزادسازی واقعی سوکت می‌مانیم
+            // تا رقابتِ SIGKILL→rebind باعث شکست تصادفی سرور بازیابی‌شده نشود.
+            $this->waitForPortRelease(self::CHAOS_BIND_HOST,$port,self::CHAOS_READY_TIMEOUT);
             $recovered=$this->startPhpServer($port,'tests/Support/provider_partition_recovered_server.php',$serverLog);
             $exit=proc_close($worker);$worker=null;
             $this->assertSame(0,$exit,(string)file_get_contents($workerLog));
@@ -375,8 +388,64 @@ final class InfrastructureFailureRuntimeTest extends TestCase
     private function startPhpServer(int $port,string $router,string $logFile,array $extraEnv=[]): mixed
     {
         $env=getenv();if(!is_array($env))$env=[];$env=array_merge($env,$extraEnv);
-        $process=proc_open([PHP_BINARY,'-S','8.8.8.8:'.$port,base_path($router)],[0=>['file','/dev/null','r'],1=>['file',$logFile,'a'],2=>['file',$logFile,'a']],$pipes,base_path(),$env);
-        $this->assertIsResource($process);usleep(100000);return $process;
+        $process=proc_open([PHP_BINARY,'-S',self::CHAOS_BIND_HOST.':'.$port,base_path($router)],[0=>['file','/dev/null','r'],1=>['file',$logFile,'a'],2=>['file',$logFile,'a']],$pipes,base_path(),$env);
+        $this->assertIsResource($process);
+        $this->waitForListeningPort(self::CHAOS_BIND_HOST,$port,self::CHAOS_READY_TIMEOUT,$process,$logFile);
+        return $process;
+    }
+
+    /**
+     * یک پورت آزاد از خود سیستم‌عامل می‌گیرد تا تست به پورت ثابت وابسته نباشد.
+     * پورت ثابت باعث برخورد با شنونده‌های باقی‌مانده یا سوییت‌های موازی می‌شد.
+     */
+    private function reserveFreePort(string $host): int
+    {
+        $socket=@stream_socket_server('tcp://'.$host.':0',$errno,$errstr);
+        $this->assertIsResource($socket,sprintf('Could not reserve a free port on %s: %s (%d)',$host,$errstr,$errno));
+        $name=(string)stream_socket_get_name($socket,false);
+        fclose($socket);
+        $position=strrpos($name,':');
+        $this->assertNotFalse($position,'Unexpected socket name: '.$name);
+        $port=(int)substr($name,$position+1);
+        $this->assertGreaterThan(0,$port,'Reserved port must be positive.');
+        return $port;
+    }
+
+    /**
+     * به‌جای usleep ثابت، تا زمان واقعیِ آماده‌شدن سوکت poll می‌کند.
+     * اگر پروسه بمیرد یا مهلت تمام شود، تست با پیام دقیق fail می‌شود.
+     *
+     * @param resource|null $process
+     */
+    private function waitForListeningPort(string $host,int $port,float $seconds,$process=null,?string $logFile=null): void
+    {
+        $deadline=microtime(true)+$seconds;
+        $lastError='';
+        while(microtime(true)<$deadline){
+            if(is_resource($process)){
+                $status=proc_get_status($process);
+                if(($status['running']??false)===false){
+                    $this->fail(sprintf('Server on %s:%d exited before listening (code %s). Log: %s',$host,$port,(string)($status['exitcode']??'?'),$logFile!==null&&is_file($logFile)?(string)file_get_contents($logFile):'n/a'));
+                }
+            }
+            $client=@stream_socket_client('tcp://'.$host.':'.$port,$errno,$errstr,0.2);
+            if(is_resource($client)){fclose($client);return;}
+            $lastError=$errstr.' ('.$errno.')';
+            usleep(5000);
+        }
+        $this->fail(sprintf('Server on %s:%d did not start listening within %.1fs. Last error: %s. Log: %s',$host,$port,$seconds,$lastError,$logFile!==null&&is_file($logFile)?(string)file_get_contents($logFile):'n/a'));
+    }
+
+    /** منتظر می‌ماند تا پورت واقعاً آزاد شود (جلوگیری از رقابت bind پس از kill). */
+    private function waitForPortRelease(string $host,int $port,float $seconds): void
+    {
+        $deadline=microtime(true)+$seconds;
+        while(microtime(true)<$deadline){
+            $client=@stream_socket_client('tcp://'.$host.':'.$port,$errno,$errstr,0.2);
+            if(!is_resource($client))return;
+            fclose($client);
+            usleep(5000);
+        }
     }
 
     /** @return array<int|string, mixed> */
