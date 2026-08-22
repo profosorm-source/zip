@@ -33,6 +33,24 @@ if ($path !== '/' && is_file($publicFile) && !str_ends_with($publicFile, '.php')
     return false;
 }
 
+// ── ایندکس دایرکتوری (DirectoryIndex) ─────────────────────────────────────
+// nginx و Apache برای درخواستِ یک دایرکتوری، فایل index.php داخل آن را اجرا
+// می‌کنند. نمونهٔ واقعی در این پروژه: نصب‌کنندهٔ گرافیکی مستقل در
+// public/install/index.php که در روتر فریم‌ورک ثبت نشده است.
+// سرور داخلی PHP چنین کاری نمی‌کند و درخواست را به همین روتر می‌سپارد؛
+// در نتیجه «/install/» به front controller می‌رسید و ۴۰۴ می‌گرفت — یعنی
+// یک تفاوت محیطی، نه ایراد محصول. اینجا همان رفتار وب‌سرور واقعی بازسازی
+// می‌شود تا اسکریپت‌های مستقلِ داخل public قابل آزمون باشند.
+$dirIndex = __DIR__ . '/public' . rtrim($path, '/') . '/index.php';
+if ($path !== '/' && is_file($dirIndex)) {
+    $rel = rtrim($path, '/') . '/index.php';
+    $_SERVER['SCRIPT_NAME']     = $rel;
+    $_SERVER['PHP_SELF']        = $rel;
+    $_SERVER['SCRIPT_FILENAME'] = $dirIndex;
+    require $dirIndex;
+    return true;
+}
+
 // هم‌ترازسازی با front controller واقعی
 $_SERVER['SCRIPT_NAME']     = '/index.php';
 $_SERVER['PHP_SELF']        = '/index.php';
