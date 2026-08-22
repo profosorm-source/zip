@@ -329,8 +329,10 @@ stage_redis() {
   load_env
   if [ ! -x "$TOOLS/redis/bin/redis-server" ] || [ "$FORCE" = 1 ]; then
     gclone "$BUILD/redis-src" https://github.com/redis/redis.git $V_REDIS
-    ( cd "$BUILD/redis-src" && make -j"$JOBS" MALLOC=libc BUILD_TLS=no \
-      && make install PREFIX="$TOOLS/redis" ) >"$LOGDIR/redis.log" 2>&1 || die "redis"
+    # USE_SYSTEMD=no الزامی است: پیکربندی خودکار Redis وجود systemd را حدس می‌زند
+    # و اگر هدرهای systemd/sd-daemon.h نباشند، ساخت با fatal error می‌شکند.
+    ( cd "$BUILD/redis-src" && make -j"$JOBS" MALLOC=libc BUILD_TLS=no USE_SYSTEMD=no \
+      && make install PREFIX="$TOOLS/redis" USE_SYSTEMD=no ) >"$LOGDIR/redis.log" 2>&1 || die "redis"
   fi
   mkdir -p "$RUNTIME/redis/data"
   cat > "$RUNTIME/redis/redis.conf" <<EOF
