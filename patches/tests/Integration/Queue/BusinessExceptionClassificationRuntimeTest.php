@@ -143,7 +143,26 @@ final class BusinessExceptionClassificationRuntimeTest extends TestCase
             ['%' . $this->marker . '%']
         );
         $this->assertInstanceOf(\stdClass::class, $failed);
-        $this->assertSame(1, (int) $failed->retry_count);
+
+        // Core\Queue::persistFailedJob رکورد را همواره با retry_count=0 درج می‌کند،
+        // پس تمایز واقعی «قرنطینه فوری» در برابر «تلاش مجدد» در ستون status است:
+        // مسیر business باید quarantined باشد، نه pending_analysis (رفتار باگ قبلی).
+        $this->assertSame(
+            'quarantined',
+            (string) $failed->status,
+            'A fatal business failure must be quarantined on the first attempt, not queued for re-analysis/retry.'
+        );
+        $this->assertSame('business', (string) $failed->error_classification);
+
+        // و هیچ نسخه‌ای از شغل نباید برای تلاش دوباره در صف باقی مانده باشد.
+        $this->assertSame(
+            0,
+            (int) $this->db->fetchColumn(
+                'SELECT COUNT(*) FROM queues WHERE payload LIKE ?',
+                ['%' . $this->marker . '%']
+            ),
+            'No copy of a fatal business job may remain queued for another attempt.'
+        );
     }
 
     /**
