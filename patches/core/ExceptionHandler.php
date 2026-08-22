@@ -880,9 +880,29 @@ private static function extractAppOriginFromTrace(\Throwable $exception): array
                     $exception->getMessage() ?: 'خطای پردازش درخواست'
                 );
             } elseif ($exception instanceof \Core\Exceptions\BusinessException) {
-                $contract = \App\Contracts\ErrorContract::internalError(
+                // BUGFIX: خطای بیزینسی یک نقض قانون کسب‌وکار است (خطای سمت کاربر)،
+                // نه خرابی سرور. نگاشت آن به 500 باعث می‌شد پیام‌های کاربرپسندی مانند
+                // «مبلغ برداشت نامعتبر است» به‌صورت «خطای سرور» به کاربر نمایش داده شود
+                // و همچنین این خطاها به‌اشتباه در مانیتورینگ به‌عنوان خطای 5xx ثبت شوند.
+                // اگر خودِ exception کد HTTP معتبری (4xx/5xx) داشته باشد همان محترم شمرده
+                // می‌شود، در غیر این صورت 422 (Unprocessable Entity) پیش‌فرض است.
+                $exceptionCode = $exception->getCode();
+                $statusCode = (is_int($exceptionCode) && $exceptionCode >= 400 && $exceptionCode <= 599)
+                    ? $exceptionCode
+                    : 422;
+
+                $contract = new \App\Contracts\ErrorContract(
+                    $statusCode,
+                    'BUSINESS_RULE_ERROR',
                     $exception->getMessage() ?: 'خطای بیزینسی'
                 );
+
+                // خطاهای فیلدمحور (در صورت وجود) حفظ می‌شوند تا فرانت‌اند بتواند
+                // آن‌ها را کنار فیلد مربوطه نمایش دهد.
+                $businessErrors = $exception->getErrors();
+                if ($businessErrors !== []) {
+                    $contract = $contract->withFieldErrors($businessErrors);
+                }
             }
 
             return $contract->toArray();
@@ -937,6 +957,14 @@ private static function extractAppOriginFromTrace(\Throwable $exception): array
                 $statusCode = 400;
                 $message = $exception->getMessage() ?: 'خطای پردازش درخواست';
                 $errorCode = 'DOMAIN_LOGIC_ERROR';
+            } elseif ($exception instanceof \Core\Exceptions\BusinessException) {
+                // هم‌راستا با مسیر اصلی: نقض قانون کسب‌وکار خطای سرور نیست.
+                $exceptionCode = $exception->getCode();
+                $statusCode = (is_int($exceptionCode) && $exceptionCode >= 400 && $exceptionCode <= 599)
+                    ? $exceptionCode
+                    : 422;
+                $message = $exception->getMessage() ?: 'خطای بیزینسی';
+                $errorCode = 'BUSINESS_RULE_ERROR';
             } else {
                 $debug = (bool) config('app.debug', false);
                 $message = $debug 
