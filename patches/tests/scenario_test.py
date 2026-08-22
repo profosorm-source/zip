@@ -26,14 +26,70 @@ from dataclasses import dataclass, field
 from typing import Optional, Callable, Dict, List, Tuple
 from pathlib import Path
 
-BASE_URL = "http://127.0.0.1:8080"
-DB_NAME = "chortk"
-DB_USER = "root"
-DB_PASS = ""
-SNAPSHOT_FILE = "/tmp/chortke_test_snapshot.sql"
-ADMIN_EMAIL = "admin@chortke.ir"
-ADMIN_PASS = "123456"
-DEFAULT_PASSWORD = "123456"
+def _project_root() -> Path:
+    """ریشه پروژه را نسبت به محل همین فایل پیدا می‌کند (tests/ -> chortke/)."""
+    return Path(__file__).resolve().parent.parent
+
+
+def _load_dotenv() -> Dict[str, str]:
+    """
+    خواندن پیکربندی واقعی پروژه از فایل .env
+
+    منبع حقیقت برای آدرس سرویس و اتصال دیتابیس همان .env است که خود اپلیکیشن
+    از طریق config/config.php از آن استفاده می‌کند؛ بنابراین هارنس تست نیز باید
+    از همان مقادیر بخواند و آن‌ها را تکرار/هاردکد نکند.
+    """
+    values: Dict[str, str] = {}
+    # همان ترتیب bootstrap/app.php: ابتدا .env و در صورت نبود آن .env.local
+    # (این دو با هم ادغام نمی‌شوند؛ هر کدام که موجود بود همان مبنا است).
+    root = _project_root()
+    env_path = root / ".env"
+    if not env_path.is_file():
+        env_path = root / ".env.local"
+    if not env_path.is_file():
+        return values
+    for raw_line in env_path.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        value = value.strip().strip('"').strip("'")
+        values[key.strip()] = value
+    return values
+
+
+_ENV = _load_dotenv()
+
+
+def env_value(key: str, default: str = "") -> str:
+    """اولویت با متغیر محیطی واقعی، سپس .env پروژه، سپس مقدار پیش‌فرض."""
+    return os.environ.get(key) or _ENV.get(key) or default
+
+
+BASE_URL = env_value("CHORTKE_E2E_BASE_URL", env_value("APP_URL", "http://127.0.0.1:8080")).rstrip("/")
+DB_HOST = env_value("DB_HOST", "127.0.0.1")
+DB_PORT = env_value("DB_PORT", "3306")
+DB_NAME = env_value("DB_NAME", "chortk")
+DB_USER = env_value("DB_USER", "root")
+DB_PASS = env_value("DB_PASS", "")
+SNAPSHOT_FILE = os.environ.get("CHORTKE_TEST_SNAPSHOT", "/tmp/chortke_test_snapshot.sql")
+ADMIN_EMAIL = env_value("E2E_ADMIN_EMAIL", "admin@chortke.ir")
+ADMIN_PASS = env_value("E2E_ADMIN_PASSWORD", "123456")
+DEFAULT_PASSWORD = env_value("E2E_PASSWORD", "123456")
+
+
+def db_conn_args() -> List[str]:
+    """
+    آرگومان‌های اتصال دیتابیس بر اساس پیکربندی واقعی پروژه.
+
+    نکته: پیش از این گذرواژه هرگز به کلاینت پاس داده نمی‌شد و کاربر به صورت
+    ثابت root فرض شده بود؛ در نتیجه هارنس روی هر محیطی که .env آن کاربر/گذرواژه
+    اختصاصی داشت شکست می‌خورد.
+    """
+    args = ["-h", DB_HOST, "-P", str(DB_PORT), "-u", DB_USER]
+    if DB_PASS:
+        args.append(f"-p{DB_PASS}")
+    return args
 
 # ═══════════════════════════════════════════════════════════════════
 # Enterprise 10-Tier Architecture Definitions
@@ -74,7 +130,7 @@ def db_snapshot():
         return False
     try:
         subprocess.run(
-            [dump_cmd, "-u", DB_USER, DB_NAME, "--no-tablespaces",
+            [dump_cmd, *db_conn_args(), DB_NAME, "--no-tablespaces",
              "--single-transaction", "--routines", "--triggers",
              "-r", SNAPSHOT_FILE],
             capture_output=True
@@ -92,7 +148,7 @@ def db_restore():
     cli_cmd = 'mariadb' if shutil.which('mariadb') else ('mysql' if shutil.which('mysql') else 'mariadb')
     try:
         subprocess.run(
-            [cli_cmd, "-u", DB_USER, DB_NAME],
+            [cli_cmd, *db_conn_args(), DB_NAME],
             stdin=open(SNAPSHOT_FILE, 'r'),
             capture_output=True
         )
@@ -107,7 +163,7 @@ def get_mysql_cli() -> str:
 def reset_rate_limits():
     """Reset rate limits in database and cache"""
     cli = get_mysql_cli()
-    subprocess.run([cli, "-u", DB_USER, DB_NAME, "-e", "TRUNCATE rate_limit_requests; TRUNCATE rate_limits;"], capture_output=True)
+    subprocess.run([cli, *db_conn_args(), DB_NAME, "-e", "TRUNCATE rate_limit_requests; TRUNCATE rate_limits;"], capture_output=True)
     try:
         subprocess.run(["redis-cli", "FLUSHALL"], capture_output=True)
     except Exception:
@@ -118,7 +174,7 @@ def db_query(sql: str) -> list:
     """اجرای کوئری و برگرداندن نتایج"""
     cli = get_mysql_cli()
     result = subprocess.run(
-        [cli, "-u", DB_USER, DB_NAME, "-N", "-B", "-e", sql],
+        [cli, *db_conn_args(), DB_NAME, "-N", "-B", "-e", sql],
         capture_output=True, text=True
     )
     return [line.strip() for line in result.stdout.strip().split('\n') if line.strip()] if result.stdout.strip() else []
@@ -128,7 +184,7 @@ def db_scalar(sql: str) -> str:
     """اجرای کوئری و برگرداندن یک مقدار"""
     cli = get_mysql_cli()
     result = subprocess.run(
-        [cli, "-u", DB_USER, DB_NAME, "-N", "-B", "-e", sql],
+        [cli, *db_conn_args(), DB_NAME, "-N", "-B", "-e", sql],
         capture_output=True, text=True
     )
     return result.stdout.strip()
@@ -138,7 +194,7 @@ def db_insert(sql: str):
     """اجرای INSERT/UPDATE/DELETE"""
     cli = get_mysql_cli()
     subprocess.run(
-        [cli, "-u", DB_USER, DB_NAME, "-e", sql],
+        [cli, *db_conn_args(), DB_NAME, "-e", sql],
         capture_output=True, text=True
     )
 

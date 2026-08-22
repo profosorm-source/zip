@@ -10,7 +10,7 @@ const E2E_EMAIL = process.env.E2E_EMAIL || 'user@chortke.ir';
 const E2E_ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || 'admin@chortke.ir';
 const E2E_ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || '123456';
 const E2E_PASSWORD = process.env.E2E_PASSWORD || '123456';
-const BASE_URL = 'http://127.0.0.1:8080';
+const BASE_URL = process.env.CHORTKE_E2E_BASE_URL || 'http://127.0.0.1:8080';
 const GREEN = '\x1b[92m', RED = '\x1b[91m', CYAN = '\x1b[96m', BOLD = '\x1b[1m', RESET = '\x1b[0m';
 
 async function solveCaptcha(page) {

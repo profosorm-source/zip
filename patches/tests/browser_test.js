@@ -13,7 +13,7 @@ const { chromium } = require('playwright');
 
 const E2E_EMAIL = process.env.E2E_EMAIL || 'user@chortke.ir';
 const E2E_PASSWORD = process.env.E2E_PASSWORD || '123456';
-const BASE = 'http://127.0.0.1:8080';
+const BASE = process.env.CHORTKE_E2E_BASE_URL || 'http://127.0.0.1:8080';
 const ADMIN_EMAIL = E2E_EMAIL;
 const ADMIN_PASS = E2E_PASSWORD;
 
