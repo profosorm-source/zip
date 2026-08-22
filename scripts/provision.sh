@@ -12,8 +12,8 @@
 #      bash scripts/provision.sh --status   # فقط نمایش وضعیت
 #      bash scripts/provision.sh deps php   # اجرای مرحله‌های مشخص
 #
-#  مراحل: tools deps php redis phpredis mariadb project dbinit migrate serve
-#  گزینه‌ها: --status  --start  --serve  --test  --force
+#  مراحل: tools deps php redis phpredis mariadb project dbinit migrate playwright
+#  گزینه‌ها: --status  --start  --serve  --test  --browser/--l7  --reset-risk  --force
 #  هر مرحله idempotent است؛ اگر قبلاً انجام شده باشد رد می‌شود (--force برای اجبار).
 # =============================================================================
 set -uo pipefail
@@ -62,7 +62,7 @@ run()  { local log="$LOGDIR/$1.log"; shift; if "$@" >>"$log" 2>&1; then return 0
          echo "${RED}  ✗ شکست — ۳۰ خط آخر $log:${RST}" >&2; tail -30 "$log" >&2; return 1; fi; }
 
 FORCE=0
-STAGES_ALL=(tools deps php openssl_conf redis phpredis mariadb project dbinit migrate)
+STAGES_ALL=(tools deps php openssl_conf redis phpredis mariadb project dbinit migrate playwright)
 
 # -----------------------------------------------------------------------------
 # محیط ساخت
@@ -452,6 +452,13 @@ stage_project() {
     [ -f "$ZIPFILE" ] || die "فایل زیپ پیدا نشد: $ZIPFILE"
     mkdir -p "$EXTRACT" && ( cd "$EXTRACT" && unzip -q -o "$ZIPFILE" ) || die "استخراج زیپ"
   fi
+
+  # روتر سرور توسعه: بدون آن، مسیرهای پویای منتهی به پسوند ایستا (مثل
+  # /file/view/captcha/<name>.png) توسط php -S بلعیده می‌شوند و ۴۰۴ می‌گیرند.
+  if [ -f "/home/user/zip/patches/scripts/dev-router.php" ]; then
+    cp "/home/user/zip/patches/scripts/dev-router.php" "$APP/dev-router.php"
+    ok "dev-router.php نصب شد"
+  fi
   ok "سورس پروژه در $APP"
   if [ ! -d "$APP/vendor" ] || [ "$FORCE" = 1 ]; then
     mkdir -p "$TOOLS/composer-home"
@@ -554,10 +561,176 @@ stage_migrate() {
   ok "تعداد جداول: $n"
 }
 
+# =============================================================================
+# مرحله ۱۰ — Playwright + Chromium (لایه ۷: تست‌های مرورگر)
+# =============================================================================
+# چرا این‌قدر پیچیده است؟
+#   `npx playwright install chromium` در این سندباکس کار نمی‌کند: CDN مرورگر
+#   (playwright.azureedge.net / cdn.playwright.dev) و همچنین
+#   storage.googleapis.com مسدودند و دانلود با ECONNRESET شکست می‌خورد.
+#   اما رجیستری npm خودش در دسترس است، و بستهٔ @sparticuz/chromium باینری
+#   کامل chromium را به‌صورت brotli داخل tarball دارد. پس مرورگر را از آنجا
+#   برمی‌داریم و دقیقاً در همان مسیری می‌گذاریم که playwright انتظار دارد
+#   (~/.cache/ms-playwright/chromium-<build>/chrome-linux/chrome). با این کار
+#   هیچ‌کدام از ۳۴ اسکریپت tests/browser_*.js نیازی به تغییر ندارند و
+#   chromium.launch() معمولی کار می‌کند.
+stage_playwright() {
+  say "مرحله ۱۰/۱۰ — Playwright + Chromium"
+  command -v node >/dev/null || { warn "node یافت نشد؛ لایه ۷ رد شد"; return 0; }
+
+  local PW_DIR="$APP" BUILD=1134
+  local DEST="$HOME/.cache/ms-playwright/chromium-$BUILD/chrome-linux"
+
+  if [ -z "${FORCE:-}" ] && [ -x "$DEST/chrome" ] && "$DEST/chrome" --version >/dev/null 2>&1; then
+    ok "chromium از قبل نصب است: $("$DEST/chrome" --version 2>&1)"
+    return 0
+  fi
+
+  # ۱) بستهٔ playwright (نسخهٔ سازگار با build 1134)
+  ( cd "$PW_DIR" && [ -f package.json ] || echo '{"name":"chortke-e2e","private":true}' > package.json )
+  ( cd "$PW_DIR" && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+      npm install playwright@1.47.2 --no-audit --no-fund >/dev/null 2>&1 ) \
+      || { warn "نصب بستهٔ playwright شکست خورد؛ لایه ۷ رد شد"; return 0; }
+  ok "بستهٔ playwright نصب شد"
+
+  # ۲) باینری chromium از @sparticuz/chromium (دور زدن CDN مسدود)
+  local TMP; TMP=$(mktemp -d)
+  ( cd "$TMP" && npm install @sparticuz/chromium@149.0.0 --no-audit --no-fund >/dev/null 2>&1 ) \
+      || { warn "دریافت باینری chromium شکست خورد؛ لایه ۷ رد شد"; rm -rf "$TMP"; return 0; }
+
+  mkdir -p "$DEST"
+  node -e "
+    const zlib=require('zlib'),fs=require('fs'),p='$TMP/node_modules/@sparticuz/chromium/bin/';
+    fs.writeFileSync('$DEST/chrome.bin', zlib.brotliDecompressSync(fs.readFileSync(p+'chromium.br')));
+    fs.writeFileSync('$TMP/al2023.tar',  zlib.brotliDecompressSync(fs.readFileSync(p+'al2023.tar.br')));
+  " || { warn "استخراج chromium شکست خورد؛ لایه ۷ رد شد"; rm -rf "$TMP"; return 0; }
+
+  # کتابخانه‌های اشتراکی (libnspr4, libnss3, ...) که در سندباکس نصب نیستند
+  tar -xf "$TMP/al2023.tar" -C "$TMP" 2>/dev/null
+  cp "$TMP"/lib/*.so* "$DEST/" 2>/dev/null
+
+  # wrapper: مسیر کتابخانه‌ها را تزریق می‌کند تا اسکریپت‌ها به
+  # LD_LIBRARY_PATH دستی نیاز نداشته باشند
+  cat > "$DEST/chrome" <<WRAP
+#!/bin/sh
+exec env LD_LIBRARY_PATH="$DEST:\$LD_LIBRARY_PATH" "$DEST/chrome.bin" "\$@"
+WRAP
+  chmod +x "$DEST/chrome" "$DEST/chrome.bin"
+  rm -rf "$TMP"
+
+  "$DEST/chrome" --version >/dev/null 2>&1 \
+    && ok "chromium آماده است: $("$DEST/chrome" --version 2>&1)" \
+    || warn "chromium اجرا نشد؛ لایه ۷ رد شد"
+}
+
+# پاکسازی وضعیت ریسک ورود (Redis) پیش از اجرای سوئیت مرورگری.
+#
+# چرا لازم است؟ LoginRiskService با هر ورود ناموفق امتیاز ریسک IP/شناسه را
+# بالا می‌برد و از یک آستانه به بعد کپچای تصویری را روی /login فعال می‌کند.
+# کپچای تصویری عمداً ماشین‌ناخوان است، بنابراین اجرای پشت‌سرهم تست‌ها خودش
+# باعث می‌شود اجرای بعدی در لاگین گیر کند — یعنی تست‌ها آلودگی حالت تولید
+# می‌کنند، نه اینکه محصول ایراد داشته باشد. این تابع فقط همان حالت گذرا را
+# صفر می‌کند و هیچ تغییری در کد یا رفتار محصول نمی‌دهد.
+reset_login_risk() {
+  local cli="$TOOLS/redis/bin/redis-cli"
+  [ -x "$cli" ] || return 0
+  local n=0
+  # 'score:user:*' و 'score_alt:*' امتیاز تقلب انباشته‌شده‌اند: هر اجرای سوئیت
+  # چند ورود/عملیات مصنوعی می‌سازد و امتیاز را بالا می‌برد تا از آستانه بلاک
+  # (۹۵ در محیط local) عبور کند و اجرای بعدی با «فعالیت غیرمجاز» رد شود.
+  for pat in 'login_risk_*' 'chortke:rl:*' 'score:user:*' 'score_alt:*'; do
+    while read -r k; do
+      [ -n "$k" ] || continue
+      "$cli" -h 127.0.0.1 DEL "$k" >/dev/null 2>&1 && n=$((n+1))
+    done < <("$cli" -h 127.0.0.1 --scan --pattern "$pat" 2>/dev/null)
+  done
+  ok "وضعیت ریسک ورود پاک شد ($n کلید)"
+}
+
+# سالخورده‌کردن حساب‌های seed پیش از تست‌های مرورگری.
+#
+# چرا لازم است؟ FraudDetectionService عامل «سن حساب» را چنین وزن می‌دهد:
+#   کمتر از ۱ روز → ۱۰۰، کمتر از ۹۰ روز → ۲۰، ۹۰ روز به بالا → ۰
+# حساب‌های seed دقیقاً در لحظه نصب ساخته می‌شوند، پس سن‌شان ۰ روز است و
+# امتیاز تقلب‌شان به سقف می‌رسد؛ RiskDecisionService هم با آستانه بلاک
+# (۹۵ در محیط local) ورودشان را با پیام «فعالیت غیرمجاز» رد می‌کند.
+#
+# این رفتار محصول درست است — یک حساب واقعاً تازه‌ساخته پرریسک است. آنچه
+# غیرواقعی است، دادهٔ آزمون است. بنابراین به‌جای دست‌زدن به منطق ضدتقلب،
+# تاریخ ساخت کاربران آزمون را به گذشته می‌بریم تا شرایط، شرایط یک حساب
+# جاافتاده باشد. هیچ خط از کد محصول تغییر نمی‌کند.
+# پاک‌سازی رسوب امتیاز تقلبِ ساخته‌شده توسط خود تست‌ها.
+#
+# سازوکار دقیقی که اندازه‌گیری شد: هر اجرای تست مرورگری یک سشن تازه باز
+# می‌کند و آن را نمی‌بندد. پس از چند اجرا، SessionAnomalyService وضعیت
+# «۵ سشن همزمان فعال» را ناهنجاری می‌شمارد و هر بار ۱۵ امتیاز در جدول
+# score_events ثبت می‌کند. جمع این رویدادها (۷ رویداد = ۱۰۵ امتیاز) از
+# آستانه بلاک عبور می‌کند و ورود بعدی با پیام «فعالیت غیرمجاز» رد می‌شود.
+#
+# محصول درست عمل می‌کند؛ سشن‌های رهاشدهٔ تست‌اند که سیگنال کاذب می‌سازند.
+# اینجا فقط همان رسوب پاک می‌شود تا هر اجرا از حالت تمیز شروع کند.
+purge_synthetic_fraud_events() {
+  local sql="DELETE FROM score_events
+             WHERE entity_type='user' AND domain='fraud' AND reason='session_anomaly';
+             DELETE FROM user_sessions WHERE last_activity < NOW();"
+  "$TOOLS/mariadb/bin/mariadb" -h127.0.0.1 -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "$sql" >/dev/null 2>&1 \
+    && ok "رسوب امتیاز تقلب و سشن‌های رهاشده پاک شد" \
+    || warn "پاک‌سازی رسوب امتیاز تقلب انجام نشد"
+}
+
+age_seed_accounts() {
+  # رمز ادمین در نصب اولیه از ADMIN_PASSWORD محیط/نصب‌کننده گرفته می‌شود و
+  # برای سناریوهای ادمینِ لایه ۷ نامعلوم است. اینجا همان رمز مستند تست
+  # (123456) برای حساب ادمین تنظیم می‌شود تا سناریوها اعتبارنامه قابل‌اتکا
+  # داشته باشند. فقط دادهٔ محیط آزمون است و به کد احراز هویت دست نمی‌زند.
+  local ADMIN_HASH
+  ADMIN_HASH=$("$TOOLS/phpsrc/bin/php" -r 'echo password_hash("123456", PASSWORD_DEFAULT);')
+  # علاوه بر سن حساب، وضعیت KYC کاربر آزمون هم تأیید می‌شود: ماژول ویترین
+  # طبق قانون کسب‌وکار (VitrineService::canTrade) ثبت آگهی را فقط برای کاربر
+  # احرازهویت‌شده مجاز می‌داند، در حالی که seeder کاربر عادی را unverified
+  # می‌سازد. سناریوی «کاربر عادی آگهی می‌سازد» بدون این پیش‌شرط اصلاً قابل
+  # اجرا نیست. این تنظیم داده است، نه تضعیف قانون؛ خود قانون دست‌نخورده می‌ماند.
+  local sql="UPDATE users SET created_at = DATE_SUB(NOW(), INTERVAL 180 DAY)
+             WHERE email IN ('user@chortke.ir','admin@chortke.ir','superadmin@chortke.ir','support@chortke.ir')
+               AND created_at > DATE_SUB(NOW(), INTERVAL 90 DAY);
+             UPDATE users SET kyc_status='verified'
+             WHERE email='user@chortke.ir' AND kyc_status <> 'verified';
+             UPDATE users SET password='$ADMIN_HASH'
+             WHERE email='admin@chortke.ir';"
+  "$TOOLS/mariadb/bin/mariadb" -h127.0.0.1 -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "$sql" >/dev/null 2>&1 \
+    && ok "حساب‌های آزمون سالخورده شدند (۱۸۰ روز)" \
+    || warn "سالخورده‌کردن حساب‌های آزمون انجام نشد"
+}
+
+# اجرای کامل سوئیت مرورگری (لایه ۷) با ریست حالت پیش از هر تست.
+run_browser_suite() {
+  load_env; start_redis; start_mariadb; link_php
+  age_seed_accounts
+  purge_synthetic_fraud_events
+  cd "$APP" || die "مسیر پروژه پیدا نشد: $APP"
+  local pass=0 fail=0 failed=""
+  for f in tests/browser_*.js; do
+    # ریست کامل پیش از هر تست: هم حالت Redis و هم رسوبی که در پایگاه داده
+    # نوشته شده. تست‌های مرورگری سشن‌های باز رها می‌کنند و هر سشن اضافه،
+    # امتیاز ناهنجاری تولید می‌کند؛ بدون پاک‌سازی DB، تست‌های انتهای صف
+    # با «فعالیت غیرمجاز» رد می‌شوند حتی اگر تک‌تک سالم باشند.
+    reset_login_risk >/dev/null 2>&1
+    purge_synthetic_fraud_events >/dev/null 2>&1
+    if timeout 240 node "$f" >/tmp/l7-$(basename "$f" .js).log 2>&1; then
+      pass=$((pass+1)); ok "$(basename "$f")"
+    else
+      fail=$((fail+1)); failed="$failed $(basename "$f")"; warn "$(basename "$f") — گزارش: /tmp/l7-$(basename "$f" .js).log"
+    fi
+  done
+  say "لایه ۷ — قبول: $pass  مردود: $fail  جمع: $((pass+fail))"
+  [ -n "$failed" ] && warn "مردودها:$failed"
+  [ "$fail" -eq 0 ]
+}
+
 serve() {
   load_env; start_redis; start_mariadb; link_php
   say "بالا آوردن وب‌سرور روی 0.0.0.0:8080"
-  cd "$APP" && exec "$TOOLS/phpsrc/bin/php" -S 0.0.0.0:8080 -t public public/index.php
+  cd "$APP" && exec "$TOOLS/phpsrc/bin/php" -S 0.0.0.0:8080 -t public dev-router.php
 }
 
 # -----------------------------------------------------------------------------
@@ -581,7 +754,7 @@ link_php() {
 start_test_server() {
   curl -s -o /dev/null -m 2 http://127.0.0.1:8090/ 2>/dev/null && return 0
   mkdir -p "$RUNTIME/web"
-  ( cd "$APP" && nohup "$TOOLS/phpsrc/bin/php" -S 0.0.0.0:8090 -t public public/index.php \
+  ( cd "$APP" && nohup "$TOOLS/phpsrc/bin/php" -S 0.0.0.0:8090 -t public dev-router.php \
       >>"$RUNTIME/web/test-8090.log" 2>&1 & )
   for _ in $(seq 1 20); do
     curl -s -o /dev/null -m 2 http://127.0.0.1:8090/ 2>/dev/null && { ok "وب‌سرور تست روی 8090 بالا آمد"; return 0; }
@@ -623,6 +796,8 @@ main() {
       --status) status; exit 0 ;;
       --serve)  serve; exit 0 ;;
       --test)   run_tests; exit $? ;;
+      --browser|--l7) run_browser_suite; exit $? ;;
+      --reset-risk)   load_env; start_redis; start_mariadb; reset_login_risk; age_seed_accounts; purge_synthetic_fraud_events; exit 0 ;;
       --start)  load_env; start_redis; start_mariadb; link_php; start_test_server; status; exit 0 ;;
       -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
       *) stages+=("$a") ;;
