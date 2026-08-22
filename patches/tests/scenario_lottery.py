@@ -155,12 +155,24 @@ def test_lottery_L5_zero_balance_join(client, assertions):
 def test_lottery_L5_expired_round_participation(client, assertions):
     """L5-2: تلاش برای شرکت در دوره‌ای که تاریخ انقضای آن گذشته اما وضعیت آن هنوز active است"""
     uid = ensure_test_user("lot.L5.2@chortke.test", balance_irt='500000', verified=True)
-    db_insert(f"INSERT INTO lottery_rounds (title, entry_fee, status, expires_at, created_at, updated_at) VALUES ('Expired Lottery', 50000, 'active', DATE_SUB(NOW(), INTERVAL 1 DAY), NOW(), NOW()) ON DUPLICATE KEY UPDATE status='active', expires_at=DATE_SUB(NOW(), INTERVAL 1 DAY)")
-    rid = db_scalar("SELECT id FROM lottery_rounds WHERE expires_at < NOW() AND status='active' LIMIT 1")
-    
+    # ستون انقضا در این جدول end_date نام دارد، نه expires_at؛ درج پیشین
+    # بی‌صدا شکست می‌خورد و «دورهٔ منقضی‌شده» هرگز ساخته نمی‌شد.
+    db_insert("INSERT INTO lottery_rounds (title, entry_fee, status, end_date, created_at, updated_at) "
+              "VALUES ('Expired Lottery', 50000, 'active', DATE_SUB(NOW(), INTERVAL 1 DAY), NOW(), NOW()) "
+              "ON DUPLICATE KEY UPDATE status='active', end_date=DATE_SUB(NOW(), INTERVAL 1 DAY)")
+    rid = db_scalar("SELECT id FROM lottery_rounds WHERE end_date < NOW() AND status='active' ORDER BY id DESC LIMIT 1")
+    assert_true(assertions, f"دورهٔ منقضی‌شده ساخته شد (id: {rid})", bool(rid))
+
     client.login("lot.L5.2@chortke.test", DEFAULT_PASSWORD)
+    bal_before = db_scalar(f"SELECT balance_irt FROM wallets WHERE user_id={uid}")
     code, body, _ = client.post(f'/lottery/{rid}/join', {})
-    assert_true(assertions, f"دوره منقضی‌شده مسدود شد HTTP {code}", code in (200, 302, 422, 400, 404))
+    # پذیرش ۲۰۰ به معنای عبور از اعتبارسنجی انقضا است، پس فقط ردِ صریح قابل قبول است.
+    assert_true(assertions, f"دوره منقضی‌شده مسدود شد HTTP {code}", code in (302, 400, 404, 422))
+    # اثر جانبی: نباید بلیتی صادر و وجهی کسر شده باشد.
+    joined = db_scalar(f"SELECT COUNT(*) FROM lottery_participations WHERE user_id={uid} AND round_id={rid}")
+    assert_true(assertions, f"مشارکتی برای دورهٔ منقضی ثبت نشد ({joined})", int(joined) == 0)
+    bal_after = db_scalar(f"SELECT balance_irt FROM wallets WHERE user_id={uid}")
+    assert_true(assertions, f"موجودی دست‌نخورده ماند ({bal_after})", float(bal_after) == float(bal_before))
 
 def test_lottery_L5_invalid_vote_choice(client, assertions):
     """L5-3: ارسال گزینه رای‌گیری نامعتبر و طولانی شامل کاراکترهای خاص"""

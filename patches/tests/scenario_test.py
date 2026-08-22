@@ -249,7 +249,16 @@ def db_scalar(sql: str) -> str:
         [cli, *db_conn_args(), DB_NAME, "-N", "-B", "-e", sql],
         capture_output=True, text=True
     )
-    return result.stdout.strip()
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"db_scalar شکست خورد (exit={result.returncode}): "
+            f"{result.stderr.strip()}\nSQL: {sql}"
+        )
+    value = result.stdout.strip()
+    # کلاینت mysql مقدار تهی را به صورت رشتهٔ "NULL" چاپ می‌کند که در پایتون
+    # truthy است و باعث می‌شود assertهایی مثل bool(value) روی ستون خالی هم سبز
+    # شوند. آن را به None نگاشت می‌کنیم تا ستون تهی واقعاً falsy باشد.
+    return None if value == "NULL" else value
 
 
 def db_insert(sql: str):
@@ -413,7 +422,7 @@ class HttpClient:
         captcha_response = ''
         # math captcha question: e.g. "23 + 7 = ?"
         q = re.search(r'captcha-question[^>]*>\s*(\d+)\s*([+\-*])\s*(\d+)', body)
-        ct = re.search(r'name="captcha_token"\s+value="([^"]+)"', body)
+        ct = re.search(r'name="captcha_token"[^>]*\svalue="([^"]+)"', body)
         if q and ct:
             a, op, b = int(q.group(1)), q.group(2), int(q.group(3))
             answer = {'+': a+b, '-': a-b, '*': a*b}[op]
@@ -536,9 +545,16 @@ class TestResult:
 
 
 class TestSuite:
-    def __init__(self, name: str):
+    def __init__(self, name: str, required_features: list[str] | None = None):
+        """required_features: نام پرچم‌های ویژگی که این سوئیت به آن‌ها نیاز دارد.
+
+        بازیابی snapshot پرچم‌ها را به مقدار پیش‌فرض (اغلب enabled=0)
+        برمی‌گرداند و مسیرهای محافظت‌شده ۵۰۳ می‌دهند. هر سوئیت به‌جای
+        هاردکد شدن در هارنس مشترک، نیازمندی خودش را اعلام می‌کند.
+        """
         self.name = name
         self.results: list[TestResult] = []
+        self.required_features = list(required_features or [])
 
     def _extract_tier(self, test_name: str) -> str:
         """استخراج شناسه لایه (L1 تا L10) از نام تابع تست"""
@@ -567,6 +583,11 @@ class TestSuite:
 
         # Enable crypto_deposit feature flag (disabled by default after snapshot restore)
         db_insert("UPDATE feature_flags SET enabled=1 WHERE name IN ('crypto_deposit', 'crypto_wallet', 'crypto');")
+
+        # پرچم‌های ویژگی که خودِ این سوئیت اعلام کرده است
+        if self.required_features:
+            names = ", ".join("'" + f.replace("'", "''") + "'" for f in self.required_features)
+            db_insert(f"UPDATE feature_flags SET enabled=1 WHERE name IN ({names});")
         try:
             subprocess.run(["redis-cli", "FLUSHALL"], capture_output=True)
         except Exception:

@@ -218,14 +218,22 @@ def test_payment_L6_concurrent_payment_verification(client, assertions):
     """L6-2: شبیه‌سازی دریافت همزمان کال‌بک درگاه برای یک تراکنش واحد (جلوگیری از دوبرابر شدن شارژ)"""
     uid = ensure_test_user("p.L6.2@chortke.test", balance_irt='0', verified=True)
     # ایجاد تراکنش پرداخت
-    db_insert(f"""
-        INSERT INTO payments (user_id, amount, gateway, status, authority, created_at, updated_at)
-        VALUES ({uid}, 500000, 'jibit', 'pending', 'AUTH_RACE_123', NOW(), NOW())
-    """)
+    # جدول 'payments' در این پروژه وجود ندارد؛ رکورد پرداخت در payment_logs
+    # نگهداری می‌شود (تنها جدولی که ستون authority دارد). INSERT پیشین با
+    # خطای «Table doesn't exist» بی‌صدا شکست می‌خورد، پس کال‌بک همزمان روی
+    # پرداختی که هرگز ساخته نشده بود اجرا می‌شد و ادعای «شارژ دوباره نشد»
+    # بی‌معنا بود.
+    authority = f"AUTH_RACE_{int(time.time())}"
+    db_insert(
+        "INSERT INTO payment_logs (user_id, gateway, amount, currency, status, authority, created_at, updated_at) "
+        f"VALUES ({uid}, 'jibit', 500000, 'irt', 'pending', '{authority}', NOW(), NOW())"
+    )
+    assert_true(assertions, "رکورد پرداخت آزمایشی ثبت شد",
+                db_scalar(f"SELECT COUNT(*) FROM payment_logs WHERE authority='{authority}'") == '1')
     client.login("p.L6.2@chortke.test", DEFAULT_PASSWORD)
     
     # شبیه‌سازی ارسال همزمان کال‌بک درگاه
-    results = client.post_concurrent('/payment/callback/jibit?authority=AUTH_RACE_123&status=success', {}, count=3)
+    results = client.post_concurrent(f'/payment/callback/jibit?authority={authority}&status=success', {}, count=3)
     
     # موجودی نهایی نباید بیش از ۵۰۰ هزار تومان شود
     bal = db_scalar(f"SELECT balance_irt FROM wallets WHERE user_id={uid}")

@@ -11,7 +11,7 @@ from scenario_test import *
 def _solve_math_captcha(body: str) -> dict:
     """تجزیه و حل کپچای ریاضی پویا از ساختار DOM صفحه ثبت‌نام"""
     q = re.search(r'captcha-question[^>]*>\s*(\d+)\s*([+\-*])\s*(\d+)', body)
-    ct = re.search(r'name="captcha_token"\s+value="([^"]+)"', body)
+    ct = re.search(r'name="captcha_token"[^>]*\svalue="([^"]+)"', body)
     if q and ct:
         a, op, b = int(q.group(1)), q.group(2), int(q.group(3))
         answer = {'+': a+b, '-': a-b, '*': a*b}[op]
@@ -101,7 +101,7 @@ def test_logic_L3_register_wrong_captcha(client, assertions):
     
     # استخراج کپچای واقعی اما ارسال پاسخ غلط
     q = re.search(r'captcha-question[^>]*>\s*(\d+)\s*([+\-*])\s*(\d+)', body)
-    ct = re.search(r'name="captcha_token"\s+value="([^"]+)"', body)
+    ct = re.search(r'name="captcha_token"[^>]*\svalue="([^"]+)"', body)
     captcha = {'captcha_token': ct.group(1), 'captcha_response': '999999'} if ct else {}
     
     email = f"fail_cap_{int(time.time())}@chortke.test"

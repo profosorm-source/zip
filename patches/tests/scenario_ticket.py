@@ -141,7 +141,14 @@ def test_ticket_L5_edge_long_ticket_message(client, assertions):
 def test_ticket_L6_concurrent_ticket_reply(client, assertions):
     """L6-1: شلیک همزمان چندین پاسخ به یک تیکت واحد توسط کاربر (Race Condition)"""
     uid = ensure_test_user("tkt.L6.1@chortke.test", verified=True)
-    db_insert(f"INSERT INTO tickets (user_id, title, department, priority, status, created_at, updated_at) VALUES ({uid}, 'Race Ticket', 'support', 'high', 'open', NOW(), NOW())")
+    # جدول tickets ستون‌های title/department ندارد؛ عنوان در subject است و
+    # ticket_id (شناسهٔ یکتای متنی) اجباری است. INSERT پیشین بی‌صدا شکست
+    # می‌خورد و «پاسخ همزمان» روی تیکتی اجرا می‌شد که وجود نداشت.
+    race_code = f"TKT-RACE-{int(time.time())}"
+    db_insert(
+        "INSERT INTO tickets (user_id, ticket_id, category_id, subject, priority, status, created_at, updated_at) "
+        f"VALUES ({uid}, '{race_code}', 1, 'Race Ticket', 'high', 'open', NOW(), NOW())"
+    )
     tid = db_scalar(f"SELECT id FROM tickets WHERE user_id={uid} LIMIT 1")
     client.login("tkt.L6.1@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get(f'/tickets/{tid}')

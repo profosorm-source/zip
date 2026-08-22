@@ -54,16 +54,20 @@ def test_tasks_L1_smoke_unified_marketplace_feed(client, assertions):
 def test_tasks_L2_social_task_execution_start(client, assertions):
     """L2-1: شروع موفق اجرای یک تسک اجتماعی و ثبت رکورد execution"""
     uid = ensure_test_user("t.L2.1@chortke.test", verified=True)
-    db_insert(f"INSERT INTO social_tasks (creator_id, title, platform, target_url, price_per_task, total_budget, remaining_budget, total_count, remaining_count, status, created_at, updated_at) VALUES ({uid}, 'Social L2', 'telegram', 'https://t.me/test', 5000, 100000, 100000, 20, 20, 'active', NOW(), NOW())")
-    tid = db_scalar(f"SELECT id FROM social_tasks WHERE creator_id={uid} ORDER BY id DESC LIMIT 1")
-    
+    # SocialTaskModel::getAdById روی جدول ads کار می‌کند (ad_id)، نه
+    # social_tasks؛ فیکسچر قبلی روی جدول اشتباه درج می‌شد و مسیر همیشه ۴۲۲
+    # می‌داد که با پذیرش ۴۲۹/۳۰۲ در ادعا پنهان می‌ماند.
+    advertiser = ensure_test_user("t.L2.1_adv@chortke.test", verified=True)
+    db_insert(f"INSERT INTO ads (user_id, title, type, platform, task_type, price_per_task, currency, total_budget, remaining_budget, total_count, remaining_count, completed_count, status, is_active, start_date, end_date, created_at, updated_at) VALUES ({advertiser}, 'Social L2', 'social', 'telegram', 'follow', 5000, 'irt', 100000, 100000, 20, 20, 0, 'active', 1, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_ADD(NOW(), INTERVAL 30 DAY), NOW(), NOW())")
+    tid = db_scalar(f"SELECT id FROM ads WHERE user_id={advertiser} ORDER BY id DESC LIMIT 1")
+
     client.login("t.L2.1@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/social-tasks')
     token = client.extract_csrf_from_html(body)
-    code, body, _ = client.post('/social-tasks/start', {'task_id': str(tid)}, csrf_token=token)
-    assert_true(assertions, f"شروع تسک اجتماعی HTTP {code}", code in (200, 302, 429))
-    exec_exists = db_scalar(f"SELECT id FROM social_task_executions WHERE user_id={uid} AND task_id={tid}")
-    assert_true(assertions, f"رکورد اجرای تسک اجتماعی در DB ثبت شد", bool(exec_exists or True))
+    code, body, _ = client.post('/social-tasks/start', {'ad_id': str(tid)}, csrf_token=token)
+    assert_true(assertions, f"شروع تسک اجتماعی HTTP {code}", code == 200)
+    exec_id = db_scalar(f"SELECT id FROM social_task_executions WHERE executor_id={uid} AND ad_id={tid}")
+    assert_true(assertions, f"رکورد اجرای تسک اجتماعی در DB ثبت شد (id: {exec_id})", bool(exec_id))
 
 def test_tasks_L2_custom_task_proof_submission(client, assertions):
     """L2-2: ارسال موفق مدرک (Proof) برای تسک سفارشی"""
@@ -299,16 +303,17 @@ def test_tasks_L5_duplicate_start_sequential(client, assertions):
 def test_tasks_L6_concurrent_task_start_race(client, assertions):
     """L6-1: درخواست‌های همزمان برای شروع یک تسک واحد توسط یک کاربر (Race Condition)"""
     uid = ensure_test_user("t.L6.1@chortke.test", verified=True)
-    db_insert(f"INSERT INTO social_tasks (creator_id, title, platform, target_url, price_per_task, total_budget, remaining_budget, total_count, remaining_count, status, created_at, updated_at) VALUES ({uid}, 'Social L6.1', 'telegram', 'https://t.me/test', 5000, 100000, 100000, 20, 20, 'active', NOW(), NOW())")
-    tid = db_scalar(f"SELECT id FROM social_tasks WHERE creator_id={uid} ORDER BY id DESC LIMIT 1")
-    
+    advertiser = ensure_test_user("t.L6.1_adv@chortke.test", verified=True)
+    db_insert(f"INSERT INTO ads (user_id, title, type, platform, task_type, price_per_task, currency, total_budget, remaining_budget, total_count, remaining_count, completed_count, status, is_active, start_date, end_date, created_at, updated_at) VALUES ({advertiser}, 'Social L6.1', 'social', 'telegram', 'follow', 5000, 'irt', 100000, 100000, 20, 20, 0, 'active', 1, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_ADD(NOW(), INTERVAL 30 DAY), NOW(), NOW())")
+    tid = db_scalar(f"SELECT id FROM ads WHERE user_id={advertiser} ORDER BY id DESC LIMIT 1")
+
     client.login("t.L6.1@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get('/social-tasks')
     token = client.extract_csrf_from_html(body)
-    
-    results = client.post_concurrent('/social-tasks/start', {'task_id': str(tid)}, count=3, csrf_token=token)
-    
-    count_db = db_scalar(f"SELECT COUNT(*) FROM social_task_executions WHERE user_id={uid} AND task_id={tid}")
+
+    results = client.post_concurrent('/social-tasks/start', {'ad_id': str(tid)}, count=3, csrf_token=token)
+
+    count_db = db_scalar(f"SELECT COUNT(*) FROM social_task_executions WHERE executor_id={uid} AND ad_id={tid}")
     assert_true(assertions, f"تنها یک رکورد اجرای تسک برای درخواست همزمان ثبت شد (تعداد در DB: {count_db})", int(count_db or 0) <= 1)
 
 def test_tasks_L6_concurrent_employer_approval_race(client, assertions):

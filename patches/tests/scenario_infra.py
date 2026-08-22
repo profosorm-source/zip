@@ -46,7 +46,10 @@ def test_infra_L2_outbox_publish_success(client, assertions):
     assert_true(assertions, "رویداد Outbox آزمایشی ثبت شد",
                 db_scalar(f"SELECT COUNT(*) FROM outbox_events WHERE event_type='{marker}'") == '1')
 
-    res = run_outbox_publish(limit=10)
+    # اسنپ‌شات پایه ده‌ها رویداد pending قدیمی دارد و دیسپچر به ترتیب قدیمی‌ترین‌ها
+    # را برمی‌دارد؛ سقف ثابت هرگز به رویداد تازه نمی‌رسید. سقف را از خود صف می‌گیریم.
+    pending_backlog = int(db_scalar("SELECT COUNT(*) FROM outbox_events WHERE status='pending'"))
+    res = run_outbox_publish(limit=pending_backlog)
     assert_true(assertions, f"دیسپچر انتشار Outbox با موفقیت اجرا شد", res.returncode == 0)
 
     # ادعای پیشین int(pending) >= 0 بود که همیشه درست است و هیچ‌چیز را نمی‌سنجید.
@@ -135,8 +138,13 @@ def test_infra_L7_browser_sentry_issue_table(client, assertions):
 # ═══════════════════════════════════════════════════════════════════
 def test_infra_L8_outbox_status_enum_validity(client, assertions):
     """L8-1: بررسی یکپارچگی مقادیر مجاز Enum در جدول outbox_events"""
+    # مجموعهٔ مجاز از خود اسکیما خوانده می‌شود؛ فهرست دستیِ پیشین با enum واقعی
+    # ('published'/'dlq') نمی‌خواند و به‌محض راه‌افتادن دیسپچر شکست می‌داد.
+    enum_def = db_scalar("SELECT COLUMN_TYPE FROM information_schema.COLUMNS "
+                         "WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='outbox_events' AND COLUMN_NAME='status'")
+    valid = set(re.findall(r"'([^']+)'", enum_def or ''))
+    assert_true(assertions, f"enum وضعیت Outbox از اسکیما استخراج شد ({len(valid)} مقدار)", len(valid) > 0)
     statuses = db_query("SELECT DISTINCT status FROM outbox_events")
-    valid = {'pending', 'processing', 'completed', 'failed'}
     for s in statuses:
         assert_true(assertions, f"مقدار وضعیت Outbox معتبر است ({s})", s in valid)
 

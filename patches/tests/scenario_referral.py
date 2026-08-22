@@ -15,8 +15,10 @@ def test_referral_L1_smoke_main_page(client, assertions):
     """L1-1: صفحه اصلی معرفی دوستان و لینک ریفرال بدون کرش لود می‌شود"""
     ensure_test_user("ref.L1.1@chortke.test", verified=True)
     client.login("ref.L1.1@chortke.test", DEFAULT_PASSWORD)
-    code, body = client.get('/referrals')
-    assert_true(assertions, f"صفحه اصلی ریفرال HTTP {code}", code in (200, 302))
+    # مسیر واقعی صفحهٔ ریفرال '/referral' است (routes/user.php:249)؛
+    # '/referrals' هرگز وجود نداشته و ۴۰۴ برمی‌گرداند.
+    code, body = client.get('/referral')
+    assert_true(assertions, f"صفحه اصلی ریفرال HTTP {code}", code == 200)
     assert_true(assertions, "بدون Fatal", 'Fatal' not in body)
 
 def test_referral_L1_smoke_tree_page(client, assertions):
@@ -48,15 +50,18 @@ def test_referral_L2_generate_referral_code_success(client, assertions):
 def test_referral_L2_signup_with_referral_code(client, assertions):
     """L2-2: ثبت‌نام موفق کاربر جدید با کد معرف و برقراری ارتباط زیرمجموعه‌گیری"""
     ref_uid = ensure_test_user("ref.L2.2_ref@chortke.test", verified=True)
-    db_insert(f"UPDATE users SET referral_code='HAPPY_REF' WHERE id={ref_uid}")
+    # کد معرف باید در هر اجرا یکتا باشد؛ مقدار ثابت در اجرای دوم به دلیل
+    # قید یکتایی ستون users.referral_code خطای Duplicate entry می‌دهد.
+    ref_code = f"REF{int(time.time())}"
+    db_insert(f"UPDATE users SET referral_code='{ref_code}' WHERE id={ref_uid}")
     
-    code, body = client.get('/register?ref=HAPPY_REF')
+    code, body = client.get(f'/register?ref={ref_code}')
     csrf_token = re.search(r'name="_csrf_token"[^>]*value="([^"]+)"', body)
     csrf_token = csrf_token.group(1) if csrf_token else ''
     
     # math captcha question
     q = re.search(r'captcha-question[^>]*>\s*(\d+)\s*([+\-*])\s*(\d+)', body)
-    ct = re.search(r'name="captcha_token"\s+value="([^"]+)"', body)
+    ct = re.search(r'name="captcha_token"[^>]*\svalue="([^"]+)"', body)
     captcha = {}
     if q and ct:
         a, op, b = int(q.group(1)), q.group(2), int(q.group(3))
@@ -68,7 +73,7 @@ def test_referral_L2_signup_with_referral_code(client, assertions):
         'email': email, 'username': 'invited', 'full_name': 'Invited User',
         'mobile': '09115556677', 'password': 'StrongP@ss123!',
         'password_confirmation': 'StrongP@ss123!', 'terms': '1', 'viewport': '1920x1080',
-        'referral_code': 'HAPPY_REF',
+        'referral_code': ref_code,
         **captcha
     }, csrf_token=csrf_token, page_body=body)
     assert_true(assertions, f"ثبت‌نام با ریفرال HTTP {code}", code == 302)
@@ -120,8 +125,10 @@ def test_referral_L3_set_referrer_already_set(client, assertions):
 def test_referral_L4_guest_cannot_access_referrals(client, assertions):
     """L4-1: تلاش کاربر لاگین‌نکرده (مهمان) برای دسترسی به پنل ریفرال مسدود می‌شود"""
     c = HttpClient('/tmp/guest_ref_jar.txt')
-    code, body = c.get('/referrals')
-    assert_true(assertions, f"دسترسی مهمان مسدود شد HTTP {code}", code in (302, 401, 403, 404))
+    # پیش‌تر مسیر ناموجود '/referrals' استفاده می‌شد و ۴۰۴ آن ادعا را
+    # بی‌آنکه چیزی دربارهٔ کنترل دسترسی ثابت کند سبز می‌کرد.
+    code, body = c.get('/referral')
+    assert_true(assertions, f"دسترسی مهمان مسدود شد HTTP {code}", code in (302, 401, 403))
 
 def test_referral_L4_csrf_generate_missing(client, assertions):
     """L4-2: تولید لینک ریفرال بدون توکن CSRF مسدود می‌شود"""
@@ -173,7 +180,7 @@ def test_referral_L6_concurrent_referral_creation(client, assertions):
     """L6-1: درخواست‌های همزمان برای تولید لینک معرفی اختصاصی (Race Condition)"""
     uid = ensure_test_user("ref.L6.1@chortke.test", verified=True)
     client.login("ref.L6.1@chortke.test", DEFAULT_PASSWORD)
-    code, body = client.get('/referrals')
+    code, body = client.get('/referral')
     csrf = re.search(r'name="_csrf_token"[^>]*value="([^"]+)"', body)
     token = csrf.group(1) if csrf else ''
     
@@ -203,8 +210,12 @@ def test_referral_L7_browser_copy_link_button(client, assertions):
     """L7-2: بررسی وجود و دسترسی‌پذیری دکمه کپی لینک معرفی در مرورگر"""
     uid = ensure_test_user("ref.L7.2@chortke.test", verified=True)
     client.login("ref.L7.2@chortke.test", DEFAULT_PASSWORD)
-    code, body = client.get('/referrals')
-    assert_true(assertions, f"دکمه کپی لینک در مرورگر بارگذاری شد HTTP {code}", code in (200, 302))
+    code, body = client.get('/referral')
+    assert_true(assertions, f"دکمه کپی لینک در مرورگر بارگذاری شد HTTP {code}", code == 200)
+    # لینک معرفی توسط ReferralController با الگوی /register?ref=<code> ساخته
+    # می‌شود؛ نبودنش یعنی صفحه واقعاً دکمهٔ کپی ندارد.
+    assert_true(assertions, "لینک معرفی در صفحه رندر شد",
+                re.search(r'register\?ref=', body) is not None)
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۸: یکپارچگی داده (Data Integrity) — L8

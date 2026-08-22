@@ -176,10 +176,17 @@ class AdvancedFraudMiddleware extends BaseMiddleware
         $ipCheck = $this->ipQualityService->check($ip);
         if ($ipCheck['is_suspicious']) {
             $this->ipQualityService->logIPCheck($userId, $ip, $ipCheck);
+            // BUG FIX: کیفیت IP یک سیگنال ایستا است (رِنج خصوصی، اشتراکی بودن، Tor…) و با
+            // هر درخواست تغییر نمی‌کند؛ اما این دلتا روی هر درخواست اعمال می‌شد و امتیاز
+            // تقلبِ یک کاربر کاملاً سالم را به‌صورت انباشتی بالا می‌برد تا از آستانه‌ی
+            // challenge/block عبور کند و کاربر بی‌دلیل به 2FA یا خروج اجباری بیفتد.
+            // applyDelta از پیش کلید idempotency را پشتیبانی می‌کند؛ سیگنال را به ازای
+            // هر (کاربر، IP، مجموعه‌ی دلایل) فقط یک‌بار اعمال می‌کنیم.
+            $ipSignalKey = 'ip_quality:' . $userId . ':' . $ip . ':' . md5(json_encode($ipCheck['reasons']) ?: '');
             $this->scoreService->applyDelta('user', $userId, \App\Enums\ScoreDomain::Fraud->value, float_value($ipCheck['score']) / 4, 'ip_quality', [
                 'ip' => $ip,
                 'reasons' => $ipCheck['reasons'],
-            ]);
+            ], $ipSignalKey);
 
             $ipDetails = is_array($ipCheck['details'] ?? null) ? $ipCheck['details'] : [];
             if (!empty($ipDetails['is_tor'])) {

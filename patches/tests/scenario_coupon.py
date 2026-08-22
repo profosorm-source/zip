@@ -15,8 +15,10 @@ def test_coupon_L1_smoke_coupon_page(client, assertions):
     """L1-1: صفحه مدیریت کوپن‌های کاربر بدون کرش لود می‌شود"""
     ensure_test_user("cpn.L1.1@chortke.test", verified=True)
     client.login("cpn.L1.1@chortke.test", DEFAULT_PASSWORD)
-    code, body = client.get('/coupons')
-    assert_true(assertions, f"صفحه اصلی کوپن‌ها HTTP {code}", code in (200, 302))
+    # GET /coupons وجود ندارد؛ تنها مسیر صفحه‌محور کوپن /coupons/history است
+    # (routes: POST /coupons/validate، POST /coupons/apply، GET /coupons/history).
+    code, body = client.get('/coupons/history')
+    assert_true(assertions, f"صفحه تاریخچه کوپن‌ها HTTP {code}", code == 200)
     assert_true(assertions, "بدون Fatal", 'Fatal' not in body)
 
 def test_coupon_L1_smoke_apply_endpoint(client, assertions):
@@ -32,7 +34,10 @@ def test_coupon_L1_smoke_apply_endpoint(client, assertions):
 def test_coupon_L2_apply_coupon_success(client, assertions):
     """L2-1: اعمال موفق کوپن تخفیف معتبر روی سبد خرید یا طرح سرمایه‌گذاری"""
     uid = ensure_test_user("cpn.L2.1@chortke.test", verified=True)
-    db_insert(f"INSERT INTO coupons (code, discount_percent, max_uses, current_uses, status, created_at, updated_at) VALUES ('HAPPY50', 50, 100, 0, 'active', NOW(), NOW()) ON DUPLICATE KEY UPDATE status='active', current_uses=0")
+    db_insert("INSERT INTO coupons (code, type, value, currency, usage_limit, usage_count, active, is_active, start_date, end_date, created_at) "
+              "VALUES ('HAPPY50', 'percent', 50, 'irt', 100, 0, 1, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_ADD(NOW(), INTERVAL 30 DAY), NOW()) "
+              "ON DUPLICATE KEY UPDATE active=1, is_active=1, usage_count=0, usage_limit=100, "
+              "start_date=DATE_SUB(NOW(), INTERVAL 1 DAY), end_date=DATE_ADD(NOW(), INTERVAL 30 DAY)")
     
     client.login("cpn.L2.1@chortke.test", DEFAULT_PASSWORD)
     code, body, _ = client.post('/coupons/apply', {
@@ -46,8 +51,8 @@ def test_coupon_L2_view_my_coupons(client, assertions):
     """L2-2: مشاهده موفق لیست کوپن‌های فعال و استفاده‌شده کاربر"""
     uid = ensure_test_user("cpn.L2.2@chortke.test", verified=True)
     client.login("cpn.L2.2@chortke.test", DEFAULT_PASSWORD)
-    code, body = client.get('/coupons')
-    assert_true(assertions, f"لیست کوپن‌ها بارگذاری شد HTTP {code}", code in (200, 302))
+    code, body = client.get('/coupons/history')
+    assert_true(assertions, f"لیست کوپن‌ها بارگذاری شد HTTP {code}", code == 200)
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۳: مسیرهای شکست (Failure Paths) — L3
@@ -66,7 +71,10 @@ def test_coupon_L3_apply_nonexistent_coupon(client, assertions):
 def test_coupon_L3_apply_expired_coupon(client, assertions):
     """L3-2: تلاش برای اعمال کوپن تخفیفی که تاریخ انقضای آن گذشته است"""
     uid = ensure_test_user("cpn.L3.2@chortke.test", verified=True)
-    db_insert(f"INSERT INTO coupons (code, discount_percent, max_uses, status, expires_at, created_at, updated_at) VALUES ('EXPIRED50', 50, 100, 'active', DATE_SUB(NOW(), INTERVAL 1 DAY), NOW(), NOW()) ON DUPLICATE KEY UPDATE expires_at=DATE_SUB(NOW(), INTERVAL 1 DAY)")
+    db_insert("INSERT INTO coupons (code, type, value, currency, usage_limit, usage_count, active, is_active, start_date, end_date, expires_at, created_at) "
+              "VALUES ('EXPIRED50', 'percent', 50, 'irt', 100, 0, 1, 1, DATE_SUB(NOW(), INTERVAL 30 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY), NOW()) "
+              "ON DUPLICATE KEY UPDATE active=1, is_active=1, "
+              "end_date=DATE_SUB(NOW(), INTERVAL 1 DAY), expires_at=DATE_SUB(NOW(), INTERVAL 1 DAY)")
     
     client.login("cpn.L3.2@chortke.test", DEFAULT_PASSWORD)
     code, body, _ = client.post('/coupons/apply', {'code': 'EXPIRED50', 'item_type': 'investment_plan', 'item_id': '1'})
@@ -75,7 +83,9 @@ def test_coupon_L3_apply_expired_coupon(client, assertions):
 def test_coupon_L3_apply_fully_used_coupon(client, assertions):
     """L3-3: تلاش برای استفاده از کوپنی که به سقف تعداد مصرف (max_uses) رسیده است"""
     uid = ensure_test_user("cpn.L3.3@chortke.test", verified=True)
-    db_insert(f"INSERT INTO coupons (code, discount_percent, max_uses, current_uses, status, created_at, updated_at) VALUES ('MAXED50', 50, 10, 10, 'active', NOW(), NOW()) ON DUPLICATE KEY UPDATE current_uses=10, max_uses=10")
+    db_insert("INSERT INTO coupons (code, type, value, currency, usage_limit, usage_count, active, is_active, start_date, end_date, created_at) "
+              "VALUES ('MAXED50', 'percent', 50, 'irt', 10, 10, 1, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_ADD(NOW(), INTERVAL 30 DAY), NOW()) "
+              "ON DUPLICATE KEY UPDATE usage_count=10, usage_limit=10, active=1, is_active=1")
     
     client.login("cpn.L3.3@chortke.test", DEFAULT_PASSWORD)
     code, body, _ = client.post('/coupons/apply', {'code': 'MAXED50', 'item_type': 'investment_plan', 'item_id': '1'})
@@ -139,10 +149,12 @@ def test_coupon_L5_special_characters_in_coupon(client, assertions):
 def test_coupon_L6_concurrent_redemption_race_condition(client, assertions):
     """L6-1: تلاش همزمان چندین کاربر برای استفاده از کوپنی با تنها ۱ ظرفیت باقی‌مانده (Race Condition)"""
     uid = ensure_test_user("cpn.L6.1@chortke.test", verified=True)
-    db_insert(f"INSERT INTO coupons (code, discount_percent, max_uses, current_uses, status, created_at, updated_at) VALUES ('RACE50', 50, 1, 0, 'active', NOW(), NOW()) ON DUPLICATE KEY UPDATE current_uses=0, max_uses=1")
+    db_insert("INSERT INTO coupons (code, type, value, currency, usage_limit, usage_count, active, is_active, start_date, end_date, created_at) "
+              "VALUES ('RACE50', 'percent', 50, 'irt', 1, 0, 1, 1, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_ADD(NOW(), INTERVAL 30 DAY), NOW()) "
+              "ON DUPLICATE KEY UPDATE usage_count=0, usage_limit=1, active=1, is_active=1")
     
     client.login("cpn.L6.1@chortke.test", DEFAULT_PASSWORD)
-    code, body = client.get('/coupons')
+    code, body = client.get('/coupons/history')
     csrf = re.search(r'name="_csrf_token"[^>]*value="([^"]+)"', body)
     token = csrf.group(1) if csrf else ''
     
@@ -153,7 +165,7 @@ def test_coupon_L6_concurrent_redemption_race_condition(client, assertions):
     }, count=3, csrf_token=token)
     
     # تعداد مصرف نباید بیش از سقف (۱) شود
-    c_uses = db_scalar("SELECT current_uses FROM coupons WHERE code='RACE50'")
+    c_uses = db_scalar("SELECT usage_count FROM coupons WHERE code='RACE50'")
     assert_true(assertions, f"تداخل در مصرف کوپن همزمان مسدود شد (current_uses: {c_uses})", int(c_uses or 0) <= 1)
 
 # ═══════════════════════════════════════════════════════════════════
@@ -163,8 +175,8 @@ def test_coupon_L7_browser_coupon_form_interaction(client, assertions):
     """L7-1: تعامل با جعبه ورود کد تخفیف در سبد خرید یا صفحه کوپن‌ها در مرورگر"""
     uid = ensure_test_user("cpn.L7.1@chortke.test", verified=True)
     client.login("cpn.L7.1@chortke.test", DEFAULT_PASSWORD)
-    code, body = client.get('/coupons')
-    assert_true(assertions, f"فرم کوپن در مرورگر بارگذاری شد HTTP {code}", code in (200, 302))
+    code, body = client.get('/coupons/history')
+    assert_true(assertions, f"فرم کوپن در مرورگر بارگذاری شد HTTP {code}", code == 200)
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۸: یکپارچگی داده (Data Integrity) — L8
@@ -174,10 +186,19 @@ def test_coupon_L8_coupon_status_enum_validity(client, assertions):
     uid = ensure_test_user("cpn.L8.1@chortke.test", verified=True)
     client.login("cpn.L8.1@chortke.test", DEFAULT_PASSWORD)
     
-    statuses = db_query("SELECT DISTINCT status FROM coupons")
-    valid = {'active', 'inactive', 'expired', 'exhausted'}
-    for s in statuses:
-        assert_true(assertions, f"مقدار وضعیت کوپن معتبر است ({s})", s in valid)
+    # جدول coupons ستون status ندارد. وضعیت از ترکیب active/is_active
+    # (بولین ۰/۱) و type (enum) ساخته می‌شود؛ همین‌ها را اعتبارسنجی می‌کنیم.
+    flags = db_query("SELECT DISTINCT active FROM coupons")
+    for s in flags:
+        assert_true(assertions, f"مقدار پرچم active کوپن معتبر است ({s})", s in {'0', '1'})
+
+    types = db_query("SELECT DISTINCT type FROM coupons")
+    for s in types:
+        assert_true(assertions, f"مقدار type کوپن معتبر است ({s})", s in {'fixed', 'percent'})
+
+    currencies = db_query("SELECT DISTINCT currency FROM coupons")
+    for s in currencies:
+        assert_true(assertions, f"مقدار currency کوپن معتبر است ({s})", s in {'irt', 'usdt'})
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۹: پردازش‌های ناهمگام و صف‌ها (Async & Queues) — L9
@@ -214,7 +235,8 @@ def test_coupon_L10_sentry_monitoring_coupon_exceptions(client, assertions):
 # Test Suite Runner
 # ═══════════════════════════════════════════════════════════════════
 if __name__ == '__main__':
-    suite = TestSuite("فاز ۵.۵ — کوپن‌های تخفیف و کدهای هدیه سازمانی (۱۰ لایه‌ای)")
+    suite = TestSuite("فاز ۵.۵ — کوپن‌های تخفیف و کدهای هدیه سازمانی (۱۰ لایه‌ای)",
+                      required_features=["coupons"])
 
     # لایه ۱: Smoke
     suite.run_test("L1-1: صفحه مدیریت کوپن‌ها", test_coupon_L1_smoke_coupon_page)
