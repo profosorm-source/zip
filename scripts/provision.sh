@@ -442,6 +442,49 @@ OPENSSLCNF
   ok "openssl.cnf ساخته شد: $cnf"
 }
 
+# -----------------------------------------------------------------------------
+# اعمال اصلاحات مخزن (patches/) روی درخت استخراج‌شده
+#
+# قرارداد چیدمان — رعایتش الزامی است، وگرنه اصلاحات در بازسازی گم می‌شوند:
+#   patches/<مسیر نسبی در chortke>   →  $APP/<همان مسیر نسبی>
+#     مثال: patches/core/ValueObjects/Money.php → $APP/core/ValueObjects/Money.php
+#   patches/configs/*                →  $APP/            (تخت، چون کانفیگ‌ها ریشه‌ای‌اند)
+#   patches/scripts/dev-router.php   →  $APP/dev-router.php
+# هر فایل PHP تختِ ریشهٔ patches/ یک خطاست و باعث توقف اسکریپت می‌شود.
+# -----------------------------------------------------------------------------
+apply_patches() {
+  local P="/home/user/zip/patches"
+  [ -d "$P" ] || { warn "پوشه patches پیدا نشد؛ از اعمال اصلاحات صرف‌نظر شد"; return 0; }
+
+  # نگهبان چیدمان: فایل PHP تخت در ریشه patches/ هرگز اعمال نمی‌شود و بی‌صدا گم می‌شود.
+  local stray
+  stray="$(find "$P" -maxdepth 1 -name '*.php' -printf '%f ' 2>/dev/null)"
+  [ -z "$stray" ] || die "فایل PHP تخت در ریشه patches/: $stray — باید به مسیر نسبی واقعی‌اش منتقل شود"
+
+  local n=0 d
+  for d in core app helpers config tests tests_scenarios docs; do
+    [ -d "$P/$d" ] || continue
+    ( cd "$P" && find "$d" -type f -print0 | xargs -0 -I{} cp --parents -f {} "$APP/" ) \
+      || die "اعمال اصلاحات $d"
+    n=$(( n + $(find "$P/$d" -type f | wc -l) ))
+  done
+
+  # کانفیگ‌های PHPUnit/PHPStan در ریشه پروژه می‌نشینند.
+  if [ -d "$P/configs" ]; then
+    cp -f "$P/configs/". "$APP/" 2>/dev/null || cp -f "$P"/configs/* "$APP/" || die "اعمال configs"
+    n=$(( n + $(find "$P/configs" -type f | wc -l) ))
+  fi
+
+  # روتر سرور توسعه: بدون آن، مسیرهای پویای منتهی به پسوند ایستا (مثل
+  # /file/view/captcha/<name>.png) توسط php -S بلعیده می‌شوند و ۴۰۴ می‌گیرند.
+  if [ -f "$P/scripts/dev-router.php" ]; then
+    cp -f "$P/scripts/dev-router.php" "$APP/dev-router.php" || die "نصب dev-router.php"
+    n=$(( n + 1 ))
+  fi
+
+  ok "اصلاحات patches اعمال شد ($n فایل)"
+}
+
 # =============================================================================
 # مرحله ۷ — سورس پروژه و وابستگی‌های Composer
 # =============================================================================
@@ -453,12 +496,7 @@ stage_project() {
     mkdir -p "$EXTRACT" && ( cd "$EXTRACT" && unzip -q -o "$ZIPFILE" ) || die "استخراج زیپ"
   fi
 
-  # روتر سرور توسعه: بدون آن، مسیرهای پویای منتهی به پسوند ایستا (مثل
-  # /file/view/captcha/<name>.png) توسط php -S بلعیده می‌شوند و ۴۰۴ می‌گیرند.
-  if [ -f "/home/user/zip/patches/scripts/dev-router.php" ]; then
-    cp "/home/user/zip/patches/scripts/dev-router.php" "$APP/dev-router.php"
-    ok "dev-router.php نصب شد"
-  fi
+  apply_patches
   ok "سورس پروژه در $APP"
   if [ ! -d "$APP/vendor" ] || [ "$FORCE" = 1 ]; then
     mkdir -p "$TOOLS/composer-home"
