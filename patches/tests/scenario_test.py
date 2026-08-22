@@ -371,21 +371,41 @@ class HttpClient:
 def get_php_bin() -> str:
     return shutil.which('php') or '/usr/bin/php'
 
+def _run_php_script(script: str, *args, timeout: int = 30):
+    """
+    اجرای یک اسکریپت CLI پروژه.
+
+    اسکریپت‌های cron.php و cli.php در ریشه پروژه قرار دارند، در حالی که این
+    تست‌ها از داخل پوشهٔ tests/ اجرا می‌شوند. اگر نام فایل به‌صورت نسبی پاس
+    داده شود، PHP آن را نسبت به دایرکتوری جاری می‌جوید و با خطای
+    «Could not open input file» و کد خروج ۱ شکست می‌خورد — یعنی ادعا به دلیل
+    مسیر نادرست رد می‌شد، نه به دلیل رفتار واقعی زمان‌بند.
+
+    بنابراین مسیر از روی ریشهٔ واقعی پروژه ساخته می‌شود (همان قراردادی که
+    _project_root در بالای همین فایل تعریف کرده) و دایرکتوری کاری نیز روی
+    ریشه تنظیم می‌گردد تا مسیرهای نسبیِ داخل خود اسکریپت درست تفسیر شوند.
+    """
+    root = _project_root()
+    return subprocess.run(
+        [get_php_bin(), str(root / script), *args],
+        capture_output=True, text=True, timeout=timeout, cwd=str(root),
+    )
+
 def run_cron():
     """[لایه ۹] اجرای دستی زمان‌بندی وظایف (Cron Dispatcher)"""
-    return subprocess.run([get_php_bin(), 'cron.php'], capture_output=True, text=True, timeout=30)
+    return _run_php_script('cron.php')
 
 def run_queue_work(limit: int = 10):
     """[لایه ۹] پردازش صف‌های سیستم"""
-    return subprocess.run([get_php_bin(), 'cli.php', 'queue:work', f'--limit={limit}'], capture_output=True, text=True, timeout=30)
+    return _run_php_script('cli.php', 'queue:work', f'--limit={limit}')
 
 def run_outbox_publish(limit: int = 100):
     """[لایه ۹] انتشار رویدادهای ثبت‌شده در جدول Outbox به سیستم پیام‌رسان"""
-    return subprocess.run([get_php_bin(), 'cli.php', 'outbox:publish', f'--limit={limit}'], capture_output=True, text=True, timeout=30)
+    return _run_php_script('cli.php', 'outbox:publish', f'--limit={limit}')
 
 def run_dlq_retry():
     """[لایه ۹] تلاش مجدد برای جاب‌های شکست‌خورده در صف مرده (DLQ)"""
-    return subprocess.run([get_php_bin(), 'cli.php', 'dlq:retry'], capture_output=True, text=True, timeout=30)
+    return _run_php_script('cli.php', 'dlq:retry')
 
 def get_failed_jobs() -> list:
     """[لایه ۹] دریافت لیست پیام‌های سمی و شکست‌خورده در دیتابیس"""
