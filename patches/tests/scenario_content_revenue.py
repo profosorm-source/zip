@@ -38,16 +38,20 @@ def test_content_L2_create_content_success(client, assertions):
     """L2-1: ثبت موفق مطلب و محتوای جدید توسط کاربر و درج در دیتابیس"""
     uid = ensure_test_user("cnt.L2.1@chortke.test", verified=True)
     client.login("cnt.L2.1@chortke.test", DEFAULT_PASSWORD)
-    code, body, _ = client.post('/content/store', {
+    # قرارداد واقعی این اندپوینت JSON است، نه فرم:
+    # ContentController::validateCsrfToken() فقط هدر X-CSRF-TOKEN (یا
+    # X-XSRF-TOKEN) را می‌پذیرد و فیلد فرم _csrf_token را نادیده می‌گیرد؛
+    # همان کاری که فرانت‌اند واقعی در
+    # public/assets/js/views/usercontentcreate.js خط ۲۰۸ انجام می‌دهد.
+    # ارسال به شکل فرم همیشه ۴۰۳ می‌گرفت و منطق ذخیره‌سازی هرگز آزموده نمی‌شد.
+    code, body, _ = client.post_json('/content/store', {
         'title': 'راهنمای کسب درآمد از بازارچه تسک‌ها',
         'slug': f'earn-money-guide-{int(time.time())}',
         'content': 'متن کامل مقاله آموزشی مسیر خوش‌اقبال',
         'category': 'education'
     })
-    # '/content/store' در routes/user.php:172 پشت $authCSRF تعریف شده است.
-    # پذیرش 404/403 در نسخهٔ پیشین یعنی حتی حذف مسیر یا ردِ کامل دسترسی هم
-    # سبز می‌ماند. پاسخ درست برای کاربر واردشده: 200/302 (موفق) یا 422 (خطای
-    # اعتبارسنجی) — که هر دو نشان می‌دهند درخواست واقعاً به کنترلر رسیده است.
+    # پاسخ درست برای کاربر واردشده: 200/302 (موفق) یا 422 (خطای اعتبارسنجی) —
+    # که هر دو نشان می‌دهند درخواست واقعاً به کنترلر رسیده است.
     assert_true(assertions, f"ایجاد محتوا HTTP {code}", code in (200, 302, 422))
 
 def test_content_L2_admin_create_placement_success(client, assertions):

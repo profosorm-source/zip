@@ -21,10 +21,67 @@ import sys
 import time
 import os
 import shutil
+import hashlib
 import concurrent.futures
 from dataclasses import dataclass, field
 from typing import Optional, Callable, Dict, List, Tuple
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit, quote
+
+
+def _encode_url_path(path: str) -> str:
+    """
+    درصد-انکد کردن بایت‌های غیر ASCII در مسیر و کوئری.
+
+    مرورگر واقعی هرگز کاراکتر غیر ASCII را خام در خط درخواست HTTP نمی‌فرستد و
+    آن را درصد-انکد می‌کند. اما هارنس مسیرهایی مانند '/search?q=تسک' را خام
+    ارسال می‌کرد؛ سرور پاسخ «Invalid request (Malformed HTTP request)» می‌داد،
+    اتصال بسته می‌شد و کد وضعیت ۰ برمی‌گشت. یعنی شکست ادعا ناشی از نحوهٔ ارسال
+    درخواست بود، نه رفتار برنامه.
+
+    کاراکترهای رزرو شدهٔ HTTP دست‌نخورده می‌مانند تا معنای مسیر و کوئری
+    (مثل ? و & و =) تغییر نکند و فقط بایت‌های ناایمن انکد شوند.
+    """
+    parts = urlsplit(path)
+    return urlunsplit((
+        parts.scheme,
+        parts.netloc,
+        quote(parts.path, safe="/%:@!$&'()*+,;=~-._"),
+        quote(parts.query, safe="/?=&%:@!$'()*+,;~-._"),
+        quote(parts.fragment, safe="/?=&%:@!$'()*+,;~-._"),
+    ))
+
+
+# ترتیب و کلیدهای مؤلفه‌ها دقیقاً مطابق
+# App\Services\Security\BrowserFingerprintService::generate()
+_FINGERPRINT_COMPONENT_KEYS = (
+    'user_agent', 'language', 'timezone', 'screen', 'canvas', 'webgl',
+    'audio', 'fonts', 'plugins', 'touch_support', 'hardware_concurrency',
+    'device_memory',
+)
+
+
+def browser_fingerprint_components(**overrides) -> dict:
+    """ساخت مجموعهٔ مؤلفه‌های فینگرپرینت مرورگر با همان کلیدهای مورد انتظار سرور."""
+    components = {k: '' for k in _FINGERPRINT_COMPONENT_KEYS}
+    components.update({k: v for k, v in overrides.items() if k in components})
+    return components
+
+
+def expected_fingerprint_hash(components: dict) -> str:
+    """
+    بازتولید همان هشی که سرور محاسبه می‌کند.
+
+    سرور مؤلفه‌ها را با ترتیب ثابت بازچینی کرده، json_encode می‌کند و
+    sha256 می‌گیرد؛ سپس با hash_equals مقایسه می‌کند. برای اینکه تست بتواند
+    «ارسال معتبر» را واقعاً بیازماید باید همان قرارداد را بازسازی کند —
+    از جمله رفتار json_encode در PHP که پیش‌فرض اسلش را \\/ اسکیپ می‌کند و
+    کاراکترهای غیر ASCII را به شکل \\uXXXX می‌نویسد.
+    """
+    canonical = {k: components.get(k, '') for k in _FINGERPRINT_COMPONENT_KEYS}
+    encoded = json.dumps(canonical, separators=(',', ':'), ensure_ascii=True).replace('/', '\\/')
+    return hashlib.sha256(encoded.encode('utf-8')).hexdigest()
+
 
 def _project_root() -> Path:
     """ریشه پروژه را نسبت به محل همین فایل پیدا می‌کند (tests/ -> chortke/)."""
@@ -161,11 +218,16 @@ def get_mysql_cli() -> str:
     return shutil.which('mariadb') or shutil.which('mysql') or 'mariadb'
 
 def reset_rate_limits():
-    """Reset rate limits in database and cache"""
+    """Reset rate limits in database and cache
+
+    FLUSHALL وضعیت LoginRiskService را هم پاک می‌کند؛ بدون آن، شکست‌های
+    انباشتهٔ ورود در اجراهای پیاپی نوع کپچا را تا recaptcha_v2 بالا می‌برند
+    که در محیط آزمون قابل حل نیست و همهٔ لاگین‌ها را خاموش می‌شکند.
+    """
     cli = get_mysql_cli()
     subprocess.run([cli, *db_conn_args(), DB_NAME, "-e", "TRUNCATE rate_limit_requests; TRUNCATE rate_limits;"], capture_output=True)
     try:
-        subprocess.run(["redis-cli", "FLUSHALL"], capture_output=True)
+        subprocess.run([shutil.which("redis-cli") or "redis-cli", "FLUSHALL"], capture_output=True)
     except Exception:
         pass
 
@@ -191,12 +253,25 @@ def db_scalar(sql: str) -> str:
 
 
 def db_insert(sql: str):
-    """اجرای INSERT/UPDATE/DELETE"""
+    """اجرای INSERT/UPDATE/DELETE
+
+    نسخهٔ پیشین خروجی و کد خروج mysql را کاملاً نادیده می‌گرفت؛ در نتیجه یک
+    INSERT با ستون ناموجود بی‌صدا هیچ سطری نمی‌ساخت، db_scalar بعدی رشتهٔ
+    خالی برمی‌گرداند و تست روی یک شناسهٔ تهی ادامه می‌یافت (مثلاً '/disputes/'
+    به جای '/disputes/12' که صفحهٔ فهرست و HTTP 200 می‌دهد و ادعای امنیتی را
+    الکی سبز می‌کرد). حالا هر خطای SQL بلافاصله تست را قرمز می‌کند.
+    """
     cli = get_mysql_cli()
-    subprocess.run(
+    result = subprocess.run(
         [cli, *db_conn_args(), DB_NAME, "-e", sql],
         capture_output=True, text=True
     )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"db_insert شکست خورد (exit={result.returncode}): "
+            f"{result.stderr.strip() or result.stdout.strip()}\nSQL: {sql}"
+        )
+    return result
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -209,7 +284,7 @@ class HttpClient:
             os.remove(self.jar)
 
     def get(self, path: str, expect_code: int = None) -> tuple:
-        url = f"{BASE_URL}{path}"
+        url = f"{BASE_URL}{_encode_url_path(path)}"
         r = subprocess.run(
             ['curl', '-sS', '-b', self.jar, '-c', self.jar,
              '-o', '/tmp/ht_body.html', '-w', '%{http_code}',
@@ -244,7 +319,7 @@ class HttpClient:
 
     def post(self, path: str, data: dict = None, expect_code: int = None,
              csrf_token: str = None, page_body: str = None) -> tuple:
-        url = f"{BASE_URL}{path}"
+        url = f"{BASE_URL}{_encode_url_path(path)}"
         # CSRF token: از body موجود یا از صفحه فعلی استخراج کن
         if csrf_token:
             token = csrf_token
@@ -275,7 +350,7 @@ class HttpClient:
 
     def post_json(self, path: str, data: dict, expect_code: int = None) -> tuple:
         """POST با JSON body و headerهای API"""
-        url = f"{BASE_URL}{path}"
+        url = f"{BASE_URL}{_encode_url_path(path)}"
         token = self.get_csrf()
         cmd = ['curl', '-sS', '-b', self.jar, '-c', self.jar, '-X', 'POST', url,
                '-H', 'Content-Type: application/json',
@@ -300,7 +375,7 @@ class HttpClient:
         [لایه ۶] شبیه‌سازی درخواست‌های همزمان (Race Condition Injector)
         ارسال چندین درخواست موازی با سشن و توکن یکسان جهت تست قفل‌ها و Idempotency
         """
-        url = f"{BASE_URL}{path}"
+        url = f"{BASE_URL}{_encode_url_path(path)}"
         token = csrf_token or self.get_csrf()
         
         def single_request(idx: int):
@@ -362,7 +437,18 @@ class HttpClient:
             capture_output=True, text=True, timeout=20
         )
         code = r.stdout.strip()
-        return code == '302'
+        if code != '302':
+            return False
+
+        # یک 302 به تنهایی اثباتِ ورود نیست: ورودِ ناموفق (رمز غلط، کپچای
+        # ریسک‌محورِ CaptchaMiddleware، حساب مسدود) هم دقیقاً 302 برمی‌گرداند
+        # اما به '/login' بازمی‌گردد. نسخهٔ پیشین همهٔ این حالت‌ها را «موفق»
+        # گزارش می‌کرد و آزمون‌های بعدی به‌عنوان کاربرِ مهمان اجرا می‌شدند —
+        # مثلاً گاردهای IDOR بدون آنکه واقعاً آزموده شوند سبز می‌ماندند.
+        # پس با یک درخواست به صفحهٔ محافظت‌شده، برقراری واقعی نشست را می‌سنجیم.
+        probe_path = '/admin/dashboard' if admin else '/dashboard'
+        probe_code, _ = self.get(probe_path)
+        return probe_code == 200
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -469,10 +555,13 @@ class TestSuite:
         # Snapshot
         db_snapshot()
         # Flush cache to reset risk scores / captcha requirements
-        php_bin = shutil.which('php') or '/usr/bin/php'
+        # مسیر نسبی 'tests/flush_cache.php' وقتی تست‌ها از داخل خود پوشهٔ
+        # tests/ اجرا می‌شوند حل نمی‌شد و پاک‌سازی بی‌صدا انجام نمی‌گرفت؛
+        # در نتیجه امتیاز ریسکِ ورود انباشته می‌شد و CaptchaMiddleware نوع
+        # کپچا را تا recaptcha_v2 بالا می‌برد که در آزمون قابل حل نیست.
+        # _run_php_script مسیر را از ریشهٔ واقعی پروژه می‌سازد.
         try:
-            subprocess.run([php_bin, 'tests/flush_cache.php'],
-                           capture_output=True, timeout=15)
+            _run_php_script('tests/flush_cache.php', timeout=15)
         except Exception:
             pass
 

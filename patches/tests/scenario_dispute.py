@@ -35,7 +35,10 @@ def test_dispute_L1_smoke_custom_tasks_disputes_page(client, assertions):
     """L1-3: صفحه اختلافات مرتبط با تسک‌های سفارشی بدون کرش لود می‌شود"""
     ensure_test_user("d.L1.3@chortke.test", verified=True)
     client.login("d.L1.3@chortke.test", DEFAULT_PASSWORD)
-    code, body = client.get('/custom-tasks/disputes')
+    # صفحهٔ اختلافاتِ سمت کاربر در routes/user.php خط ۱۱۸ با '/disputes' ثبت
+    # شده است. '/custom-tasks/disputes' فقط پیشوند ادمین دارد
+    # (routes/admin.php خط ۱۹۲) و برای کاربر عادی ۴۰۴ است.
+    code, body = client.get('/disputes')
     assert_true(assertions, f"صفحه اختلافات تسک‌های سفارشی HTTP {code}", code in (200, 302))
 
 # ═══════════════════════════════════════════════════════════════════

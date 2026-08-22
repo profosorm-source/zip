@@ -22,7 +22,9 @@ def test_security_L1_smoke_security_settings(client, assertions):
     """L1-2: صفحه تنظیمات امنیتی کاربر (2FA/Sessions) بدون خطا بارگذاری می‌شود"""
     ensure_test_user("sec.L1.2@chortke.test", verified=True)
     client.login("sec.L1.2@chortke.test", DEFAULT_PASSWORD)
-    code, body = client.get('/account/security')
+    # مسیر واقعی در routes/user.php خط ۱۳۷ '/settings/security' است؛
+    # '/account/security' اصلاً ثبت نشده و همیشه ۴۰۴ می‌داد.
+    code, body = client.get('/settings/security')
     assert_true(assertions, f"صفحه تنظیمات امنیتی HTTP {code}", code in (200, 302))
 
 def test_security_L1_smoke_security_event_endpoint(client, assertions):
@@ -45,13 +47,21 @@ def test_security_L2_valid_fingerprint_handshake(client, assertions):
     """L2-1: ارسال موفق شناسه فینگرپرینت مرورگر بدون برانگیختن سیستم ضدتقلب"""
     uid = ensure_test_user("sec.L2.1@chortke.test", verified=True)
     client.login("sec.L2.1@chortke.test", DEFAULT_PASSWORD)
-    code, body, _ = client.post('/api/fingerprint', {
-        'hash': 'VALID_BROWSER_HASH_L2_123',
-        'canvas_hash': 'CANVAS_HASH_L2_456',
-        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-        'screen_resolution': '1920x1080'
+    # قرارداد واقعی اندپوینت (Api\FingerprintController خط ۲۸-۵۸) یک بدنهٔ
+    # JSON با دو کلید components و hash است و سرور خودش هش را از روی همان
+    # دوازده مؤلفهٔ BrowserFingerprintService بازمحاسبه می‌کند. بدنهٔ تخت
+    # پیشین همیشه ۴۰۰ می‌گرفت و پذیرش (200,302) این را پنهان می‌کرد.
+    components = browser_fingerprint_components(
+        user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        screen='1920x1080',
+        language='fa-IR',
+        timezone='Asia/Tehran',
+    )
+    code, body, _ = client.post_json('/api/fingerprint', {
+        'components': components,
+        'hash': expected_fingerprint_hash(components),
     })
-    assert_true(assertions, f"هندشیک فینگرپرینت معتبر HTTP {code}", code in (200, 302))
+    assert_true(assertions, f"هندشیک فینگرپرینت معتبر HTTP {code}", code == 200)
 
 def test_security_L2_admin_ban_user_execution(client, assertions):
     """L2-2: مسدودسازی (Ban) موفق حساب کاربر متخلف توسط ادمین و ثبت در دیتابیس"""
@@ -88,24 +98,49 @@ def test_security_L3_idor_cross_user_dispute_access(client, assertions):
     """L3-1: تلاش کاربر برای مشاهده چت حل اختلاف (Dispute) متعلق به کاربر دیگر مسدود می‌شود (IDOR Guard)"""
     uid1 = ensure_test_user("sec.idor1@chortke.test", verified=True)
     uid2 = ensure_test_user("sec.idor2@chortke.test", verified=True)
-    db_insert(f"INSERT INTO disputes (user_id, target_id, target_type, status, title, created_at, updated_at) VALUES ({uid1}, 1, 'custom_task', 'open', 'IDOR Security Test', NOW(), NOW())")
-    did1 = db_scalar(f"SELECT id FROM disputes WHERE user_id={uid1} LIMIT 1")
-    
+    # ستون‌های واقعی جدول disputes عبارت‌اند از ref_type/ref_id/reason؛
+    # نسخهٔ پیشین ستون‌های ناموجود target_id/target_type/title را می‌نوشت،
+    # INSERT بی‌صدا شکست می‌خورد، did1 خالی می‌شد و آدرس به '/disputes/'
+    # (صفحهٔ فهرست، HTTP 200) تنزل می‌یافت — یعنی گاردِ IDOR اصلاً آزموده نمی‌شد.
+    db_insert(
+        "INSERT INTO disputes (user_id, target_user_id, ref_type, ref_id, status, reason, created_at, updated_at) "
+        f"VALUES ({uid1}, {uid1}, 'custom_task', 1, 'open', 'IDOR Security Test', NOW(), NOW())"
+    )
+    did1 = db_scalar(f"SELECT id FROM disputes WHERE user_id={uid1} ORDER BY id DESC LIMIT 1")
+    assert_true(assertions, f"پروندهٔ اختلاف آزمایشی ساخته شد (id={did1})", str(did1).isdigit())
+
     # لاگین با کاربر دوم و تلاش برای دسترسی به چت کاربر اول
     client.login("sec.idor2@chortke.test", DEFAULT_PASSWORD)
     code, body = client.get(f'/disputes/{did1}')
+    # DisputeController::show خط ۵۵-۵۹ کاربر غیرطرفِ پرونده را به '/disputes'
+    # ریدایرکت می‌کند، پس پاسخ باید ۳۰۲ باشد؛ ۲۰۰ یعنی محتوای پرونده لو رفته است.
     assert_true(assertions, f"حریم کاربری در حل اختلاف حفظ شد (IDOR Guard) HTTP {code}", code in (403, 404, 302))
 
 def test_security_L3_idor_cross_user_wallet_transfer_view(client, assertions):
     """L3-2: تلاش کاربر برای مشاهده جزئیات یا لغو تراکنش انتقال P2P متعلق به کاربر دیگر مسدود می‌شود"""
     uid1 = ensure_test_user("sec.idor_w1@chortke.test", verified=True)
     uid2 = ensure_test_user("sec.idor_w2@chortke.test", verified=True)
-    db_insert(f"INSERT INTO transactions (user_id, amount, type, status, created_at) VALUES ({uid1}, 50000, 'transfer', 'completed', NOW())")
-    tx_id = db_scalar(f"SELECT id FROM transactions WHERE user_id={uid1} LIMIT 1")
-    
+    # نسخهٔ پیشین دو نقص داشت: (۱) INSERT بدون ستون اجباری transaction_id
+    # بی‌صدا شکست می‌خورد و tx_id خالی می‌ماند؛ (۲) مسیر '/wallet/transfer/{id}'
+    # اصلاً وجود ندارد (routes/wallet.php:57-58 فقط create/store دارد) و ادعا
+    # کدهای (403,404,302,200) را می‌پذیرفت — یعنی هر پاسخی سبز بود.
+    # مسیر واقعیِ مالی که مالکیت را بررسی می‌کند '/withdrawals/{id}/cancel'
+    # است (routes/wallet.php:52) و WithdrawalUserService خط ۱۶۳ برای کاربر
+    # غیرمالک 'درخواست برداشت یافت نشد' با HTTP 422 برمی‌گرداند.
+    ref = f"idor-{int(time.time())}-{uid1}"
+    db_insert(
+        "INSERT INTO withdrawals (user_id, transaction_id, amount, currency, status, created_at, updated_at) "
+        f"VALUES ({uid1}, '{ref}', 50000, 'irt', 'pending', NOW(), NOW())"
+    )
+    wid = db_scalar(f"SELECT id FROM withdrawals WHERE transaction_id='{ref}'")
+    assert_true(assertions, f"درخواست برداشت آزمایشی ساخته شد (id={wid})", str(wid).isdigit())
+
     client.login("sec.idor_w2@chortke.test", DEFAULT_PASSWORD)
-    code, body = client.get(f'/wallet/transfer/{tx_id}')
-    assert_true(assertions, f"دسترسی غیرمجاز به تراکنش مالی دیگران مسدود شد HTTP {code}", code in (403, 404, 302, 200))
+    code, body, _ = client.post(f'/withdrawals/{wid}/cancel', {})
+    assert_true(assertions, f"لغو برداشت کاربر دیگر رد شد HTTP {code}", code == 422)
+    # مهم‌تر از کد وضعیت: برداشت قربانی نباید تغییر کرده باشد.
+    status_after = db_scalar(f"SELECT status FROM withdrawals WHERE id={wid}")
+    assert_true(assertions, f"وضعیت برداشت قربانی دست‌نخورده ماند ({status_after})", status_after == 'pending')
 
 def test_security_L3_idor_cross_user_kyc_document_access(client, assertions):
     """L3-3: تلاش کاربر برای دانلود یا مشاهده مدارک هویتی (KYC) متعلق به کاربر دیگر مسدود می‌شود"""
@@ -122,11 +157,16 @@ def test_security_L3_behavioral_biometrics_bot_anomaly(client, assertions):
     """L3-4: شبیه‌سازی حرکت غیرطبیعی ماوس و کلیک‌های رباتی جهت تحریک موتور ضدتقلب (Behavioral Biometrics Anomaly)"""
     uid = ensure_test_user("sec.bot@chortke.test", verified=True)
     client.login("sec.bot@chortke.test", DEFAULT_PASSWORD)
-    code, body, _ = client.post('/api/security/biometrics', {
-        'mouse_trajectory': 'M0,0 L1000,1000', # حرکت خطی و آنی ماوس (رباتی)
-        'key_press_speed': '0ms'              # فشردن بدون وقفه کلیدها
+    # همانند L1-3، مسیر '/api/security/biometrics' در پروژه وجود ندارد؛
+    # سیگنال‌های رفتاری از همان اندپوینت واقعی routes/public.php:52 گزارش
+    # می‌شوند. ادعای پیشین شش کد وضعیت را می‌پذیرفت (از جمله ۴۰۴ و ۴۰۰) و
+    # عملاً هر پاسخی را سبز می‌کرد.
+    code, body, _ = client.post('/api/security/event', {
+        'event': 'behavioral_biometrics_anomaly',
+        'mouse_trajectory': 'M0,0 L1000,1000',  # حرکت خطی و آنی ماوس (رباتی)
+        'key_press_speed': '0ms',               # فشردن بدون وقفه کلیدها
     })
-    assert_true(assertions, f"رفتار رباتی در ضدتقلب تشخیص داده شد HTTP {code}", code in (200, 302, 422, 403, 400, 404))
+    assert_true(assertions, f"رفتار رباتی به موتور ضدتقلب گزارش شد HTTP {code}", code == 200)
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۴: امنیت پیشرفته، ترافیک تور و سرریز (Advanced Security) — L4
@@ -244,7 +284,7 @@ if __name__ == '__main__':
 
     suite.run_test("L1-1: صفحه داشبورد ضدتقلب", test_security_L1_smoke_fraud_dashboard)
     suite.run_test("L1-2: صفحه تنظیمات امنیتی", test_security_L1_smoke_security_settings)
-    suite.run_test("L1-3: اندپوینت بایومتریک", test_security_L1_smoke_biometrics_endpoint)
+    suite.run_test("L1-3: اندپوینت رویداد امنیتی", test_security_L1_smoke_security_event_endpoint)
 
     suite.run_test("L2-1: هندشیک فینگرپرینت معتبر", test_security_L2_valid_fingerprint_handshake)
     suite.run_test("L2-2: مسدودسازی کاربر توسط ادمین (Ban)", test_security_L2_admin_ban_user_execution)

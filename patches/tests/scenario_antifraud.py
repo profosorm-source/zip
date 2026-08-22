@@ -20,11 +20,18 @@ def test_antifraud_L1_smoke_fraud_dashboard(client, assertions):
 
 def test_antifraud_L1_smoke_fingerprint_endpoint(client, assertions):
     """L1-2: بررسی در دسترس بودن اندپوینت ثبت فینگرپرینت مرورگر (Browser Fingerprint)"""
-    code, body = client.get('/api/fingerprint', expect_code=None)
-    # این اندپوینت در routes/public.php:66 فقط با متد POST تعریف شده است؛
-    # بنابراین پاسخ درست به یک درخواست GET «متد مجاز نیست» (405) است.
-    # پذیرش 404/200 در نسخهٔ پیشین، حذف شدنِ مسیر را هم سبز نگه می‌داشت.
-    assert_true(assertions, f"اندپوینت فینگرپرینت به GET پاسخ 405 می‌دهد HTTP {code}", code == 405)
+    # این اندپوینت در routes/public.php:66 فقط با متد POST تعریف شده و روتر
+    # پروژه مفهوم «۴۰۵ متد غیرمجاز» ندارد (در core/Router.php پیاده‌سازی نشده)،
+    # بنابراین GET به‌درستی ۴۰۴ می‌گیرد.
+    # صرفِ ۴۰۴ گرفتنِ GET اثبات وجود مسیر نیست؛ پس در کنار آن ثابت می‌کنیم
+    # که همان مسیر با POST زنده است و ۴۰۴ نمی‌دهد.
+    get_code, _ = client.get('/api/fingerprint', expect_code=None)
+    assert_true(assertions, f"GET روی اندپوینت POST-only رد شد HTTP {get_code}", get_code == 404)
+
+    post_code, _, _ = client.post('/api/fingerprint', {'hash': ''})
+    assert_true(assertions,
+                f"مسیر فینگرپرینت با POST وجود دارد HTTP {post_code}",
+                post_code != 404)
 
 # ═══════════════════════════════════════════════════════════════════
 # لایه ۲: مسیر خوش‌اقبال (Happy Path) — L2
@@ -33,13 +40,18 @@ def test_antifraud_L2_valid_fingerprint_submission(client, assertions):
     """L2-1: ارسال موفق شناسه فینگرپرینت مرورگر بدون برانگیختن سیستم ضدتقلب"""
     uid = ensure_test_user("af.L2.1@chortke.test", verified=True)
     client.login("af.L2.1@chortke.test", DEFAULT_PASSWORD)
-    code, body, _ = client.post('/api/fingerprint', {
-        'hash': 'VALID_BROWSER_HASH_ABC123',
-        'canvas_hash': 'CANVAS_HASH_XYZ789',
-        'user_agent': 'Mozilla/5.0 (Enterprise QA Test)',
-        'screen_resolution': '1920x1080'
+    # قرارداد واقعی کنترلر (app/Controllers/Api/FingerprintController.php):
+    # بدنه باید شامل 'components' (آرایه) و 'hash' باشد و سرور همان هش را
+    # دوباره تولید کرده و با hash_equals مقایسه می‌کند تا جعل شناسایی شود.
+    # مقادیر ساختگیِ نسخهٔ پیشین ('VALID_BROWSER_HASH_ABC123') هرگز با هش
+    # سمت سرور برابر نمی‌شد و همیشه ۴۰۰/۴۰۳ می‌گرفت؛ یعنی «ارسال معتبر» را
+    # اصلاً آزمون نمی‌کرد.
+    components = browser_fingerprint_components(user_agent='Mozilla/5.0 (Enterprise QA Test)')
+    code, body, _ = client.post_json('/api/fingerprint', {
+        'components': components,
+        'hash': expected_fingerprint_hash(components),
     })
-    assert_true(assertions, f"ارسال فینگرپرینت معتبر HTTP {code}", code in (200, 302))
+    assert_true(assertions, f"ارسال فینگرپرینت معتبر HTTP {code}", code == 200)
 
 def test_antifraud_L2_risk_policy_view(client, assertions):
     """L2-2: مشاهده موفق قوانین و سیاست‌های ریسک در پنل ادمین (Risk Policy)"""

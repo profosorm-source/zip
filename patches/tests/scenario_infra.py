@@ -36,12 +36,24 @@ def test_infra_L1_smoke_health_check_endpoint(client, assertions):
 # ═══════════════════════════════════════════════════════════════════
 def test_infra_L2_outbox_publish_success(client, assertions):
     """L2-1: ثبت موفق رویداد در جدول outbox_events و انتشار موفق به صف پیام‌رسان"""
-    db_insert("INSERT INTO outbox_events (event_type, payload, status, created_at) VALUES ('UserCreated', '{\"uid\": 1}', 'pending', NOW())")
+    # ستون‌های aggregate_type/aggregate_id/available_at اجباری‌اند؛ INSERT
+    # پیشین بدون آن‌ها بی‌صدا شکست می‌خورد و دیسپچر روی جدول خالی اجرا می‌شد.
+    marker = f"UserCreated-{int(time.time())}"
+    db_insert(
+        "INSERT INTO outbox_events (aggregate_type, aggregate_id, event_type, payload, status, available_at, created_at) "
+        f"VALUES ('user', '1', '{marker}', '{{\"uid\": 1}}', 'pending', NOW(), NOW())"
+    )
+    assert_true(assertions, "رویداد Outbox آزمایشی ثبت شد",
+                db_scalar(f"SELECT COUNT(*) FROM outbox_events WHERE event_type='{marker}'") == '1')
+
     res = run_outbox_publish(limit=10)
     assert_true(assertions, f"دیسپچر انتشار Outbox با موفقیت اجرا شد", res.returncode == 0)
-    
-    pending = db_scalar("SELECT COUNT(*) FROM outbox_events WHERE status='pending'")
-    assert_true(assertions, f"رکوردهای Outbox منتشر شدند (تعداد باقیمانده: {pending})", int(pending) >= 0)
+
+    # ادعای پیشین int(pending) >= 0 بود که همیشه درست است و هیچ‌چیز را نمی‌سنجید.
+    # ادعای واقعی: همان رویدادِ نشانه‌دار دیگر در وضعیت pending نمانده باشد.
+    status_after = db_scalar(f"SELECT status FROM outbox_events WHERE event_type='{marker}'")
+    assert_true(assertions, f"رویداد Outbox از حالت pending خارج شد (وضعیت: {status_after})",
+                status_after != 'pending')
 
 def test_infra_L2_dlq_retry_success(client, assertions):
     """L2-2: اجرای موفق دیسپچر تلاش مجدد برای جاب‌های شکست‌خورده در صف مرده (DLQ)"""
@@ -54,7 +66,10 @@ def test_infra_L2_dlq_retry_success(client, assertions):
 # ═══════════════════════════════════════════════════════════════════
 def test_infra_L3_outbox_invalid_payload_poison_message(client, assertions):
     """L3-1: شبیه‌سازی وجود پیام سمی (Poison Message) با ساختار نامعتبر در Outbox"""
-    db_insert("INSERT INTO outbox_events (event_type, payload, status, created_at) VALUES ('BadEvent', 'INVALID_JSON_CORRUPTED', 'pending', NOW())")
+    db_insert(
+        "INSERT INTO outbox_events (aggregate_type, aggregate_id, event_type, payload, status, available_at, created_at) "
+        "VALUES ('user', '1', 'BadEvent', 'INVALID_JSON_CORRUPTED', 'pending', NOW(), NOW())"
+    )
     res = run_outbox_publish(limit=10)
     assert_true(assertions, f"دیسپچر Outbox در مواجهه با پیام سمی متوقف نشد", res.returncode == 0)
 
