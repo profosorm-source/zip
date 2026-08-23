@@ -26,7 +26,21 @@ for rel in app/Commands/FeatureFlagCommand.php \
     install -D -m 644 "$SRC/$rel" "$TARGET/$rel"
     echo "  ✓ $rel"
 done
-for cfg in phpstan.neon phpstan_core.neon phpstan_full.neon phpstan-core-honest.neon phpstan-search.neon phpstan-commands.neon; do
+for rel in app/Models/ContentSubmission.php \
+           app/Models/Coupon.php \
+           app/Models/CryptoDepositIntent.php \
+           app/Models/Escrow.php \
+           app/Models/InfluencerModel.php \
+           app/Models/SentryModel.php \
+           app/Models/SystemTelemetryModel.php \
+           app/Models/Transaction.php \
+           app/Models/TransactionQuery.php \
+           app/Models/User.php \
+           app/Models/UserVacation.php; do
+    install -D -m 644 "$SRC/$rel" "$TARGET/$rel"
+    echo "  ✓ $rel"
+done
+for cfg in phpstan.neon phpstan_core.neon phpstan_full.neon phpstan-core-honest.neon phpstan-search.neon phpstan-commands.neon phpstan-models.neon; do
     install -m 644 "$SRC/configs/$cfg" "$TARGET/$cfg"
     echo "  ✓ $cfg"
 done
@@ -37,3 +51,4 @@ php -d memory_limit=3G vendor/bin/phpstan analyse -c phpstan.neon --no-progress 
 php -d memory_limit=3G vendor/bin/phpstan analyse -c phpstan-core-honest.neon --no-progress 2>/dev/null | grep -E "Found|No errors"
 php -d memory_limit=3G vendor/bin/phpstan analyse -c phpstan-search.neon --no-progress 2>/dev/null | grep -E "Found|No errors"
 php -d memory_limit=3G vendor/bin/phpstan analyse -c phpstan-commands.neon --no-progress 2>/dev/null | grep -E "Found|No errors"
+php -d memory_limit=3G vendor/bin/phpstan analyse -c phpstan-models.neon --no-progress 2>/dev/null | grep -E "Found|No errors"

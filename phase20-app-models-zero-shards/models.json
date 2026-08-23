@@ -1,0 +1,70 @@
+{
+  "phase": 20,
+  "shard": "Models",
+  "path": "app/Models",
+  "verified_at": "2026-08-23",
+  "before": {
+    "errors": 19,
+    "files_with_errors": 11,
+    "source": "fresh honest Level 9 scan in the continuation workspace"
+  },
+  "after": {
+    "errors": 0,
+    "files_with_errors": 0
+  },
+  "scan": {
+    "tool": "PHPStan",
+    "level": 9,
+    "configuration": "phpstan-models.neon",
+    "baseline": false,
+    "ignoreErrors": false,
+    "suppression": false,
+    "treatPhpDocTypesAsCertain": true,
+    "scanned_files": 96,
+    "changed_files": 11
+  },
+  "phpstan_error_distribution_before": {
+    "ContentSubmission.php": 3,
+    "Coupon.php": 1,
+    "CryptoDepositIntent.php": 2,
+    "Escrow.php": 1,
+    "InfluencerModel.php": 4,
+    "SentryModel.php": 1,
+    "SystemTelemetryModel.php": 2,
+    "Transaction.php": 2,
+    "TransactionQuery.php": 1,
+    "User.php": 1,
+    "UserVacation.php": 1
+  },
+  "verification": {
+    "phpstan": "pass",
+    "syntax": "pass",
+    "behavioral_tests": [
+      {
+        "suite": "InfluencerModelTest",
+        "tests": 5,
+        "assertions": 13,
+        "status": "pass"
+      },
+      {
+        "suite": "SentryModelSRPTest",
+        "tests": 94,
+        "assertions": 191,
+        "status": "pass"
+      },
+      {
+        "suite": "UserVacationTest",
+        "tests": 3,
+        "assertions": 5,
+        "status": "pass"
+      },
+      {
+        "suite": "CouponServiceTest",
+        "tests": 15,
+        "assertions": 29,
+        "status": "pass"
+      }
+    ],
+    "integration_note": "No MariaDB integration result is claimed from the PHP-WASM runner; native MariaDB remains required for database integration coverage."
+  }
+}
