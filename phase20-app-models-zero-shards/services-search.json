@@ -1,0 +1,73 @@
+{
+  "phase": 20,
+  "shard": "Services/Search",
+  "path": "app/Services/Search",
+  "verified_at": "2026-08-23",
+  "before": {
+    "errors": 24,
+    "files_with_errors": 8,
+    "source": "CHORTKE_NEW_SESSION_HANDOFF_FA.md"
+  },
+  "after": {
+    "errors": 0,
+    "files_with_errors": 0
+  },
+  "scan": {
+    "tool": "PHPStan",
+    "level": 9,
+    "configuration": "phpstan-search.neon",
+    "baseline": false,
+    "ignoreErrors": false,
+    "suppression": false,
+    "treatPhpDocTypesAsCertain": true,
+    "scanned_files": 15,
+    "changed_files": 12
+  },
+  "phpstan_error_distribution_before": {
+    "AdminSearchProvider.php": 10,
+    "SchemaInspector.php": 5,
+    "UserSearchProvider.php": 3,
+    "AdminSearchGateway.php": 2,
+    "BaseSearchProvider.php": 1,
+    "ModuleSearchGateway.php": 1,
+    "ModuleSearchProvider.php": 1,
+    "UserSearchGateway.php": 1
+  },
+  "verification": {
+    "phpstan": "pass",
+    "syntax": "pass",
+    "behavioral_tests": [
+      {
+        "suite": "SearchEcosystemTest",
+        "tests": 8,
+        "assertions": 29,
+        "status": "pass"
+      },
+      {
+        "suite": "SearchCacheContractBehaviorTest",
+        "tests": 1,
+        "assertions": 3,
+        "status": "pass"
+      },
+      {
+        "suite": "SearchRuntimeBehaviorTest",
+        "tests": 2,
+        "assertions": 4,
+        "status": "pass"
+      },
+      {
+        "suite": "SearchSystemFixTest",
+        "tests": 4,
+        "assertions": 12,
+        "status": "pass"
+      },
+      {
+        "suite": "SplitServicesTest",
+        "tests": 8,
+        "assertions": 14,
+        "status": "pass"
+      }
+    ],
+    "integration_note": "SchemaInspectorContractRuntimeTest was not counted as a pass because the PHP 8.4 WASM runner cannot provide the MariaDB runtime."
+  }
+}

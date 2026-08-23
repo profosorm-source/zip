@@ -1,0 +1,190 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\Search;
+
+use App\Contracts\LoggerInterface;
+use App\Contracts\SearchProviderInterface;
+use App\Contracts\SearchServiceInterface;
+use Core\RateLimiter;
+
+/**
+ * SearchOrchestrator - هماهنگ‌کننده نهایی جستجو
+ */
+class SearchOrchestrator implements SearchServiceInterface
+{
+    /** @var SearchProviderInterface[] */
+    private array $providers = [];
+
+    private \App\Contracts\LoggerInterface $logger;
+    private ?RateLimiter $rateLimiter;
+    public function __construct(
+        \App\Contracts\LoggerInterface $logger,
+        ?RateLimiter $rateLimiter = null
+    ) {        $this->logger = $logger;
+        $this->rateLimiter = $rateLimiter;
+
+            }
+
+    public function registerProvider(SearchProviderInterface $provider): void
+    {
+        $this->providers[] = $provider;
+    }
+
+    private function allowSearch(string $scope, ?int $actorId = null, int $max = 60, int $minutes = 1): bool
+    {
+        if (!$this->rateLimiter) {
+            return true;
+        }
+
+        $identity = $actorId !== null && $actorId > 0
+            ? (string)$actorId
+            : (function_exists('get_client_ip') ? get_client_ip() : 'unknown');
+
+        $key = 'search:' . $scope . ':' . $identity;
+        $allowed = $this->rateLimiter->attempt($key, $max, $minutes, false);
+        if (!$allowed) {
+            $this->logger->warning('search.rate_limited', ['scope' => $scope, 'actor_id' => $actorId, 'key' => $key]);
+        }
+
+        return $allowed;
+    }
+
+    public function search(SearchQuery $query): SearchResult
+    {
+        return $this->searchQuery($query);
+    }
+
+    public function searchQuery(SearchQuery $query): SearchResult
+    {
+        $filters = $query->getFilters();
+        $scope = array_key_exists('scope', $filters) ? $filters['scope'] : 'unknown';
+        if (!is_string($scope) || $scope === '') {
+            throw new \InvalidArgumentException('Search scope must be a non-empty string.');
+        }
+
+        $actorRaw = array_key_exists('user_id', $filters) ? $filters['user_id'] : null;
+        $actorId = 0;
+        if ($actorRaw !== null) {
+            if (is_int($actorRaw)) {
+                $actorId = $actorRaw;
+            } elseif (is_string($actorRaw) && ctype_digit($actorRaw)) {
+                $parsedActorId = filter_var($actorRaw, FILTER_VALIDATE_INT);
+                if ($parsedActorId === false) {
+                    throw new \InvalidArgumentException('Search user_id must be an integer.');
+                }
+                $actorId = $parsedActorId;
+            } else {
+                throw new \InvalidArgumentException('Search user_id must be an integer.');
+            }
+        }
+
+        if (!$this->allowSearch($scope, $actorId > 0 ? $actorId : null)) {
+            return new SearchResult([], 0, ['rate_limited' => true]);
+        }
+
+        foreach ($this->providers as $provider) {
+            if ($provider->supports($scope)) {
+                return $provider->search($query);
+            }
+        }
+
+        return new SearchResult([], 0, ['error' => 'No search provider found for scope: ' . $scope]);
+    }
+
+    public function searchAdmin(SearchQuery $query): array
+    {
+        /** @var AdminSearchProvider|null $provider */
+        $provider = $this->findProvider(AdminSearchProvider::class);
+        return $provider ? $provider->searchAdmin($query) : ['items' => [], 'total' => 0];
+    }
+
+    public function searchUser(SearchQuery $query, int $userId): array
+    {
+        /** @var UserSearchProvider|null $provider */
+        $provider = $this->findProvider(UserSearchProvider::class);
+        return $provider ? $provider->searchUser($query, $userId) : ['items' => [], 'total' => 0];
+    }
+
+    public function searchModules(array $modules, SearchQuery $query): array
+    {
+        if (!array_is_list($modules)) {
+            throw new \InvalidArgumentException('Search modules must be a list of strings.');
+        }
+        foreach ($modules as $module) {
+            if (!is_string($module) || $module === '') {
+                throw new \InvalidArgumentException('Search modules must be a list of strings.');
+            }
+        }
+
+        /** @var ModuleSearchProvider|null $provider */
+        $provider = $this->findProvider(ModuleSearchProvider::class);
+        if ($provider === null) {
+            return [];
+        }
+
+        $filters = $query->getFilters();
+        $filters['q'] = $query->getTerm() ?? '';
+        return $provider->searchModules($modules, $filters, $query->getLimit(), $query->getOffset());
+    }
+
+    public function searchAdminModule(string $module, SearchQuery $query): array
+    {
+        /** @var AdminSearchProvider|null $provider */
+        $provider = $this->findProvider(AdminSearchProvider::class);
+        if ($provider === null) {
+            return ['items' => [], 'total' => 0];
+        }
+
+        return $provider->searchRegisteredModule(
+            $module,
+            $query->getTerm() ?? '',
+            $query->getFilters(),
+            $query->getLimit(),
+            $query->getOffset()
+        );
+    }
+
+
+    public function invalidateModuleCache(string $module): void
+    {
+        foreach ($this->providers as $provider) {
+            if (method_exists($provider, 'invalidateModuleCache')) {
+                $provider->invalidateModuleCache($module);
+            }
+        }
+    }
+
+    public function registeredAdminModules(): array
+    {
+        /** @var AdminSearchProvider|null $provider */
+        $provider = $this->findProvider(AdminSearchProvider::class);
+        return $provider ? $provider->registeredModules() : [];
+    }
+
+    /**
+     * @param list<mixed> $parameters
+     */
+    public function __call(string $method, array $parameters): mixed
+    {
+        foreach ($this->providers as $provider) {
+            if (method_exists($provider, $method)) {
+                return $provider->{$method}(...$parameters);
+            }
+        }
+
+        throw new \BadMethodCallException("Method {$method} does not exist in SearchOrchestrator or its providers.");
+    }
+
+    private function findProvider(string $class): ?SearchProviderInterface
+    {
+        foreach ($this->providers as $provider) {
+            if ($provider instanceof $class) {
+                return $provider;
+            }
+        }
+
+        return null;
+    }
+}

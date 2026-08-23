@@ -14,7 +14,12 @@ for rel in core/Session.php core/Request.php core/EventDispatcher.php \
     install -D -m 644 "$SRC/$rel" "$TARGET/$rel"
     echo "  ✓ $rel"
 done
-for cfg in phpstan.neon phpstan_core.neon phpstan_full.neon phpstan-core-honest.neon; do
+
+for rel in app/Services/Search/*.php; do
+    install -D -m 644 "$SRC/$rel" "$TARGET/$rel"
+    echo "  ✓ $rel"
+done
+for cfg in phpstan.neon phpstan_core.neon phpstan_full.neon phpstan-core-honest.neon phpstan-search.neon; do
     install -m 644 "$SRC/configs/$cfg" "$TARGET/$cfg"
     echo "  ✓ $cfg"
 done
@@ -23,3 +28,4 @@ echo "تأیید:"
 cd "$TARGET"
 php -d memory_limit=3G vendor/bin/phpstan analyse -c phpstan.neon --no-progress 2>/dev/null | grep -E "Found|No errors"
 php -d memory_limit=3G vendor/bin/phpstan analyse -c phpstan-core-honest.neon --no-progress 2>/dev/null | grep -E "Found|No errors"
+php -d memory_limit=3G vendor/bin/phpstan analyse -c phpstan-search.neon --no-progress 2>/dev/null | grep -E "Found|No errors"
