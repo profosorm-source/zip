@@ -1,0 +1,18 @@
+# Honest, standalone gate for the app/Commands shard.
+# This file intentionally has no baseline, ignoreErrors, or suppression rules.
+parameters:
+    level: 9
+    paths:
+        - app/Commands
+    scanDirectories:
+        - app
+        - core
+        - helpers
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+    treatPhpDocTypesAsCertain: true
+    universalObjectCratesClasses:
+        - stdClass
+    parallel:
+        maximumNumberOfProcesses: 1
+        processTimeout: 300.0

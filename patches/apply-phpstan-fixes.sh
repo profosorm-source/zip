@@ -19,7 +19,14 @@ for rel in app/Services/Search/*.php; do
     install -D -m 644 "$SRC/$rel" "$TARGET/$rel"
     echo "  ✓ $rel"
 done
-for cfg in phpstan.neon phpstan_core.neon phpstan_full.neon phpstan-core-honest.neon phpstan-search.neon; do
+for rel in app/Commands/FeatureFlagCommand.php \
+           app/Commands/IdempotencyCommand.php \
+           app/Commands/QueueFailedCommand.php \
+           bootstrap/app.php; do
+    install -D -m 644 "$SRC/$rel" "$TARGET/$rel"
+    echo "  ✓ $rel"
+done
+for cfg in phpstan.neon phpstan_core.neon phpstan_full.neon phpstan-core-honest.neon phpstan-search.neon phpstan-commands.neon; do
     install -m 644 "$SRC/configs/$cfg" "$TARGET/$cfg"
     echo "  ✓ $cfg"
 done
@@ -29,3 +36,4 @@ cd "$TARGET"
 php -d memory_limit=3G vendor/bin/phpstan analyse -c phpstan.neon --no-progress 2>/dev/null | grep -E "Found|No errors"
 php -d memory_limit=3G vendor/bin/phpstan analyse -c phpstan-core-honest.neon --no-progress 2>/dev/null | grep -E "Found|No errors"
 php -d memory_limit=3G vendor/bin/phpstan analyse -c phpstan-search.neon --no-progress 2>/dev/null | grep -E "Found|No errors"
+php -d memory_limit=3G vendor/bin/phpstan analyse -c phpstan-commands.neon --no-progress 2>/dev/null | grep -E "Found|No errors"

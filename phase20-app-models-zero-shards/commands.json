@@ -1,0 +1,49 @@
+{
+  "phase": 20,
+  "shard": "Commands",
+  "path": "app/Commands",
+  "verified_at": "2026-08-23",
+  "before": {
+    "errors": 43,
+    "files_with_errors": 3,
+    "source": "fresh honest Level 9 scan in the continuation workspace"
+  },
+  "after": {
+    "errors": 0,
+    "files_with_errors": 0
+  },
+  "scan": {
+    "tool": "PHPStan",
+    "level": 9,
+    "configuration": "phpstan-commands.neon",
+    "baseline": false,
+    "ignoreErrors": false,
+    "suppression": false,
+    "treatPhpDocTypesAsCertain": true,
+    "scanned_files": 21,
+    "changed_files": 4
+  },
+  "phpstan_error_distribution_before": {
+    "FeatureFlagCommand.php": 35,
+    "IdempotencyCommand.php": 1,
+    "QueueFailedCommand.php": 7
+  },
+  "verification": {
+    "phpstan": "pass",
+    "syntax": "pass",
+    "behavioral_tests": [
+      {
+        "suite": "AllCommandsVerificationTest",
+        "tests": 18,
+        "assertions": 18,
+        "status": "pass"
+      }
+    ],
+    "runtime_fixes": [
+      "CLI argument arrays are documented and handled as positional lists.",
+      "Feature flag, idempotency, and queue command arguments are validated at the CLI boundary.",
+      "QueueFailedCommand now consumes the argument list shape supplied by CliDispatcher.",
+      "Feature and idempotency wildcard registrations now match their documented subcommands."
+    ]
+  }
+}
